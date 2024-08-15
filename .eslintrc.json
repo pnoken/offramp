@@ -1,0 +1,120 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@next/next/recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:jsx-a11y/recommended",
+    "plugin:testing-library/react",
+    "plugin:jest/recommended",
+    "plugin:jest-dom/recommended",
+    "plugin:prettier/recommended",
+    "plugin:unicorn/recommended",
+    "plugin:cypress/recommended",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "cypress",
+    "jest",
+    "jest-dom",
+    "testing-library",
+    "react-hooks",
+    "simple-import-sort",
+    "unicorn",
+    "prettier"
+  ],
+  "rules": {
+    "no-console": "warn",
+    "@typescript-eslint/explicit-function-return-type": 0,
+    "@typescript-eslint/explicit-module-boundary-types": 0,
+    "@typescript-eslint/no-empty-function": 0,
+    "@typescript-eslint/no-var-requires": 0,
+    "import/order": "off",
+    "jsx-a11y/anchor-is-valid": [
+      "error",
+      {
+        "aspects": ["invalidHref", "preferButton"],
+        "components": ["Link"],
+        "specialLink": ["hrefLeft", "hrefRight"]
+      }
+    ],
+    "prettier/prettier": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/rules-of-hooks": "error",
+    "react/display-name": "off",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
+    "simple-import-sort/exports": "error",
+    "simple-import-sort/imports": "error",
+    "unicorn/no-reduce": "off",
+    "unicorn/no-array-reduce": "off",
+    "unicorn/no-array-for-each": "off",
+    "unicorn/no-array-callback-reference": "off",
+    "unicorn/no-fn-reference-in-iterator": "off",
+    "unicorn/prevent-abbreviations": [
+      "error",
+      {
+        "allowList": {
+          "Props": true,
+          "props": true,
+          "i18n": true,
+          "next-env.d": true,
+          "next-i18next.config": true
+        }
+      }
+    ],
+    "jest/expect-expect": [
+      "error",
+      {
+        "assertFunctionNames": ["expect", "testSaga"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.spec.ts"],
+      "rules": {
+        "jest/expect-expect": [
+          "error",
+          {
+            "assertFunctionNames": ["expect", "cy.*"]
+          }
+        ],
+        "jest/valid-expect": "off",
+        "jest/valid-describe": "off",
+        "jest/valid-describe-callback": "off",
+        "jest/valid-expect-in-promise": "off",
+        "testing-library/await-async-query": "off",
+        "testing-library/prefer-screen-queries": "off"
+      }
+    }
+  ],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["src"],
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    },
+    "react": {
+      "version": "detect"
+    }
+  }
+}
