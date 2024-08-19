@@ -1,8 +1,65 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Web5 Wallet for Cross-Border Transfers in Africa
 
-## Getting Started
+![Web5 Wallet Logo](path-to-logo-image-if-any)
 
-First, run the development server:
+## Overview
+
+This project is a Web5 wallet designed for cross-border transfers in Africa, developed as part of the TBDex challenge. The wallet leverages decentralized technologies to facilitate secure, fast, and low-cost financial transactions across borders within the African continent.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+
+## Features
+
+- **Decentralized Identity (DID) Integration:** Ensures secure and private user authentication.
+- **Cross-Border Transfers:** Enables seamless transfers between different African countries.
+- **Low Transaction Fees:** Built to minimize transaction costs, making it accessible to a wider audience.
+- **Multi-Currency Support:** Supports multiple African currencies to facilitate local transactions.
+- **User-Friendly Interface:** Designed with simplicity and ease of use in mind, catering to users of all technical levels.
+- **Offline Support:** Offers offline transaction capabilities, ensuring accessibility in regions with limited internet connectivity.
+
+## Technology Stack
+
+- **Frontend:** React, TypeScript
+- **Backend:** [If applicable, mention any backend services used]
+- **Blockchain:** TBDex SDK, Web5 Protocols
+- **Cryptography:** ECIES (Elliptic Curve Integrated Encryption Scheme)
+- **Build Tools:** Webpack, Babel
+- **Package Management:** npm/yarn
+
+## Installation
+
+To run this project locally, follow these steps:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/yourusername/web5-wallet.git
+   cd web5-wallet
+
+
+## Usage
+Firstly install dependencies using:
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+
+Secondly, run the development server:
 
 ```bash
 npm run dev
