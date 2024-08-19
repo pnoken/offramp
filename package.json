@@ -1,85 +1,32 @@
 {
-  "name": "fiat247",
+  "name": "web-wallet",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "crypto-browserify": "3.12.0",
-    "@tbdex/http-client": "1.1.0",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.104",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.1",
-    "@typescript-eslint/parser": "^8.1.0",
-    "@web5/api": "^0.10.0",
-    "@web5/credentials": "1.0.3",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-react": "^7.35.0",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "husky": "^9.1.4",
-    "loglevel": "^1.9.1",
-    "prettier": "^3.3.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-scripts": "^5.0.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run precommit"
-    }
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
-      "eslint --max-warnings=0",
-      "prettier --write"
-    ],
-    "**/*.{html,json,css,scss,md,mdx}": [
-      "prettier -w"
-    ]
-  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "jest",
-    "eject": "react-scripts eject",
-    "prepare": "husky",
-    "lint": "eslint src",
-    "precommit": "npm run lint && npm test"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "@tbdex/http-client": "1.1.0",
+    "@web5/api": "^0.10.0",
+    "@web5/crypto": "1.0.1",
+    "@web5/crypto-aws-kms": "1.0.1",
+    "@web5/dids": "1.1.2",
+    "next": "^14.2.5",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.4.0",
-    "@commitlint/config-conventional": "^19.2.2",
-    "@eslint/js": "^9.9.0",
-    "eslint": "^9.9.0",
-    "eslint-config-react-app": "^7.0.1",
-    "globals": "^15.9.0",
-    "lint-staged": "^15.2.9",
-    "pinst": "^3.0.0",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
-    "typescript-eslint": "^8.1.0"
+    "typescript": "^5"
   }
 }
