@@ -8,6 +8,8 @@ import { decryptPrivateKey } from '@/utils/retrieve-pk';
 import { encryptPrivateKey } from '@/utils/encrypt-store-pk';
 import { DidDht } from '@web5/dids'
 import { storeDID } from '@/utils/load-write-did';
+import { initKeyManagement } from '@/utils/key-mgmt';
+import { Drawer } from '@/components/ui/drawer';
 
 export default function WebWallet() {
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -19,6 +21,11 @@ export default function WebWallet() {
   const [web5, setWeb5] = useState({});
   const [myDid, setMyDid] = useState("");
   const [fileName, setFileName] = useState("did.json");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDrawer = () => {
+    setIsOpen(prevState => !prevState);
+  };
 
   const handleCreateNewWallet = async () => {
     try {
@@ -29,6 +36,8 @@ export default function WebWallet() {
       const did = didDht.uri;
 
       const portableDid = await didDht.export();
+
+      initKeyManagement('test', portableDid);
 
       storeDID(fileName, portableDid);
 
@@ -48,10 +57,10 @@ export default function WebWallet() {
       const privateKeyJwk = await decryptPrivateKey(importedPrivateKey, passphrase);
 
       // Assuming DID.restore() restores a DID from a private key
-      const did = await DID.restore(privateKeyJwk);
+      //const did = await DID.restore(privateKeyJwk);
 
       // Now web5 should be configured with the restored DID
-      const web5 = new Web5({ did });
+      //const web5 = new Web5({ did });
 
       setWalletCreated(true);
       setIsImporting(false);
@@ -80,6 +89,8 @@ export default function WebWallet() {
             <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
               Your FIATSEND Native wallet
             </h2>
+            <p>{`Choose how you'd like to set up your wallet`}
+            </p>
           </div>
 
           <div>
@@ -97,24 +108,16 @@ export default function WebWallet() {
           <div>
             <button
               type="submit"
+              onClick={() => setIsOpen(true)}
               className="flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
-              Restore Wallet
+              Import an Account
             </button>
           </div>
-
-          <div>
-            <button
-              type="submit"
-              className="flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Access Wallet
-            </button>
-          </div>
-
           <p className="mt-10 text-sm text-gray-500 absolute bottom-0 left-0 m-6">Web Wallet v 1.00</p>
         </div>
       </div>
+      <Drawer isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   )
 }

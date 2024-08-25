@@ -7,25 +7,29 @@ if (typeof window === 'undefined') {
 }
 
 interface PortableDid {
-    did: string;
-    document: object;
-    keySet: object;
+    did: string,
+    document: {},
+    keySet: {}
 }
 
 type Environment = 'production' | 'development' | 'test';
 
-export async function initKeyManagement(env: Environment, portableDid: PortableDid | null): Promise<DidDhtInstance> {
-    let keyManager: LocalKeyManager | typeof AwsKeyManager;
 
-    if (env === "production" && AwsKeyManager) {
+export async function initKeyManagement(env: Environment, portableDid: PortableDid) {
+    // Determine which key manager to use based on the environment
+    let keyManager;
+    if (env === "production") {
         keyManager = new AwsKeyManager();
     } else {
         keyManager = new LocalKeyManager();
     }
 
+    // Initialize or load a DID
     if (portableDid == null) {
-        return await DidDht.create({ keyManager });
+        // Create a new DID
+        return await DidDht.create(keyManager);
     } else {
+        // Load existing DID
         return await DidDht.import({ portableDid, keyManager });
     }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
+import { promises as fs } from 'fs';
 
 export async function POST(req: Request) {
     try {
