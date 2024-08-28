@@ -28,14 +28,12 @@ This project is a Web5 wallet designed for cross-border transfers in Africa, dev
 
 ## Technology Stack
 
-- **Frontend:** React, TypeScript
-- **Backend:** [If applicable, mention any backend services used]
+- **Frontend:** React, TypeScript, NextJS
 - **Blockchain:** TBDex SDK, Web5 Protocols
-- **Cryptography:** ECIES (Elliptic Curve Integrated Encryption Scheme)
 - **Build Tools:** Webpack, Babel
 - **Package Management:** npm/yarn
 
-## Installation
+## Installation & Usage
 
 To run this project locally, follow these steps:
 
@@ -45,31 +43,30 @@ To run this project locally, follow these steps:
    git clone https://github.com/yourusername/web5-wallet.git
    cd web5-wallet
 
+2. **Install dependencies using:**
 
-## Usage
-Firstly install dependencies using:
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
+    ```bash
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    # or
+    bun install
+    ```
 
 
-Secondly, run the development server:
+3. **Run the development server:**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+    ```bash
+    npm run dev
+    # or
+    yarn dev
+    # or
+    pnpm dev
+    # or
+    bun dev
+    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
