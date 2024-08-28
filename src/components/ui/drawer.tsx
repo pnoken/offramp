@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation';
 
 export const Drawer = ({ isOpen, setIsOpen }) => {
     const [open, setOpen] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         setOpen(isOpen);
     }, [isOpen])
+
+    const handleImport = () => {
+        // Logic for creating an account
+        // After account creation, redirect to the next step
+        router.push('/password/create');
+    };
 
     return (
         <Dialog open={open} onClose={setIsOpen} className="relative z-10" >
@@ -40,7 +48,7 @@ export const Drawer = ({ isOpen, setIsOpen }) => {
                             < div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl" >
                                 <div className="px-4 sm:px-6 flex flex-col gap-4" >
                                     <DialogTitle className="text-base font-semibold leading-6 text-gray-900" > Import account </DialogTitle>
-                                    <button className="flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Import from Seed Phrase</button>
+                                    <button className="flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" onClick={handleImport}>Import with Private Key</button>
                                     <button className="flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Import from did(json)</button>
                                 </div>
                                 < div className="relative mt-6 flex-1 px-4 sm:px-6" > {/* Your content */} </div>

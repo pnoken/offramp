@@ -2,12 +2,14 @@
 
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { encryptData } from "@/utils/password";
+import { useRouter } from "next/navigation";
 
 const ConfirmPasswordForm: React.FC = () => {
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
     const [passwordError, setPasswordError] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
+    const router = useRouter();
 
     const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPassword(e.target.value);
@@ -22,6 +24,7 @@ const ConfirmPasswordForm: React.FC = () => {
 
     const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
         setConfirmPassword(e.target.value);
+        router.push('/account/privatekey/import');
         if (e.target.value !== password) {
             setPasswordError("Passwords do not match");
         } else {

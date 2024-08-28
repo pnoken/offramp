@@ -9,6 +9,7 @@ interface DID {
 export async function loadDID(filename: string): Promise<object | false> {
     try {
         const data = await fs.readFile(filename, 'utf-8');
+        console.log("did.json data", JSON.parse(data));
         return JSON.parse(data);
     } catch (error) {
         console.error('Error reading from file:', error);
