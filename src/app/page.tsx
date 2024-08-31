@@ -2,53 +2,38 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Web5 } from "@web5/api";
-import { VerifiableCredential } from '@web5/credentials';
+
 import { decryptPrivateKey } from '@/utils/retrieve-pk';
-import { encryptPrivateKey } from '@/utils/encrypt-store-pk';
-import { DidDht } from '@web5/dids'
-import { storeDID } from '@/utils/load-write-did';
-import { initKeyManagement } from '@/utils/key-mgmt';
+
 import { Drawer } from '@/components/ui/drawer';
+import ConfirmationModal from '@/components/modals/confirm-modal';
+import { useRouter } from 'next/navigation';
 
 export default function WebWallet() {
-  const [isCreating, setIsCreating] = useState<boolean>(false);
+
   const [isImporting, setIsImporting] = useState<boolean>(false);
   const [walletCreated, setWalletCreated] = useState<boolean>(false);
   const [importedPrivateKey, setImportedPrivateKey] = useState<string>('');
   const [passphrase, setPassphrase] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [web5, setWeb5] = useState({});
-  const [myDid, setMyDid] = useState("");
-  const [fileName, setFileName] = useState("did.json");
+
   const [isOpen, setIsOpen] = useState(false);
+
+  const router = useRouter()
 
   const toggleDrawer = () => {
     setIsOpen(prevState => !prevState);
   };
 
-  const handleCreateNewWallet = async () => {
-    try {
-      setIsCreating(true);
+  const handleCreateNewWallet = () => {
+    setLoading(true);
 
-      const didDht = await DidDht.create({ publish: true });
+    router.push('account/new-seed-phrase/');
 
-      const did = didDht.uri;
 
-      const portableDid = await didDht.export();
-
-      initKeyManagement('test', portableDid);
-
-      storeDID(fileName, portableDid);
-
-      setWalletCreated(true);
-      setMyDid(did);
-      setIsCreating(false);
-    } catch (error) {
-      console.error("Error creating new wallet:", error);
-      setIsCreating(false);
-    }
   };
+
+
 
   const handleImportWallet = async () => {
     try {
@@ -102,7 +87,7 @@ export default function WebWallet() {
             >
               Create New Wallet
             </button>
-            <h2>{myDid}</h2>
+            {/* <h2>{myDid}</h2> */}
           </div>
 
           <div>
@@ -117,7 +102,9 @@ export default function WebWallet() {
           <p className="mt-10 text-sm text-gray-500 absolute bottom-0 left-0 m-6">Web Wallet v 1.00</p>
         </div>
       </div>
+
       <Drawer isOpen={isOpen} setIsOpen={setIsOpen} />
+
     </div>
   )
 }

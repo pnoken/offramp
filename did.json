@@ -1,45 +1,45 @@
 {
-  "uri": "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo",
+  "uri": "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy",
   "document": {
-    "id": "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo",
+    "id": "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy",
     "verificationMethod": [
       {
-        "id": "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo#0",
+        "id": "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy#0",
         "type": "JsonWebKey",
-        "controller": "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo",
+        "controller": "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy",
         "publicKeyJwk": {
           "crv": "Ed25519",
           "kty": "OKP",
-          "x": "WxPEvRlqxdOvu44vkpXrIHD2ScCFVtszaFv_mUkpoZE",
-          "kid": "44c23Jbw35350hgbAHZOrk4Qi_uoOcVwWa8NM10qNeM",
+          "x": "YcNHU-m6jHF21MS5vx_dwLHt4cHASP9peKhZ6nH7Bx4",
+          "kid": "qiBtTOAOMFOmDkjZPtotmitdWtZNGT7A0gcEqST7LA0",
           "alg": "EdDSA"
         }
       }
     ],
     "authentication": [
-      "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo#0"
+      "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy#0"
     ],
     "assertionMethod": [
-      "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo#0"
+      "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy#0"
     ],
     "capabilityDelegation": [
-      "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo#0"
+      "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy#0"
     ],
     "capabilityInvocation": [
-      "did:dht:mcjhjxe3pmn78m75taz3ffxmrbaxc1qyoimpsc5emx9311jjwgeo#0"
+      "did:dht:c8bwqw9jzkg8n7swa1h56867ana65aqbabrx64maibc6whx5yhxy#0"
     ]
   },
   "metadata": {
     "published": true,
-    "versionId": "1724830002"
+    "versionId": "1725065254"
   },
   "privateKeys": [
     {
       "crv": "Ed25519",
-      "d": "L73v0lPtR6XKUYmD06mn4FdodC32hOFbe59p-lPMPxw",
+      "d": "KuEB8Kn2-s68tNNHGOZtQFvX2KH8LNvwQTsxKxycUEE",
       "kty": "OKP",
-      "x": "WxPEvRlqxdOvu44vkpXrIHD2ScCFVtszaFv_mUkpoZE",
-      "kid": "44c23Jbw35350hgbAHZOrk4Qi_uoOcVwWa8NM10qNeM",
+      "x": "YcNHU-m6jHF21MS5vx_dwLHt4cHASP9peKhZ6nH7Bx4",
+      "kid": "qiBtTOAOMFOmDkjZPtotmitdWtZNGT7A0gcEqST7LA0",
       "alg": "EdDSA"
     }
   ]
