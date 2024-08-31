@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 
 import { decryptPrivateKey } from '@/utils/retrieve-pk';
 
 import { Drawer } from '@/components/ui/drawer';
-import ConfirmationModal from '@/components/modals/confirm-modal';
 import { useRouter } from 'next/navigation';
 
 export default function WebWallet() {
@@ -20,10 +19,6 @@ export default function WebWallet() {
   const [isOpen, setIsOpen] = useState(false);
 
   const router = useRouter()
-
-  const toggleDrawer = () => {
-    setIsOpen(prevState => !prevState);
-  };
 
   const handleCreateNewWallet = () => {
     setLoading(true);
@@ -62,7 +57,7 @@ export default function WebWallet() {
         <div className="relative flex min-h-full flex-1 flex-col gap-10 px-6 py-12 lg:px-8">
           <div className="sm:mx-auto sm:w-full sm:max-w-sm">
             <Image
-              alt="Your Company"
+              alt="Fiatsend wallet"
               src="/favicon.ico"
               width={100}
               height={100}
