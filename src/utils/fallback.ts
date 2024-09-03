@@ -1,4 +1,3 @@
-// eslint-disable-next-line header/header
 if (!global.chrome) {
     // @ts-ignore
     global.chrome = {};
@@ -33,7 +32,7 @@ function migrateStorageKeys() {
 migrateStorageKeys();
 
 export function getLocalStorageKeys(): string[] {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
     return getLocalStorageItem('__storage_keys__', []);
 }
 
@@ -66,14 +65,14 @@ function getLocalStorageItem(key: string, defaultVal: any = undefined) {
 
     if (value) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
             return JSON.parse(value);
         } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
             return defaultVal;
         }
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
         return defaultVal;
     }
 }
@@ -115,7 +114,7 @@ global.chrome.storage = {
             const rs: Record<string, any> = {};
 
             (keys).forEach((k) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
                 rs[k] = getLocalStorageItem(k);
             });
 
