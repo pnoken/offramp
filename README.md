@@ -1,6 +1,6 @@
 # Web5 Wallet for Cross-Border Transfers in Africa
 
-![Web5 Wallet Logo](path-to-logo-image-if-any)
+![Web5 Wallet Logo](./src/app/favicon.ico)
 
 ## Overview
 
