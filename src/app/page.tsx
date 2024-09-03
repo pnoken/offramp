@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
 import { decryptPrivateKey } from '@/utils/retrieve-pk';
@@ -20,7 +20,15 @@ export default function WebWallet() {
 
   const router = useRouter()
 
+  useEffect(() => {
+    const storedDid = localStorage.getItem('customerDid');
+    if (storedDid) {
+      router.push("/home");
+    }
+  }, [router])
+
   const handleCreateNewWallet = () => {
+
     setLoading(true);
 
     router.push('account/new-seed-phrase/');
@@ -61,35 +69,34 @@ export default function WebWallet() {
               src="/favicon.ico"
               width={100}
               height={100}
-              className="mx-auto h-10 w-auto"
+              className="mx-auto h-20 w-auto"
             />
             <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
               Unlocking the future of Web5:
             </h2>
-            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-              Your FIATSEND Native wallet
+            <h2 className="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+              Your Native Web5 wallet
             </h2>
-            <p>{`Choose how you'd like to set up your wallet`}
+            <p className='text-center'>{`Choose how you'd like to set up your wallet`}
             </p>
           </div>
 
-          <div>
+          <div className='btn-container flex xl:flex-row flex-col'>
             <button
               type="submit"
               onClick={handleCreateNewWallet}
               disabled={loading}
-              className="flex w-full justify-center rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="m-5 p-10 flex w-full justify-center rounded-xl bg-indigo-600 text-xl font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Create New Wallet
+
             </button>
             {/* <h2>{myDid}</h2> */}
-          </div>
 
-          <div>
             <button
               type="submit"
               onClick={() => setIsOpen(true)}
-              className="flex w-full justify-center rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="m-5 p-10 flex w-full justify-center rounded-xl bg-indigo-600 text-xl font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Import an Account
             </button>

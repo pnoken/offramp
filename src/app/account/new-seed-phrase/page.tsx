@@ -21,21 +21,19 @@ const NewSeedPhrase: React.FC = () => {
         try {
             setIsCreating(true);
 
-            const didDht = await DidDht.create({ publish: true });
+            const didDht = await DidDht.create({ options: { publish: true } });
 
             const did = didDht.uri;
 
             const portableDid = await didDht.export();
-
-            initKeyManagement('test', portableDid);
-
+            console.log('portable did', portableDid);
+            localStorage.setItem('customerDid', JSON.stringify(portableDid));
+            //initKeyManagement('test', portableDid);
             storeDID(fileName, portableDid);
 
             setWalletCreated(true);
             setMyDid(did);
             setIsCreating(false);
-
-
         } catch (error) {
             console.error("Error creating new wallet:", error);
             setIsCreating(false);
@@ -46,10 +44,10 @@ const NewSeedPhrase: React.FC = () => {
         setIsModalOpen(true); // Open the modal
     }, [])
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files ? event.target.files[0] : null;
-        setSelectedFile(file);
-    };
+    // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     const file = event.target.files ? event.target.files[0] : null;
+    //     setSelectedFile(file);
+    // };
 
     const handleSubmit = () => {
         if (selectedFile) {
@@ -84,25 +82,13 @@ const NewSeedPhrase: React.FC = () => {
                 <h2 className="text-xl font-semibold">Import from DID(json)</h2>
                 <p>Drag and drop the JSON file you exported from DID:</p>
 
-                {/* Private Key Input Section */}
-                <div className="flex items-center space-x-2">
-                    <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                        <label
-                            htmlFor="file-upload"
-                            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                        >
-                            <span>Upload a file</span>
-                            <input id="file-upload" onChange={handleFileChange} name="file-upload" type="file" className="sr-only" />
-                        </label>
 
-                    </div>
-
-                </div>
 
                 {/* Import Account Button */}
                 <button
                     className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none"
-                    onClick={handleSubmit}
+                    onClick={handleCreateNewWallet}
+                    disabled={isCreating}
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +104,7 @@ const NewSeedPhrase: React.FC = () => {
                             d="M12 4v16m8-8H4"
                         />
                     </svg>
-                    Import Account
+                    Create New Wallet
                 </button>
             </div>
 
@@ -129,7 +115,7 @@ const NewSeedPhrase: React.FC = () => {
                     A private key is like a password — a string of letters and numbers — that can be used to restore your wallet.
                 </p>
                 <p className="text-gray-600">
-                    Is it safe to enter it into SubWallet? Yes. It will be stored locally and never leave your device without your explicit permission.
+                    Is it safe to enter it into Fiatsend wallet? Yes. It will be stored locally and never leave your device without your explicit permission.
                 </p>
             </div>
             <ConfirmationModal

@@ -63,7 +63,7 @@ const ImportPrivateKey: React.FC = () => {
                     A private key is like a password — a string of letters and numbers — that can be used to restore your wallet.
                 </p>
                 <p className="text-gray-600">
-                    Is it safe to enter it into SubWallet? Yes. It will be stored locally and never leave your device without your explicit permission.
+                    Is it safe to enter it into your wallet? Yes. It will be stored locally and never leave your device without your explicit permission.
                 </p>
             </div>
         </div>

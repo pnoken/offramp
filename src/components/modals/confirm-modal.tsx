@@ -26,7 +26,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
                 <p className="mb-4">Tap on all checkboxes to confirm you understand the importance of your seed phrase:</p>
                 <div className="space-y-2 mb-6">
                     {[
-                        "Fiatsent doesn't keep any copy of your seed phrase and other backup methods such as JSON file or private key.",
+                        "Fiatsend doesn't keep any copy of your seed phrase and other backup methods such as JSON file or private key.",
                         "Fiatsend can't help you recover your account once your seed phrase, JSON file, or private key is lost.",
                         "You must write down your seed phrase in the correct order. It is recommended that you store it in a secure offline location.",
                         "You are NOT recommended to download and store your seed phrase in a digital device."
