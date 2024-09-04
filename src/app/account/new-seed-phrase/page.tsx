@@ -76,7 +76,7 @@ const NewSeedPhrase: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row gap-8 p-8">
+        <div className="flex flex-col md:flex-row gap-8 p-8 w-2/3 mx-auto">
             {/* Left Section - Import by Private Key */}
             <div className="md:w-1/2 space-y-6">
                 <h2 className="text-xl font-semibold">Import from DID(json)</h2>

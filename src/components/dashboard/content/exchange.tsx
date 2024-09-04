@@ -16,6 +16,12 @@ const Exchange: React.FC = () => {
     const [currencyFrom, setCurrencyFrom] = useState<string>("USD");
     const [currencyTo, setCurrencyTo] = useState<string>("GHS");
 
+    const createExchange = async (offering, amount, payoutPaymentDetails) => {
+        const selectedCredentials = PresentationExchange.selectCredentials({
+            //vcJwts: 
+        })
+    }
+
 
 
     //const didDocument = await resolveDid(pfiDid);

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const WELCOME_PATH = '/welcome';
+const HOME_PATH = '/home';
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname.split('/')[1];
-    if ([''].includes(path)) return NextResponse.redirect(WELCOME_PATH);
+    if ([''].includes(path)) return NextResponse.redirect(HOME_PATH);
 }
