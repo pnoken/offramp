@@ -25,7 +25,7 @@ export default function WebWallet() {
     if (storedDid) {
       router.push("/home");
     }
-  }, [router])
+  }, [router]);
 
   const handleCreateNewWallet = () => {
 
