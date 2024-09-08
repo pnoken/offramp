@@ -7,6 +7,7 @@ import { decryptPrivateKey } from '@/utils/retrieve-pk';
 
 import { Drawer } from '@/components/ui/drawer';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function WebWallet() {
 
@@ -14,7 +15,6 @@ export default function WebWallet() {
   const [walletCreated, setWalletCreated] = useState<boolean>(false);
   const [importedPrivateKey, setImportedPrivateKey] = useState<string>('');
   const [passphrase, setPassphrase] = useState<string>('');
-  const [loading, setLoading] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,15 +26,6 @@ export default function WebWallet() {
       router.push("/home");
     }
   }, [router]);
-
-  const handleCreateNewWallet = () => {
-
-    setLoading(true);
-
-    router.push('account/new-seed-phrase/');
-
-
-  };
 
 
 
@@ -69,37 +60,39 @@ export default function WebWallet() {
               src="/favicon.ico"
               width={100}
               height={100}
-              className="mx-auto h-20 w-auto"
+              className="mx-auto h-20 w-auto my-10"
             />
-            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-              Unlocking the future of Web5:
-            </h2>
-            <h2 className="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-              Your Native Web5 wallet
-            </h2>
-            <p className='text-center'>{`Choose how you'd like to set up your wallet`}
-            </p>
+            <div className='flex flex-col text-center gap-3 m-3'>
+              <h1 className="text-slate-900 text-2xl font-semibold">
+                Unlocking the future of Web5:
+              </h1>
+              <h2 className="text-slate-700 text-xl font-semibold">
+                Your Native Web5 wallet
+              </h2>
+              <p className='text-slate-500 text-md font-semibold'>{`Choose how you'd like to set up your wallet`}
+              </p>
+            </div>
           </div>
 
           <div className='btn-container flex xl:flex-row flex-col'>
-            <button
-              type="submit"
-              onClick={handleCreateNewWallet}
-              disabled={loading}
-              className="m-5 p-10 flex w-full justify-center rounded-xl bg-indigo-600 text-xl font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Create New Wallet
+            <Link href="/account/new-seed-phrase/" className="group block max-w-xs mx-auto rounded-lg p-6 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
+              <div className="flex items-center space-x-3">
+                <svg className="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"></svg>
+                <h3 className="text-slate-900 group-hover:text-white text-sm font-semibold">Create New Wallet</h3>
+              </div>
+              <p className="text-slate-500 group-hover:text-white text-sm">Create a new account with fiatsend.</p>
+            </Link>
 
-            </button>
             {/* <h2>{myDid}</h2> */}
 
-            <button
-              type="submit"
-              onClick={() => setIsOpen(true)}
-              className="m-5 p-10 flex w-full justify-center rounded-xl bg-indigo-600 text-xl font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Import an Account
+            <button onClick={() => setIsOpen(true)} className="group block max-w-xs mx-auto rounded-lg p-6 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
+              <div className="flex items-center space-x-3">
+                <svg className="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"></svg>
+                <h3 className="text-slate-900 group-hover:text-white text-sm font-semibold">Import an Account</h3>
+              </div>
+              <p className="text-slate-500 group-hover:text-white text-sm">Import an existing account from a did.json file.</p>
             </button>
+
           </div>
           <p className="mt-10 text-sm text-gray-500 absolute bottom-0 left-0 m-6">Web Wallet v 1.00</p>
         </div>

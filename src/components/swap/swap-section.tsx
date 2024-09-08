@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SwapInput } from "../ui/input/swap-input";
+import { TbdexHttpClient, Rfq, Quote, Order, OrderStatus, Close, Message } from '@tbdex/http-client';
+
 
 export const SwapSection: React.FC = () => {
     const handleReset = () => {
@@ -12,9 +14,55 @@ export const SwapSection: React.FC = () => {
     const [currencyTo, setCurrencyTo] = useState<string>("GHS");
     const [amountFrom, setAmountFrom] = useState<string>("0");
     const [amountTo, setAmountTo] = useState<string>("0");
+    const [customerDid, setCustomerDid] = useState(null);
+
+
+    const mockProviderDids = {
+        aquafinance_capital: {
+            uri: 'did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y',
+            name: 'AquaFinance Capital',
+            description: 'Provides exchanges with the Ghanaian Cedis: GHS to USDC, GHS to KES'
+        }
+    };
+
+    useEffect(() => {
+        const storedDid = localStorage.getItem('customerDid');
+        if (storedDid) {
+            setCustomerDid(storedDid);
+        }
+    }, []);
+
+    const payinCurrencyCode = 'GHS'; // Desired payin currency code
+    const payoutCurrencyCode = 'USDC'; // Desired payout currency code
+    const matchedOfferings = [];
+
+
+    const fetchExchanges = async () => {
+        try {
+            const offerings = await TbdexHttpClient.getOfferings({
+                pfiDid: 'did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y', //pfiUri,
+            })
+            // Filter offerings based on the currency pair
+            if (offerings) {
+                const filteredOfferings = offerings.filter(offering =>
+                    offering.data.payin.currencyCode === payinCurrencyCode &&
+                    offering.data.payout.currencyCode === payoutCurrencyCode
+                );
+                matchedOfferings.push(...filteredOfferings);
+            }
+
+            console.log("matched offerings", matchedOfferings); '';
+
+
+
+        } catch (error) {
+            console.log("cannout fetch exchanges", error);
+        }
+    }
+
 
     return (
-        <div className="flex flex-col px-3">
+        <div className="flex flex-col p-3 my-3 bg-slate-800 rounded-2xl">
             <SwapInput onCurrencyChange={(e) => setCurrencyFrom(e.target.value)} selectValue="GHS" currencies={currencies} onChange={(e) => setAmountFrom(e.target.value)} label="You pay" placeholder="0.00" value={amountFrom} onReset={handleReset} />
             {/* Swap Button */}
             <div className="flex items-center justify-center max-h-[10px] min-h-[10px] transition-all duration-300">
@@ -32,7 +80,7 @@ export const SwapSection: React.FC = () => {
                 </div>
             </div>
             <SwapInput onCurrencyChange={(e) => setCurrencyTo(e.target.value)} selectValue="USD" currencies={currencies} onChange={(e) => setAmountTo(e.target.value)} label="You receive" placeholder="0.00" value={amountTo} onReset={handleReset} />
-            <button className='rounded-full text-lg p-3 my-3 bg-green-500'>Exchange</button>
+            <button onClick={fetchExchanges} className='rounded-full text-lg p-3 mt-3 bg-green-500'>Exchange</button>
         </div>
     );
 };

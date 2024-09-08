@@ -7,6 +7,11 @@ import { encryptPrivateKey } from '@/utils/encrypt-store-pk';
 import { DidDht } from '@web5/dids'
 import { storeDID } from '@/utils/load-write-did';
 import { initKeyManagement } from '@/utils/key-mgmt';
+import { Provider } from 'react-redux';
+import store from '@/lib/store';
+import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
+import { createNewWallet } from '@/lib/wallet-slice';
+import { useRouter } from 'next/navigation';
 
 const NewSeedPhrase: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -14,30 +19,43 @@ const NewSeedPhrase: React.FC = () => {
     const [web5, setWeb5] = useState({});
     const [myDid, setMyDid] = useState("");
     const [fileName, setFileName] = useState("did.json");
-    const [isCreating, setIsCreating] = useState<boolean>(false);
-    const [walletCreated, setWalletCreated] = useState<boolean>(false);
+    //const [isCreating, setIsCreating] = useState<boolean>(false);
+    //const [walletCreated, setWalletCreated] = useState<boolean>(false);
+    const dispatch = useAppDispatch();
 
-    const handleCreateNewWallet = async () => {
-        try {
-            setIsCreating(true);
+    const { isCreating, walletCreated, portableDid, did, error } = useAppSelector((state) => state.wallet);
 
-            const didDht = await DidDht.create({ options: { publish: true } });
+    // const handleCreateNewWallet = async () => {
+    //     try {
+    //         setIsCreating(true);
 
-            const did = didDht.uri;
+    //         const didDht = await DidDht.create({ options: { publish: true } });
 
-            const portableDid = await didDht.export();
-            console.log('portable did', portableDid);
-            localStorage.setItem('customerDid', JSON.stringify(portableDid));
-            //initKeyManagement('test', portableDid);
-            storeDID(fileName, portableDid);
+    //         const did = didDht.uri;
 
-            setWalletCreated(true);
-            setMyDid(did);
-            setIsCreating(false);
-        } catch (error) {
-            console.error("Error creating new wallet:", error);
-            setIsCreating(false);
-        }
+    //         const portableDid = await didDht.export();
+    //         console.log('portable did', portableDid);
+    //         localStorage.setItem('customerDid', JSON.stringify(portableDid));
+    //         //initKeyManagement('test', portableDid);
+    //         storeDID(fileName, portableDid);
+
+    //         setWalletCreated(true);
+    //         setMyDid(did);
+    //         setIsCreating(false);
+    //     } catch (error) {
+    //         console.error("Error creating new wallet:", error);
+    //         setIsCreating(false);
+    //     }
+    // };
+
+    const router = useRouter()
+
+    if (walletCreated) {
+        router.push("/create-done")
+    }
+
+    const handleCreateNewWallet = () => {
+        dispatch(createNewWallet());
     };
 
     useEffect(() => {
@@ -76,11 +94,14 @@ const NewSeedPhrase: React.FC = () => {
     };
 
     return (
+
         <div className="flex flex-col md:flex-row gap-8 p-8 w-2/3 mx-auto">
             {/* Left Section - Import by Private Key */}
             <div className="md:w-1/2 space-y-6">
-                <h2 className="text-xl font-semibold">Import from DID(json)</h2>
-                <p>Drag and drop the JSON file you exported from DID:</p>
+                <h2 className="text-xl font-semibold">Create New Wallet</h2>
+                <p>Keep your portale did in a safe place, and never disclose it. Anyone with this information can take control of your assets.
+                </p>
+
 
 
 

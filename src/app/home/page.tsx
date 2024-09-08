@@ -28,6 +28,7 @@ const Dashboard: React.FC = () => {
     };
 
     return (
+
         <div className="flex h-screen bg-gray-100">
             {/* Sidebar */}
             <Sidebar
@@ -42,6 +43,7 @@ const Dashboard: React.FC = () => {
                 {renderContent()}
             </div>
         </div>
+
     );
 };
 
