@@ -28,6 +28,7 @@ const Dashboard: React.FC = () => {
     };
 
     return (
+
         <div className="flex h-screen bg-gray-100">
             {/* Sidebar */}
             <Sidebar
@@ -37,11 +38,12 @@ const Dashboard: React.FC = () => {
             />
 
             {/* Main Content Area */}
-            <div className={`flex-1 p-6 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`}>
+            <div className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-36' : 'ml-16'}`}>
                 {/* Render only the active component */}
                 {renderContent()}
             </div>
         </div>
+
     );
 };
 
