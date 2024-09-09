@@ -9,6 +9,7 @@ const ImportPrivateKey: React.FC = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
         setSelectedFile(file);
+        console.log("file", file);
     };
 
     const handleSubmit = () => {
@@ -42,7 +43,7 @@ const ImportPrivateKey: React.FC = () => {
                             className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
                         >
                             <span>Upload a file</span>
-                            <input id="file-upload" onChange={handleFileChange} name="file-upload" type="file" className="sr-only" />
+                            <input id="file-upload" onChange={handleFileChange} name="file-upload" type="file" accept='application/json' className="sr-only" />
                         </label>
 
                     </div>

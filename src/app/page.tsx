@@ -2,19 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-
-import { decryptPrivateKey } from '@/utils/retrieve-pk';
-
+import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import { Drawer } from '@/components/ui/drawer';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { createNewWallet } from '@/lib/wallet-slice';
 
 export default function WebWallet() {
+  const dispatch = useAppDispatch();
 
-  const [isImporting, setIsImporting] = useState<boolean>(false);
-  const [walletCreated, setWalletCreated] = useState<boolean>(false);
-  const [importedPrivateKey, setImportedPrivateKey] = useState<string>('');
-  const [passphrase, setPassphrase] = useState<string>('');
+  const { isCreating, walletCreated, portableDid, did, error } = useAppSelector((state) => state.wallet);
+
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,26 +24,12 @@ export default function WebWallet() {
     }
   }, [router]);
 
+  if (walletCreated) {
+    router.push("/account/new-did")
+  }
 
-
-  const handleImportWallet = async () => {
-    try {
-      setIsImporting(true);
-
-      const privateKeyJwk = await decryptPrivateKey(importedPrivateKey, passphrase);
-
-      // Assuming DID.restore() restores a DID from a private key
-      //const did = await DID.restore(privateKeyJwk);
-
-      // Now web5 should be configured with the restored DID
-      //const web5 = new Web5({ did });
-
-      setWalletCreated(true);
-      setIsImporting(false);
-    } catch (error) {
-      console.error("Error importing wallet:", error);
-      setIsImporting(false);
-    }
+  const handleCreateNewWallet = () => {
+    dispatch(createNewWallet());
   };
 
 
@@ -75,13 +58,13 @@ export default function WebWallet() {
           </div>
 
           <div className='btn-container flex xl:flex-row flex-col'>
-            <Link href="/account/new-seed-phrase/" className="group block max-w-xs mx-auto rounded-lg p-6 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
+            <button onClick={handleCreateNewWallet} disabled={isCreating} className="group block max-w-xs mx-auto rounded-lg p-6 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
               <div className="flex items-center space-x-3">
                 <svg className="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"></svg>
                 <h3 className="text-slate-900 group-hover:text-white text-sm font-semibold">Create New Wallet</h3>
               </div>
               <p className="text-slate-500 group-hover:text-white text-sm">Create a new account with fiatsend.</p>
-            </Link>
+            </button>
 
             {/* <h2>{myDid}</h2> */}
 

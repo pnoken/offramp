@@ -1,10 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import walletReducer from './wallet-slice'
-// import offeringReducer from './offering-slice'
+import offeringReducer from './offering-slice'
+import exchangeReducer from './exchange-slice'
 
 export const store = configureStore({
     reducer: {
         wallet: walletReducer,
+        offering: offeringReducer,
+        exchange: exchangeReducer
     },
 })
 

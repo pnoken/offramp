@@ -1,6 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq, Quote, Order, OrderStatus, Close, Message } from '@tbdex/http-client';
 
+// Async thunk to fetch and filter offerings
+export const fetchOfferings = createAsyncThunk(
+    'offerings/fetchOfferings',
+    async (_, thunkAPI) => {
+        try {
+            // Fetch offerings using TbdexHttpClient
+            const offerings = await TbdexHttpClient.getOfferings({ pfiDid: "did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y" });
+
+            // Filter offerings based on the currency pair
+            const filteredOfferings = offerings.filter(
+                (offering) =>
+                    offering.data.payin.currencyCode === "GHS" &&
+                    offering.data.payout.currencyCode === "USDC"
+            );
+
+            return filteredOfferings; // Return filtered offerings
+        } catch (error) {
+            return thunkAPI.rejectWithValue('Cannot fetch offerings');
+        }
+    }
+);
+
+
 const offeringsSlice = createSlice({
     name: 'offerings',
     initialState: {
@@ -25,27 +48,6 @@ const offeringsSlice = createSlice({
     },
 });
 
-// Async thunk to fetch and filter offerings
-export const fetchOfferings = createAsyncThunk(
-    'offerings/fetchOfferings',
-    async ({ pfiDid = "did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y", payinCurrencyCode = "GHS", payoutCurrencyCode = "USDC" }, thunkAPI) => {
-        try {
-            // Fetch offerings using TbdexHttpClient
-            const offerings = await TbdexHttpClient.getOfferings({ pfiDid });
-
-            // Filter offerings based on the currency pair
-            const filteredOfferings = offerings.filter(
-                (offering) =>
-                    offering.data.payin.currencyCode === payinCurrencyCode &&
-                    offering.data.payout.currencyCode === payoutCurrencyCode
-            );
-
-            return filteredOfferings; // Return filtered offerings
-        } catch (error) {
-            return thunkAPI.rejectWithValue('Cannot fetch offerings');
-        }
-    }
-);
 
 
 export default offeringsSlice.reducer;
