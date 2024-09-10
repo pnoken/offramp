@@ -1,10 +1,10 @@
-# Web5 Wallet for Cross-Border Transfers in Africa
+# fsWallet: Web5 Wallet for Cross-Border Transfers in Africa
 
-![Web5 Wallet Logo](./src/app/favicon.ico)
+![fsWallet Logo](./src/app/favicon.ico)
 
 ## Overview
 
-This project is a Web5 wallet designed for cross-border transfers in Africa, developed as part of the TBDex challenge. The wallet leverages decentralized technologies to facilitate secure, fast, and low-cost financial transactions across borders within the African continent.
+fsWallet is a Web5 wallet designed for cross-border transfers in Africa, developed as part of the TBDex challenge. The wallet leverages decentralized technologies to facilitate secure, fast, and low-cost financial transactions across borders within the African continent.
 
 ## Table of Contents
 
@@ -19,19 +19,22 @@ This project is a Web5 wallet designed for cross-border transfers in Africa, dev
 
 ## Features
 
-- **Decentralized Identity (DID) Integration:** Ensures secure and private user authentication.
-- **Cross-Border Transfers:** Enables seamless transfers between different African countries.
+- **Decentralized Identity (DID) Integration:** Ensures secure and private user authentication using Web5 DID protocols.
+- **Cross-Border Transfers:** Enables seamless transfers between different African countries using TBDex protocol.
 - **Low Transaction Fees:** Built to minimize transaction costs, making it accessible to a wider audience.
-- **Multi-Currency Support:** Supports multiple African currencies to facilitate local transactions.
+- **Multi-Currency Support:** Supports multiple African currencies (e.g., GHS) and digital currencies (e.g., USDC) to facilitate local and international transactions.
 - **User-Friendly Interface:** Designed with simplicity and ease of use in mind, catering to users of all technical levels.
-- **Offline Support:** Offers offline transaction capabilities, ensuring accessibility in regions with limited internet connectivity.
+- **Portable DID Management:** Allows users to create, export, and manage their Decentralized Identifiers.
 
 ## Technology Stack
 
-- **Frontend:** React, TypeScript, NextJS
+- **Frontend:** React, TypeScript, Next.js
+- **State Management:** Redux Toolkit
 - **Blockchain:** TBDex SDK, Web5 Protocols
-- **Build Tools:** Webpack, Babel
-- **Package Management:** npm/yarn
+- **DID Management:** @web5/dids
+- **Styling:** Tailwind CSS
+- **Build Tools:** Next.js built-in tooling
+- **Package Management:** npm
 
 ## Installation & Usage
 
@@ -40,51 +43,53 @@ To run this project locally, follow these steps:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/web5-wallet.git
-   cd web5-wallet
+   git clone https://github.com/yourusername/fswallet.git
+   cd fswallet
+   ```
 
-2. **Install dependencies using:**
+2. **Install dependencies:**
 
-    ```bash
-    npm install
-    # or
-    yarn install
-    # or
-    pnpm install
-    # or
-    bun install
-    ```
-
+   ```bash
+   npm install
+   ```
 
 3. **Run the development server:**
 
-    ```bash
-    npm run dev
-    # or
-    yarn dev
-    # or
-    pnpm dev
-    # or
-    bun dev
-    ```
+   ```bash
+   npm run dev
+   ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- `src/app`: Contains the main application pages and routing logic.
+- `src/components`: Reusable React components.
+- `src/lib`: Redux slices and other utility functions.
+- `public`: Static assets.
+
+## Key Components
+
+- `wallet-slice.ts`: Manages wallet creation and DID operations.
+- `offering-slice.ts`: Handles fetching and filtering of TBDex offerings.
+- `exchange-slice.ts`: Manages the creation of exchanges using TBDex protocol.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about the technologies used in this project:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Web5 DID Documentation](https://developer.tbd.website/docs/web5/learn/decentralized-identifiers)
+- [TBDex Documentation](https://developer.tbd.website/docs/tbdex/)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+This project is licensed under the MIT License.
+
+## Contact
+
+For any queries or suggestions, please open an issue in the GitHub repository.
