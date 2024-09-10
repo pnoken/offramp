@@ -18,7 +18,7 @@ export function Tabs() {
     const [tabUnderlineWidth, setTabUnderlineWidth] = useState(0);
     const [tabUnderlineLeft, setTabUnderlineLeft] = useState(0);
 
-    const tabsRef = useRef([]);
+    const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
     useEffect(() => {
         function setTabPosition() {
