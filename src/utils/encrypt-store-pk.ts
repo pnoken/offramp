@@ -32,9 +32,9 @@ export const encryptPrivateKey = async (privateKey: string, passphrase: string):
   );
 
   return {
-    encryptedPrivateKey: Array.from(new Uint8Array(encryptedData)),
-    iv: Array.from(iv),
-    salt: Array.from(salt)
+    encryptedPrivateKey: new Uint8Array(encryptedData).buffer,
+    iv: iv.buffer,
+    salt: salt.buffer
   };
 };
 
