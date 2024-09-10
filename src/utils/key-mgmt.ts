@@ -1,21 +1,16 @@
 import { DidDht } from '@web5/dids';
 import { LocalKeyManager } from "@web5/crypto";
+import { PortableDid as Web5PortableDid } from '@web5/dids';
 let AwsKeyManager: any;
 
 if (typeof window === 'undefined') {
     AwsKeyManager = require('@web5/crypto-aws-kms').AwsKeyManager;
 }
 
-interface PortableDid {
-    did: string,
-    document: {},
-    keySet: {}
-}
-
 type Environment = 'production' | 'development' | 'test';
 
 
-export async function initKeyManagement(env: Environment, portableDid: PortableDid) {
+export async function initKeyManagement(env: Environment, portableDid: Web5PortableDid) {
     // Determine which key manager to use based on the environment
     let keyManager;
     if (env === "production") {

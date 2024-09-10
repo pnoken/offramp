@@ -1,8 +1,4 @@
-interface EncryptedPrivateKey {
-  encryptedPrivateKey: number[];
-  iv: number[];
-  salt: number[];
-}
+import { EncryptedPrivateKey } from "./types";
 
 export const encryptPrivateKey = async (privateKey: string, passphrase: string): Promise<EncryptedPrivateKey> => {
   const encoder = new TextEncoder();
