@@ -7,17 +7,13 @@ import { Drawer } from '@/components/ui/drawer';
 import { useRouter } from 'next/navigation';
 import { createNewWallet } from '@/lib/wallet-slice';
 import Spinner from '@/components/spinner';
+import { motion } from 'framer-motion';
 
 export default function WebWallet() {
   const dispatch = useAppDispatch();
-
-  const { isCreating, walletCreated, portableDid, did, error } = useAppSelector((state) => state.wallet);
-
-
+  const { isCreating, walletCreated } = useAppSelector((state) => state.wallet);
   const [isOpen, setIsOpen] = useState(false);
-
   const router = useRouter()
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,69 +25,69 @@ export default function WebWallet() {
     }
   }, [router]);
 
-  if (isLoading) {
-    return <Spinner />;
-  }
+  if (isLoading) return <Spinner />;
+  if (walletCreated) router.push("/account/new-did");
 
-  if (walletCreated) {
-    router.push("/account/new-did")
-  }
-
-  const handleCreateNewWallet = () => {
-    dispatch(createNewWallet());
-  };
-
+  const handleCreateNewWallet = () => dispatch(createNewWallet());
 
   return (
-    <div className="h-lvh p-4">
-      <div className="shadow-inner border-gray-200 border-solid border-2 h-full w-full sm:w-1/2 mx-auto rounded-xl">
-        <div className="relative flex min-h-full flex-1 flex-col gap-10 px-6 py-12 lg:px-8">
-          <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white shadow-2xl rounded-3xl overflow-hidden w-full max-w-4xl"
+      >
+        <div className="flex flex-col md:flex-row">
+          <div className="md:w-1/2 p-8 flex flex-col justify-center">
             <Image
               alt="Fiatsend wallet"
               src="/favicon.ico"
-              width={100}
-              height={100}
-              className="mx-auto h-20 w-auto my-10"
+              width={80}
+              height={80}
+              className="mx-auto mb-8"
             />
-            <div className='flex flex-col text-center gap-3 m-3'>
-              <h1 className="text-slate-900 text-2xl font-semibold">
-                Unlocking the future of Web5:
-              </h1>
-              <h2 className="text-slate-700 text-xl font-semibold">
-                Your Native Web5 wallet
-              </h2>
-              <p className='text-slate-500 text-md font-semibold'>{`Choose how you'd like to set up your wallet`}
-              </p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+              Welcome to Web5
+            </h1>
+            <p className="text-gray-600 text-center mb-8">
+              Your gateway to decentralized identity and seamless transactions.
+            </p>
+            <div className="space-y-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCreateNewWallet}
+                disabled={isCreating}
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold shadow-md hover:from-blue-600 hover:to-purple-600 transition duration-300"
+              >
+                Create New Wallet
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsOpen(true)}
+                className="w-full py-3 bg-white text-gray-800 border border-gray-300 rounded-lg font-semibold shadow-md hover:bg-gray-50 transition duration-300"
+              >
+                Import Existing Account
+              </motion.button>
             </div>
           </div>
-
-          <div className='btn-container flex xl:flex-row flex-col'>
-            <button onClick={handleCreateNewWallet} disabled={isCreating} className="group block max-w-xs mx-auto rounded-lg p-6 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
-              <div className="flex items-center space-x-3">
-                <svg className="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"></svg>
-                <h3 className="text-slate-900 group-hover:text-white text-sm font-semibold">Create New Wallet</h3>
-              </div>
-              <p className="text-slate-500 group-hover:text-white text-sm">Create a new account with fiatsend.</p>
-            </button>
-
-            {/* <h2>{myDid}</h2> */}
-
-            <button onClick={() => setIsOpen(true)} className="group block max-w-xs mx-auto rounded-lg p-6 bg-white ring-1 ring-slate-900/5 shadow-lg space-y-3 hover:bg-sky-500 hover:ring-sky-500">
-              <div className="flex items-center space-x-3">
-                <svg className="h-6 w-6 stroke-sky-500 group-hover:stroke-white" fill="none" viewBox="0 0 24 24"></svg>
-                <h3 className="text-slate-900 group-hover:text-white text-sm font-semibold">Import an Account</h3>
-              </div>
-              <p className="text-slate-500 group-hover:text-white text-sm">Import an existing account from a did.json file.</p>
-            </button>
-
+          <div className="md:w-1/2 bg-gradient-to-br from-blue-500 to-purple-500 p-8 flex items-center justify-center">
+            <div className="text-white text-center">
+              <h2 className="text-3xl font-bold mb-4">Unlock the Future</h2>
+              <p className="mb-6">Experience the power of decentralized finance with our Web5 wallet.</p>
+              <ul className="text-left list-disc list-inside">
+                <li>Secure and private transactions</li>
+                <li>Full control over your digital identity</li>
+                <li>Seamless integration with Web5 ecosystem</li>
+              </ul>
+            </div>
           </div>
-          <p className="mt-10 text-sm text-gray-500 absolute bottom-0 left-0 m-6">Web Wallet v 1.00</p>
         </div>
-      </div>
-
+      </motion.div>
       <Drawer isOpen={isOpen} setIsOpen={setIsOpen} />
-
+      <p className="absolute bottom-4 left-4 text-sm text-gray-500">Web Wallet v 1.00</p>
     </div>
   )
 }

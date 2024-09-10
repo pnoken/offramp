@@ -2,83 +2,101 @@
 
 import React, { useEffect, useState } from 'react';
 import ConfirmationModal from '@/components/modals/confirm-modal';
-import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
-import { createNewWallet } from '@/lib/wallet-slice';
+import { useAppSelector } from '@/hooks/use-app-dispatch';
 import { useRouter } from 'next/navigation';
 import CodeBlock from '@/components/ui/pre/markdown';
 import DownloadData from '@/components/ui/download/data-download';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const NewSeedPhrase: React.FC = () => {
     const { portableDid } = useAppSelector((state) => state.wallet);
     const router = useRouter();
-
-
     const [isModalOpen, setIsModalOpen] = useState(false);
-
 
     const handleIsSaved = () => {
         router.push("/create-done");
     };
 
     useEffect(() => {
-        setIsModalOpen(true); // Open the modal
-    }, [])
+        setIsModalOpen(true);
+    }, []);
 
     const createDownloadLink = () => {
         if (!portableDid) return null;
-
-        const blob = new Blob([JSON.stringify(portableDid, null, 2)], { type: 'application/json' }); // Convert JSON to Blob
-        const url = URL.createObjectURL(blob); // Create an object URL for the Blob
-        const link = document.createElement('a'); // Create a new anchor element
-        link.href = url; // Set the URL to the href attribute
-        link.download = 'did.json'; // Set the download attribute with the desired file name
-        link.click(); // Programmatically click the link to trigger the download
-
-        // Cleanup the URL object to release memory
+        const blob = new Blob([JSON.stringify(portableDid, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'did.json';
+        link.click();
         URL.revokeObjectURL(url);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false); // Close the modal
-    };
-
+    const handleCloseModal = () => setIsModalOpen(false);
     const handleConfirm = () => {
-        // Logic to proceed with account creation
         console.log('User confirmed!');
-        setIsModalOpen(false); // Close the modal after confirmation
+        setIsModalOpen(false);
     };
 
     return (
-        <div my-6>
-            <h1 className='text-2xl text-center my-6 font-bold'>Your Portable DID</h1>
-            <div className="flex flex-col md:flex-row gap-8 p-8 w-2/3 mx-auto">
-                {/* Left Section - Import by Private Key */}
-                <div className="md:w-1/2 space-y-6">
-                    <p>Keep your portale did in a safe place, and never disclose it. Anyone with this information can take control of your assets.
-                    </p>
-                    <CodeBlock data={portableDid} />
-                    {
-                        portableDid && <DownloadData onDownloadClick={createDownloadLink} />
-                    }
-
-
-                    <button type="button" onClick={handleIsSaved} className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none" disabled={!portableDid}>
-                        <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-
-                        </svg>
-                        I have saved it somewhere safe
-                    </button>
-                </div>
-
-                {/* Right Section - What is a private key? */}
-                <div className="md:w-1/2 space-y-4">
-                    <h3 className="text-lg font-semibold">What is a portable did?</h3>
-                    <p className="text-gray-600">
-                        A portable did is like a password — a string of letters and numbers — that can be used to restore your wallet.
-                    </p>
-                    <p className="text-gray-600">
-                        Is it safe to enter it into Fiatsend wallet? Yes. It will be stored locally and never leave your device without your explicit permission.
-                    </p>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8"
+        >
+            <div className="max-w-4xl mx-auto">
+                <motion.h1
+                    initial={{ y: -20 }}
+                    animate={{ y: 0 }}
+                    className='text-3xl text-center mb-12 font-bold text-gray-800'
+                >
+                    Your Portable DID
+                </motion.h1>
+                <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+                    <div className="flex flex-col md:flex-row">
+                        <div className="md:w-1/2 p-8 bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                            <h2 className="text-2xl font-semibold mb-4">Secure Your Identity</h2>
+                            <p className="mb-6">
+                                Keep your portable DID in a safe place, and never disclose it.
+                                Anyone with this information can take control of your assets.
+                            </p>
+                            <div className="bg-white/10 rounded-lg p-4 mb-6">
+                                <CodeBlock data={portableDid} />
+                            </div>
+                            {portableDid && <DownloadData onDownloadClick={createDownloadLink} />}
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                type="button"
+                                onClick={handleIsSaved}
+                                className="w-full mt-4 px-4 py-2 text-blue-600 bg-white rounded-md hover:bg-blue-50 focus:outline-none transition duration-300 ease-in-out"
+                                disabled={!portableDid}
+                            >
+                                I have saved it somewhere safe
+                            </motion.button>
+                        </div>
+                        <div className="md:w-1/2 p-8">
+                            <h3 className="text-2xl font-semibold mb-4 text-gray-800">What is a portable DID?</h3>
+                            <p className="text-gray-600 mb-4">
+                                A portable DID (Decentralized Identifier) is like a digital passport for your online identity.
+                                It's a unique string of characters that represents you in the decentralized web.
+                            </p>
+                            <p className="text-gray-600 mb-6">
+                                It's safe to use with Fiatsend wallet. Your DID is stored locally and never leaves your
+                                device without your explicit permission.
+                            </p>
+                            <div className="flex items-center justify-center">
+                                <Image
+                                    src="/images/did-illustration.svg"
+                                    alt="Portable DID Illustration"
+                                    width={200}
+                                    height={200}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <ConfirmationModal
                     isOpen={isModalOpen}
@@ -86,7 +104,7 @@ const NewSeedPhrase: React.FC = () => {
                     onConfirm={handleConfirm}
                 />
             </div>
-        </div>
+        </motion.div>
     );
 };
 

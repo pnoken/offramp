@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import SwapSection from '@/components/swap/swap-section';
 import { OfferingSection } from '@/components/offerings/offering-section';
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
@@ -8,12 +9,11 @@ import { fetchOfferings } from '@/lib/offering-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
 import { Offering as TbdexOffering } from '@tbdex/protocol';
 
-
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
-    const customerDid = useAppSelector((state) => state.wallet.portableDid); // Get customer DID from wallet slice
-    const customerCredentials = useAppSelector((state) => state.wallet.did); // Get customer credentials
-    const { isCreating, exchange, error } = useAppSelector((state) => state.exchange); // Get exchange state
+    const customerDid = useAppSelector((state) => state.wallet.portableDid);
+    const customerCredentials = useAppSelector((state) => state.wallet.did);
+    const { isCreating, exchange, error } = useAppSelector((state) => state.exchange);
 
     const [selectedCurrencyPair, setSelectedCurrencyPair] = useState({ from: '', to: '' });
     const [amount, setAmount] = useState('');
@@ -34,42 +34,52 @@ const Exchange: React.FC = () => {
     };
 
     const renderOfferings = () => {
-        if (status === 'idle') {
-            return null
-        }
+        if (status === 'idle') return null;
+        if (status === 'loading') return <LoadingPulse />;
+        if (status === 'failed') return <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-500 text-center mt-4">Error: {offeringsError}</motion.p>;
+        if (matchedOfferings.length === 0) return <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-yellow-500 text-center mt-4">No offerings available for the selected currency pair.</motion.p>;
 
-        if (status === 'loading') {
-            return <LoadingPulse />;
-        }
-
-        if (status === 'failed') {
-            return <p>Error: {offeringsError}</p>;
-        }
-
-        if (matchedOfferings.length === 0) {
-            return <p>No offerings available for the selected currency pair.</p>;
-        }
-
-        return matchedOfferings.map((offering: TbdexOffering) => (
-            <OfferingSection key={offering.metadata.id} offering={offering as any} amount={amount} />
-        ));
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                {matchedOfferings.map((offering: TbdexOffering) => (
+                    <OfferingSection key={offering.metadata.id} offering={offering as any} amount={amount} />
+                ))}
+            </motion.div>
+        );
     };
 
     return (
-        <div className="container h-screen mx-auto px-4 py-8 bg-gray-600">
-            <h2 className="text-2xl font-bold mb-4">Currency Exchange</h2>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8"
+        >
+            <div className="max-w-4xl mx-auto">
+                <motion.h2
+                    initial={{ y: -20 }}
+                    animate={{ y: 0 }}
+                    className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500"
+                >
+                    Currency Exchange
+                </motion.h2>
 
-            <div className="lg:w-1/2 w-full mx-auto">
-                <SwapSection
-                    selectedCurrencyPair={selectedCurrencyPair}
-                    onCurrencyPairSelect={handleCurrencyPairSelect}
-                    amount={amount}
-                    onAmountChange={handleAmountChange}
-                />
+                <div className="bg-gray-700 rounded-lg shadow-xl p-6 mb-8">
+                    <SwapSection
+                        selectedCurrencyPair={selectedCurrencyPair}
+                        onCurrencyPairSelect={handleCurrencyPairSelect}
+                        amount={amount}
+                        onAmountChange={handleAmountChange}
+                    />
+                </div>
+
                 {renderOfferings()}
             </div>
-
-        </div>
+        </motion.div>
     );
 };
 

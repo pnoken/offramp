@@ -1,34 +1,48 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { OfferingCard } from "./offering-card";
 import { Offering } from "@/types/offering";
+import { motion } from "framer-motion";
+import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
-export const OfferingSection: React.FC<{ offering: Offering, amount: string }> = ({ offering, amount }) => {
+export const OfferingSection: React.FC<{ offering: Offering; amount: string }> = ({ offering, amount }) => {
     if (!offering) {
-        return <div>No offering available</div>;
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-6 bg-gray-100 rounded-2xl text-center text-gray-600"
+            >
+                No offering available at the moment
+            </motion.div>
+        );
     }
 
+    const receivedAmount = (Number(offering.data.payoutUnitsPerPayinUnit) * Number(amount)).toFixed(2);
+    const fees = (Number(receivedAmount) * 0.003).toFixed(2);
+
     return (
-        <div className="flex flex-col p-6 bg-blue-200 rounded-2xl">
-            <div className="flex flex-row justify-between">
-                <h1>Receive</h1>
-                <div className="relative size-5" data-tooltip-target="tooltip-dark">
-                    <svg className="size-full -rotate-90" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-gray-200 dark:text-neutral-700" strokeWidth="2"></circle>
-                        <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-blue-600 dark:text-blue-500" strokeWidth="2" strokeDasharray="100" strokeDashoffset="75" strokeLinecap="round"></circle>
-                    </svg>
-                </div>
-                <div id="tooltip-dark" role="tooltip" className="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-                    Tooltip content
-                    <div className="tooltip-arrow" data-popper-arrow></div>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col p-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg"
+        >
+            <div className="flex flex-row justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-white">You'll Receive</h2>
+                <div className="relative">
+                    <InformationCircleIcon className="h-6 w-6 text-white cursor-pointer" />
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg p-2 text-sm text-gray-700 hidden group-hover:block">
+                        Exchange rate and fees may vary
+                    </div>
                 </div>
             </div>
             <OfferingCard
                 currency={offering.data.payout.currencyCode}
-                returnAmount={`${(Number(offering.data.payoutUnitsPerPayinUnit) * Number(amount)).toFixed(2)} ${offering.data.payout.currencyCode}`}
+                returnAmount={`${receivedAmount} ${offering.data.payout.currencyCode}`}
                 provider={offering.metadata.from}
-                fees={`${(Number(offering.data.payoutUnitsPerPayinUnit) * Number(amount) * 0.003).toFixed(2)} ${offering.data.payout.currencyCode}`}
-                slippage={offering.data.payoutUnitsPerPayinUnit || "N/A"}
+                fees={`${fees} ${offering.data.payout.currencyCode}`}
+                slippage={`${offering.data.payoutUnitsPerPayinUnit || "N/A"}`}
             />
-        </div>
+        </motion.div>
     );
 };

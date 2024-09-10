@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { SwapInput } from "../ui/input/swap-input";
-
+import { motion } from "framer-motion";
+import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
 
 export const SwapSection: React.FC<{
     selectedCurrencyPair: { from: string; to: string };
@@ -16,7 +17,6 @@ export const SwapSection: React.FC<{
     const currencies = ["GHS", "USDC", "KES"];
 
     useEffect(() => {
-        // Set default currencies when component mounts
         if (!selectedCurrencyPair.from && !selectedCurrencyPair.to) {
             onCurrencyPairSelect('GHS', 'USDC');
         }
@@ -35,7 +35,12 @@ export const SwapSection: React.FC<{
     };
 
     return (
-        <div className="flex flex-col p-3 my-3 bg-slate-800 rounded-2xl">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col p-6 my-6 bg-gradient-to-br from-slate-800 to-slate-700 rounded-3xl shadow-lg"
+        >
             <SwapInput
                 onCurrencyChange={handleFromCurrencyChange}
                 selectValue={selectedCurrencyPair.from || 'GHS'}
@@ -46,34 +51,35 @@ export const SwapSection: React.FC<{
                 value={amount}
                 onReset={handleReset}
             />
-            {/* Swap Button */}
-            <div className="flex items-center justify-center max-h-[10px] min-h-[10px] transition-all duration-300">
-                <div className="bg-[#010D09] rounded-full flex items-center justify-center h-[52px] w-[52px] z-10">
-                    <button
-                        className="relative align-middle select-none font-sans font-medium text-center uppercase disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none max-w-[40px] max-h-[40px] text-xs shadow-md shadow-light-green-500/20 hover:shadow-lg hover:shadow-light-green-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none z-10 h-[36px] w-[36px] overflow-hidden bg-bgGreen1/10 hover:bg-bgGreen1/20 rounded-full text-bgGreen1 border-2 border-bgGreen1 hover:rotate-[180deg] transition-all duration-300"
-                        type="button"
-                        onClick={() => onCurrencyPairSelect(selectedCurrencyPair.to, selectedCurrencyPair.from)}
-                    >
-                        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
-                            <svg viewBox="0 0 30 30" fill="inherit" xmlns="http://www.w3.org/2000/svg" style={{ width: '36px', fill: 'rgb(95, 223, 172)', minWidth: '36px' }}>
-                                <path d="M13.97 9.706v9.265h-2.058v-4.118H8.823l5.147-5.147Zm4.118 5.147h3.088L16.03 20v-9.264h2.059v4.117Z" fill="inherit"></path>
-                            </svg>
-                        </span>
-                    </button>
-                </div>
+            <div className="flex items-center justify-center my-4">
+                <motion.button
+                    whileHover={{ scale: 1.1, rotate: 180 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="bg-bgGreen1 text-slate-800 rounded-full p-3 shadow-md hover:shadow-lg transition-all duration-300"
+                    onClick={() => onCurrencyPairSelect(selectedCurrencyPair.to, selectedCurrencyPair.from)}
+                >
+                    <ArrowsUpDownIcon className="h-6 w-6" />
+                </motion.button>
             </div>
             <SwapInput
                 onCurrencyChange={handleToCurrencyChange}
                 selectValue={selectedCurrencyPair.to || 'USDC'}
                 currencies={currencies}
-                onChange={() => { }} // This input is read-only
+                onChange={() => { }}
                 label="You receive"
                 placeholder="0.00"
-                value="" // This should be calculated based on the exchange rate
+                value=""
                 onReset={handleReset}
                 isReadOnly={true}
             />
-        </div>
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="mt-6 bg-bgGreen1 text-slate-800 py-3 px-6 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300"
+            >
+                Swap Currencies
+            </motion.button>
+        </motion.div>
     );
 };
 
