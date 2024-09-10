@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import { Drawer } from '@/components/ui/drawer';
 import { useRouter } from 'next/navigation';
 import { createNewWallet } from '@/lib/wallet-slice';
+import Spinner from '@/components/spinner';
 
 export default function WebWallet() {
   const dispatch = useAppDispatch();
@@ -17,12 +18,20 @@ export default function WebWallet() {
 
   const router = useRouter()
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const storedDid = localStorage.getItem('customerDid');
     if (storedDid) {
       router.push("/home");
+    } else {
+      setIsLoading(false);
     }
   }, [router]);
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   if (walletCreated) {
     router.push("/account/new-did")
