@@ -1,8 +1,15 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { TbdexHttpClient, Rfq, Quote, Order, OrderStatus, Close, Message } from '@tbdex/http-client';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { TbdexHttpClient, Offering } from '@tbdex/http-client';
+
+// Define the state type
+interface OfferingsState {
+    matchedOfferings: Offering[];
+    status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    error: string | null;
+}
 
 // Async thunk to fetch and filter offerings
-export const fetchOfferings = createAsyncThunk(
+export const fetchOfferings = createAsyncThunk<Offering[], void, { rejectValue: string }>(
     'offerings/fetchOfferings',
     async (_, thunkAPI) => {
         try {
@@ -16,38 +23,37 @@ export const fetchOfferings = createAsyncThunk(
                     offering.data.payout.currencyCode === "USDC"
             );
 
-            return filteredOfferings; // Return filtered offerings
+            return filteredOfferings;
         } catch (error) {
             return thunkAPI.rejectWithValue('Cannot fetch offerings');
         }
     }
 );
 
+const initialState: OfferingsState = {
+    matchedOfferings: [],
+    status: 'idle',
+    error: null,
+};
 
 const offeringsSlice = createSlice({
     name: 'offerings',
-    initialState: {
-        matchedOfferings: [],
-        status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-        error: null,
-    },
+    initialState,
     reducers: {},
     extraReducers: (builder) => {
         builder
             .addCase(fetchOfferings.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(fetchOfferings.fulfilled, (state, action) => {
+            .addCase(fetchOfferings.fulfilled, (state, action: PayloadAction<Offering[]>) => {
                 state.status = 'succeeded';
-                state.matchedOfferings = action.payload; // Update state with filtered offerings
+                state.matchedOfferings = action.payload;
             })
             .addCase(fetchOfferings.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload; // Update state with error message
+                state.error = action.payload ?? 'An error occurred';
             });
     },
 });
-
-
 
 export default offeringsSlice.reducer;
