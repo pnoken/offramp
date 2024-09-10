@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import SwapSection from '@/components/swap/swap-section';
 import { OfferingSection } from '@/components/offerings/offering-section';
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
+import { fetchOfferings } from '@/lib/offering-slice';
+import LoadingPulse from '@/components/animate/loading-pulse';
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -11,23 +13,54 @@ const Exchange: React.FC = () => {
     const customerCredentials = useAppSelector((state) => state.wallet.did); // Get customer credentials
     const { isCreating, exchange, error } = useAppSelector((state) => state.exchange); // Get exchange state
 
-    const handleCreateExchange = (offering, amount, payoutPaymentDetails) => {
-        if (!customerDid) {
-            console.error('Customer DID is not available. Please create a wallet first.');
-            return;
+    const [selectedCurrencyPair, setSelectedCurrencyPair] = useState({ from: '', to: '' });
+    const [amount, setAmount] = useState('');
+    const { matchedOfferings = [], status = 'idle', error: offeringsError = null } = useAppSelector((state) => state.offering) || {};
+
+    useEffect(() => {
+        if (selectedCurrencyPair.from && selectedCurrencyPair.to && amount) {
+            dispatch(fetchOfferings());
+        }
+    }, [selectedCurrencyPair, amount, dispatch]);
+
+    const handleCurrencyPairSelect = (from: string, to: string) => {
+        setSelectedCurrencyPair({ from, to });
+    };
+
+    const handleAmountChange = (value: string) => {
+        setAmount(value);
+    };
+
+    const renderOfferings = () => {
+        if (status === 'loading') {
+            return <LoadingPulse />;
         }
 
-        dispatch(createExchange({ offering, amount, payoutPaymentDetails, customerDid, customerCredentials })); // Pass necessary data
+        if (status === 'failed') {
+            return <p>Error: {offeringsError}</p>;
+        }
+
+        if (matchedOfferings.length === 0) {
+            return <p>No offerings available for the selected currency pair.</p>;
+        }
+
+        return matchedOfferings.map((offering) => (
+            <OfferingSection key={offering.id} offering={offering} />
+        ));
     };
 
     return (
         <div className="container h-screen mx-auto px-4 py-8 bg-gray-600">
             <h2 className="text-2xl font-bold mb-4">Currency Exchange</h2>
 
-
             <div className="lg:w-1/2 w-full mx-auto">
-                <SwapSection />
-                <OfferingSection />
+                <SwapSection
+                    selectedCurrencyPair={selectedCurrencyPair}
+                    onCurrencyPairSelect={handleCurrencyPairSelect}
+                    amount={amount}
+                    onAmountChange={handleAmountChange}
+                />
+                {renderOfferings()}
             </div>
 
         </div>

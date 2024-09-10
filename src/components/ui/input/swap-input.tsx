@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, Dispatch, SetStateAction } from 'react';
+import React, { ChangeEventHandler } from 'react';
 
 interface SwapInputProps {
     label: string;
@@ -8,26 +8,38 @@ interface SwapInputProps {
     selectValue: string;
     onReset: () => void;
     onCurrencyChange: ChangeEventHandler<HTMLSelectElement>
-    onChange: ChangeEventHandler<HTMLInputElement> //Dispatch<SetStateAction<string>>
+    onChange: ChangeEventHandler<HTMLInputElement>
+    isReadOnly?: boolean;
 }
 
-export const SwapInput: React.FC<SwapInputProps> = ({ label, onCurrencyChange, selectValue, currencies, placeholder, onChange, value, onReset }) => (
+export const SwapInput: React.FC<SwapInputProps> = ({
+    label,
+    onCurrencyChange,
+    selectValue,
+    currencies,
+    placeholder,
+    onChange,
+    value,
+    onReset,
+    isReadOnly = false
+}) => (
     <div className="py-[12px] relative w-full min-h-fit bg-white/5 flex flex-col items-center rounded-2xl border border-white/5">
         <div className="px-[15px] flex items-center justify-between w-full font-medium py-[2px] text-gray-500">
             <div className="flex items-center gap-1.5">
                 <span className="text-sm">{label}</span>
-                <button
-                    className="scale-0 hover:bg-white1 rounded-full hover:scale-110 transition-all overflow-hidden duration-300 max-w-[28px] max-h-[28px] text-gray-500 hover:text-white"
-                    aria-label="Reset values"
-                    onClick={onReset}
-                    style={{ maxWidth: '200px' }}
-                >
-                    <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="text-base" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z" />
-                    </svg>
-                </button>
+                {!isReadOnly && (
+                    <button
+                        className="scale-0 hover:bg-white1 rounded-full hover:scale-110 transition-all overflow-hidden duration-300 max-w-[28px] max-h-[28px] text-gray-500 hover:text-white"
+                        aria-label="Reset values"
+                        onClick={onReset}
+                        style={{ maxWidth: '200px' }}
+                    >
+                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="text-base" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z" />
+                        </svg>
+                    </button>
+                )}
             </div>
-
 
             <div className="flex items-center gap-1.5">
                 <button
@@ -48,6 +60,7 @@ export const SwapInput: React.FC<SwapInputProps> = ({ label, onCurrencyChange, s
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
+                readOnly={isReadOnly}
                 className="peer w-full h-full bg-transparent text-blue-gray-700 font-sans font-normal outline outline-0 focus:outline-0 transition-all border-b placeholder-shown:border-blue-gray-200 text-sm pt-4 pb-1.5 border-blue-gray-200 focus:border-gray-900 px-[15px] border-none outline-none text-white"
                 style={{ paddingTop: 0, fontSize: 28 }}
             />
@@ -55,7 +68,7 @@ export const SwapInput: React.FC<SwapInputProps> = ({ label, onCurrencyChange, s
                 id="currency-from"
                 value={selectValue}
                 onChange={onCurrencyChange}
-                className="bg-gray-600 mr-4 outline-none rounded flex gap-1.5 "
+                className="bg-gray-600 mr-4 outline-none rounded flex gap-1.5"
             >
                 {currencies.map((currency) => (
                     <option key={currency} value={currency}>

@@ -1,9 +1,13 @@
 // src/store/walletSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { DidDht } from '@web5/dids'
+import { DidDht } from '@web5/dids';
 
 // Async thunk to create a new wallet
-export const createNewWallet = createAsyncThunk('wallet/createNewWallet', async (_, thunkAPI) => {
+export const createNewWallet = createAsyncThunk<
+    { portableDid: any; did: string },
+    void,
+    { rejectValue: string }
+>('wallet/createNewWallet', async (_, thunkAPI) => {
     try {
         const didDht = await DidDht.create({ options: { publish: true } }); // Create new DID
 
@@ -19,15 +23,25 @@ export const createNewWallet = createAsyncThunk('wallet/createNewWallet', async 
     }
 });
 
+interface WalletState {
+    portableDid: any | null; // Initial portable DID state
+    did: string | null; // Initial DID URI state
+    isCreating: boolean; // State for creating process
+    walletCreated: boolean; // State to confirm wallet creation
+    error: string | null; // Error state
+}
+
+const initialState: WalletState = {
+    portableDid: null,
+    did: null,
+    isCreating: false,
+    walletCreated: false,
+    error: null,
+};
+
 const walletSlice = createSlice({
     name: 'wallet',
-    initialState: {
-        portableDid: null, // Initial portable DID state
-        did: null, // Initial DID URI state
-        isCreating: false, // State for creating process
-        walletCreated: false, // State to confirm wallet creation
-        error: null, // Error state
-    },
+    initialState,
     reducers: {
         clearWalletState: (state) => {
             state.portableDid = null;
@@ -36,7 +50,6 @@ const walletSlice = createSlice({
             state.walletCreated = false;
             state.error = null;
         },
-
     },
     extraReducers: (builder) => {
         builder
@@ -53,7 +66,7 @@ const walletSlice = createSlice({
             .addCase(createNewWallet.rejected, (state, action) => {
                 state.isCreating = false;
                 state.walletCreated = false; // Reset wallet creation status
-                state.error = action.payload; // Store error message
+                state.error = action.payload ?? null; // Store error message
             });
     },
 });

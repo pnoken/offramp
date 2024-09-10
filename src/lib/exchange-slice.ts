@@ -1,16 +1,21 @@
-// src/store/exchangeSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq } from '@tbdex/http-client';
-import { Jwt, PresentationExchange } from '@web5/credentials'
+import { PresentationExchange } from '@web5/credentials';
 
 // Async thunk to create an exchange
-export const createExchange = createAsyncThunk(
+export const createExchange = createAsyncThunk<any, {
+    offering: any;
+    amount: string;
+    payoutPaymentDetails: any;
+    customerDid: any;
+    customerCredentials: any;
+}, { rejectValue: string }>(
     'exchange/create',
-    async ({ offering, amount, payoutPaymentDetails, customerDid, customerCredentials }, thunkAPI) => { // Expect customerDid and customerCredentials to be passed as arguments
+    async ({ offering, amount, payoutPaymentDetails, customerDid, customerCredentials }, thunkAPI) => {
         try {
             // Select credentials required for the exchange
             const selectedCredentials = PresentationExchange.selectCredentials({
-                vcJwts: customerCredentials, // Obtained from the state
+                vcJwts: customerCredentials,
                 presentationDefinition: offering.data.requiredClaims,
             });
 
@@ -18,21 +23,21 @@ export const createExchange = createAsyncThunk(
             const rfq = Rfq.create({
                 metadata: {
                     from: customerDid.uri,
-                    to: offering.metaData.from,
+                    to: offering.metadata.from,
                     protocol: '1.0',
                 },
                 data: {
                     offeringId: offering.id,
                     payin: {
-                        amount: amount.toString(),
+                        amount: amount,
                         kind: offering.data.payin.methods[0].kind,
                         paymentDetails: {}, // Payment details for payin
                     },
                     payout: {
                         kind: offering.data.payout.methods[0].kind,
-                        paymentDetails: payoutPaymentDetails, // Payment details for payout
+                        paymentDetails: payoutPaymentDetails,
                     },
-                    claims: selectedCredentials, // Attach selected credentials
+                    claims: selectedCredentials,
                 },
             });
 
@@ -40,27 +45,35 @@ export const createExchange = createAsyncThunk(
             await rfq.verifyOfferingRequirements(offering);
 
             // Sign RFQ message
-            await rfq.sign(customerDid); // Sign RFQ using the customer's portable DID
+            await rfq.sign(customerDid);
 
             // Create exchange using TbdexHttpClient
             const exchangeResponse = await TbdexHttpClient.createExchange(rfq);
 
-            return exchangeResponse; // Return the response to update state
+            return exchangeResponse;
         } catch (error) {
             console.error('Failed to create exchange', error);
-            return thunkAPI.rejectWithValue('Failed to create exchange'); // Handle error
+            return thunkAPI.rejectWithValue('Failed to create exchange');
         }
     }
 );
 
+interface ExchangeState {
+    isCreating: boolean;
+    exchange: any | null;
+    error: string | null;
+}
+
+const initialState: ExchangeState = {
+    isCreating: false,
+    exchange: null,
+    error: null,
+};
+
 // Slice definition
 const exchangeSlice = createSlice({
     name: 'exchange',
-    initialState: {
-        isCreating: false,
-        exchange: null,
-        error: null,
-    },
+    initialState,
     reducers: {
         resetExchangeState: (state) => {
             state.isCreating = false;
@@ -81,7 +94,7 @@ const exchangeSlice = createSlice({
             })
             .addCase(createExchange.rejected, (state, action) => {
                 state.isCreating = false;
-                state.error = action.payload;
+                state.error = action.payload ?? 'An unknown error occurred';
             });
     },
 });
