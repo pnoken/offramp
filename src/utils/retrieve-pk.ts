@@ -1,3 +1,5 @@
+import { EncryptedPrivateKey } from "./types";
+
 export const decryptPrivateKey = async (encryptedPrivateKeyObj: EncryptedPrivateKey, passphrase: string): Promise<JsonWebKey> => {
     const { encryptedPrivateKey, iv, salt } = encryptedPrivateKeyObj;
     const encoder = new TextEncoder();
