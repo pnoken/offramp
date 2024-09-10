@@ -1,19 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 
-const tabsData = [
-    {
-        label: 'Tokens',
-        content:
-            'Ut irure mollit nulla eiusmod excepteur laboris elit sit anim magna tempor excepteur labore nulla.',
-    },
-    {
-        label: 'Verifiable Credentials',
-        content:
-            'Fugiat dolor et quis in incididunt aute. Ullamco voluptate consectetur dolor officia sunt est dolor sint.',
-    },
-];
+interface TabData {
+    label: string;
+    content: string;
+}
 
-export function Tabs() {
+interface TabsProps {
+    tabsData: TabData[];
+}
+
+
+export function Tabs({ tabsData }: TabsProps) {
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const [tabUnderlineWidth, setTabUnderlineWidth] = useState(0);
     const [tabUnderlineLeft, setTabUnderlineLeft] = useState(0);

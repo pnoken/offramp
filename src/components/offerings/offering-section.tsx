@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { OfferingCard } from "./offering-card";
+import { Offering } from "@/types/offering";
 
-export const OfferingSection: React.FC<{ offering: any }> = ({ offering }) => {
+export const OfferingSection: React.FC<{ offering: Offering, amount: string }> = ({ offering, amount }) => {
     if (!offering) {
         return <div>No offering available</div>;
     }
@@ -23,10 +24,10 @@ export const OfferingSection: React.FC<{ offering: any }> = ({ offering }) => {
             </div>
             <OfferingCard
                 currency={offering.data.payout.currencyCode}
-                returnAmount={`${(Number(offering.data.payoutUnitsPerPayinUnit) * 100).toFixed(2)} ${offering.data.payout.currencyCode}`}
+                returnAmount={`${(Number(offering.data.payoutUnitsPerPayinUnit) * Number(amount)).toFixed(2)} ${offering.data.payout.currencyCode}`}
                 provider={offering.metadata.from}
-                fees="N/A"
-                slippage={offering.data.slippage || "N/A"}
+                fees={`${(Number(offering.data.payoutUnitsPerPayinUnit) * Number(amount) * 0.003).toFixed(2)} ${offering.data.payout.currencyCode}`}
+                slippage={offering.data.payoutUnitsPerPayinUnit || "N/A"}
             />
         </div>
     );
