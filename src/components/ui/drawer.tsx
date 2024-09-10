@@ -3,7 +3,12 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, TransitionChild } fro
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation';
 
-export const Drawer = ({ isOpen, setIsOpen }) => {
+interface DrawerProps {
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
+}
+
+export const Drawer = ({ isOpen, setIsOpen }: DrawerProps) => {
     const [open, setOpen] = useState(false);
     const router = useRouter();
 
