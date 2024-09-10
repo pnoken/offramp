@@ -6,6 +6,8 @@ import { OfferingSection } from '@/components/offerings/offering-section';
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
 import { fetchOfferings } from '@/lib/offering-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
+import { Offering as TbdexOffering } from '@tbdex/protocol';
+
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -32,6 +34,10 @@ const Exchange: React.FC = () => {
     };
 
     const renderOfferings = () => {
+        if (status === 'idle') {
+            return null
+        }
+
         if (status === 'loading') {
             return <LoadingPulse />;
         }
@@ -44,8 +50,8 @@ const Exchange: React.FC = () => {
             return <p>No offerings available for the selected currency pair.</p>;
         }
 
-        return matchedOfferings.map((offering) => (
-            <OfferingSection key={offering.id} offering={offering} />
+        return matchedOfferings.map((offering: TbdexOffering) => (
+            <OfferingSection key={offering.metadata.id} offering={offering as any} amount={amount} />
         ));
     };
 
