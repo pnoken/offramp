@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PaperClipIcon } from '@heroicons/react/20/solid'
 
 
-const DownloadData: React.FC = ({ onDownloadClick }) => {
+const DownloadData: React.FC<{ onDownloadClick: () => void }> = ({ onDownloadClick }) => {
 
     return (
         <ul role="list" className="divide-y divide-gray-100 rounded-md border border-gray-200">
