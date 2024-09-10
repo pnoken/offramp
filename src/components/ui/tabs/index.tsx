@@ -41,7 +41,7 @@ export function Tabs() {
                         return (
                             <button
                                 key={idx}
-                                ref={(el) => (tabsRef.current[idx] = el)}
+                                ref={(el) => { tabsRef.current[idx] = el; }}
                                 className="pt-2 pb-3"
                                 onClick={() => setActiveTabIndex(idx)}
                             >
