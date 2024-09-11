@@ -55,7 +55,7 @@ export const OfferingCard: React.FC<OfferingCardProps> = ({ currency, returnAmou
                 <motion.img
                     whileHover={{ scale: 1.1, rotate: 360 }}
                     transition={{ duration: 0.5 }}
-                    src={`/currencies/${currency.toLowerCase()}.png`}
+                    src={`/images/currencies/${currency.toLowerCase()}.png`}
                     width={60}
                     height={60}
                     alt={currency}

@@ -89,7 +89,7 @@ const NewSeedPhrase: React.FC = () => {
                             </p>
                             <div className="flex items-center justify-center">
                                 <Image
-                                    src="/images/did-illustration.svg"
+                                    src="/images/secure-doc.svg"
                                     alt="Portable DID Illustration"
                                     width={200}
                                     height={200}

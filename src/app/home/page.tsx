@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+        <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
             {/* Sidebar */}
             <Sidebar
                 isOpen={isSidebarOpen}
@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
                     p-4 md:p-8
                 `}
             >
-                <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                <div className="bg-gray-100 rounded-lg p-6 md:p-8">
                     <h1 className="text-3xl font-bold mb-6 text-gray-800">{activeComponent}</h1>
                     {renderContent()}
                 </div>

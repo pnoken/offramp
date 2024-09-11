@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TabData {
     label: string;
-    content: string;
+    content: React.ReactNode;
 }
 
 interface TabsProps {
     tabsData: TabData[];
 }
-
 
 export function Tabs({ tabsData }: TabsProps) {
     const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -31,30 +31,45 @@ export function Tabs({ tabsData }: TabsProps) {
     }, [activeTabIndex]);
 
     return (
-        <div>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="relative">
-                <div className="flex space-x-3 border-b">
-                    {tabsData.map((tab, idx) => {
-                        return (
-                            <button
-                                key={idx}
-                                ref={(el) => { tabsRef.current[idx] = el; }}
-                                className="pt-2 pb-3"
-                                onClick={() => setActiveTabIndex(idx)}
-                            >
-                                {tab.label}
-                            </button>
-                        );
-                    })}
+                <div className="flex border-b">
+                    {tabsData.map((tab, idx) => (
+                        <button
+                            key={idx}
+                            ref={(el) => { tabsRef.current[idx] = el; }}
+                            className={`py-4 px-6 font-medium transition-colors duration-300 ${idx === activeTabIndex
+                                    ? 'text-blue-600'
+                                    : 'text-gray-600 hover:text-blue-500'
+                                }`}
+                            onClick={() => setActiveTabIndex(idx)}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
-                <span
-                    className="absolute bottom-0 block h-1 bg-teal-500 transition-all duration-300"
-                    style={{ left: tabUnderlineLeft, width: tabUnderlineWidth }}
+                <motion.span
+                    className="absolute bottom-0 left-0 h-0.5 bg-blue-600"
+                    initial={false}
+                    animate={{
+                        left: tabUnderlineLeft,
+                        width: tabUnderlineWidth,
+                    }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
             </div>
-            <div className="py-4">
-                <p>{tabsData[activeTabIndex].content}</p>
-            </div>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTabIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="p-6"
+                >
+                    {tabsData[activeTabIndex].content}
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 }

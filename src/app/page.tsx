@@ -42,7 +42,7 @@ export default function WebWallet() {
           <div className="md:w-1/2 p-8 flex flex-col justify-center">
             <Image
               alt="Fiatsend wallet"
-              src="/favicon.ico"
+              src="/images/fiatsend.png"
               width={80}
               height={80}
               className="mx-auto mb-8"

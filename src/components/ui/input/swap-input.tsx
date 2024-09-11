@@ -1,4 +1,6 @@
-import React, { ChangeEventHandler } from 'react';
+import React, { ChangeEventHandler, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface SwapInputProps {
     label: string;
@@ -8,7 +10,7 @@ interface SwapInputProps {
     selectValue: string;
     onReset: () => void;
     onCurrencyChange: ChangeEventHandler<HTMLSelectElement>
-    onChange: ChangeEventHandler<HTMLInputElement>
+    onChange: (value: string) => void;
     isReadOnly?: boolean;
 }
 
@@ -22,60 +24,88 @@ export const SwapInput: React.FC<SwapInputProps> = ({
     value,
     onReset,
     isReadOnly = false
-}) => (
-    <div className="py-[12px] relative w-full min-h-fit bg-white/5 flex flex-col items-center rounded-2xl border border-white/5">
-        <div className="px-[15px] flex items-center justify-between w-full font-medium py-[2px] text-gray-500">
-            <div className="flex items-center gap-1.5">
-                <span className="text-sm">{label}</span>
-                {!isReadOnly && (
-                    <button
-                        className="scale-0 hover:bg-white1 rounded-full hover:scale-110 transition-all overflow-hidden duration-300 max-w-[28px] max-h-[28px] text-gray-500 hover:text-white"
-                        aria-label="Reset values"
-                        onClick={onReset}
-                        style={{ maxWidth: '200px' }}
-                    >
-                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="text-base" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z" />
-                        </svg>
-                    </button>
-                )}
-            </div>
+}) => {
+    const [displayValue, setDisplayValue] = useState(value);
 
-            <div className="flex items-center gap-1.5">
-                <button
-                    className="text-sm gap-1.5 flex items-center cursor-pointer text-gray-500 stroke-gray-500 hover:text-bgGreen1 hover:stroke-bgGreen1 transition-all duration-300"
+    useEffect(() => {
+        setDisplayValue(formatNumber(value));
+    }, [value]);
+
+    const formatNumber = (num: string) => {
+        const parts = num.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.join('.');
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value.replace(/[^0-9.]/g, '');
+        const parts = inputValue.split('.');
+        if (parts.length > 2) return; // Prevent multiple decimal points
+        if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
+
+        onChange(inputValue);
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="py-6 px-6 relative w-full min-h-fit bg-white/10 flex flex-col items-center rounded-2xl border border-white/20 shadow-lg"
+        >
+            <div className="flex items-center justify-between w-full font-medium mb-4 text-white/80">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold">{label}</span>
+                    {!isReadOnly && (
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="text-white/60 hover:text-white transition-colors duration-300"
+                            aria-label="Reset values"
+                            onClick={onReset}
+                        >
+                            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="text-base" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z" />
+                            </svg>
+                        </motion.button>
+                    )}
+                </div>
+
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    className="text-sm gap-1.5 flex items-center cursor-pointer text-white/80 hover:text-white transition-all duration-300"
                     aria-label="Wallet Balance"
-                    style={{ maxWidth: '170px' }}
                 >
                     <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-xs relative top-[1px]" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                         <path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V192c0-35.3-28.7-64-64-64H80c-8.8 0-16-7.2-16-16s7.2-16 16-16H448c17.7 0 32-14.3 32-32s-14.3-32-32-32H64zM416 272a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
                     </svg>
                     0
-                </button>
+                </motion.button>
             </div>
-        </div>
-        <div className="flex items-center relative w-full top-1">
-            <input
-                type="text"
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                readOnly={isReadOnly}
-                className="peer w-full h-full bg-transparent text-blue-gray-700 font-sans font-normal outline outline-0 focus:outline-0 transition-all border-b placeholder-shown:border-blue-gray-200 text-sm pt-4 pb-1.5 border-blue-gray-200 focus:border-gray-900 px-[15px] border-none outline-none text-white"
-                style={{ paddingTop: 0, fontSize: 28 }}
-            />
-            <select
-                id="currency-from"
-                value={selectValue}
-                onChange={onCurrencyChange}
-                className="bg-gray-600 mr-4 outline-none rounded flex gap-1.5"
-            >
-                {currencies.map((currency) => (
-                    <option key={currency} value={currency}>
-                        {currency}
-                    </option>
-                ))}
-            </select>
-        </div>
-    </div>
-);
+            <div className="flex items-center justify-between w-full">
+                <div className="relative flex items-center w-full">
+                    <div className="flex items-center bg-white/20 text-white py-2 px-3 rounded-lg transition-colors duration-300 hover:bg-white/30 mr-3">
+                        <Image
+                            src={`/images/currencies/${selectValue.toLowerCase()}.png`}
+                            alt={`${selectValue} logo`}
+                            width={24}
+                            height={24}
+                            className="rounded-full mr-2"
+                        />
+                        <span className="text-base font-semibold">{selectValue}</span>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder={placeholder}
+                        value={displayValue}
+                        onChange={handleInputChange}
+                        readOnly={isReadOnly}
+                        className="flex-grow bg-transparent text-white font-semibold outline-none text-3xl"
+                    />
+                </div>
+            </div>
+
+
+        </motion.div>
+    );
+};
