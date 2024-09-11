@@ -9,9 +9,10 @@ interface OfferingCardProps {
     provider: string;
     fees: string;
     slippage: string;
+    bestReturn?: boolean;
 }
 
-export const OfferingCard: React.FC<OfferingCardProps> = ({ currency, returnAmount, provider, fees, slippage }) => {
+export const OfferingCard: React.FC<OfferingCardProps> = ({ currency, bestReturn, returnAmount, provider, fees, slippage }) => {
 
 
     const providerName = Object.values(mockProviderDids).find(p => p.uri === provider)?.name || provider;
@@ -23,14 +24,14 @@ export const OfferingCard: React.FC<OfferingCardProps> = ({ currency, returnAmou
             transition={{ duration: 0.5 }}
             className="flex flex-col rounded-2xl my-4 bg-gradient-to-br from-blue-600 to-purple-700 p-6 shadow-lg"
         >
-            <motion.div
+            {bestReturn && <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 260, damping: 20 }}
                 className="rounded-full max-w-fit bg-green-400 px-3 py-1 mb-4 text-sm font-semibold text-gray-800"
             >
                 Best Return
-            </motion.div>
+            </motion.div>}
             <div className="flex items-center gap-6">
                 <motion.img
                     whileHover={{ scale: 1.1, rotate: 360 }}

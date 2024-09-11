@@ -20,6 +20,8 @@ const Exchange: React.FC = () => {
     const [amount, setAmount] = useState('');
     const { matchedOfferings = [], status = 'idle', error: offeringsError = null } = useAppSelector((state) => state.offering) || {};
 
+    const [selectedOfferingId, setSelectedOfferingId] = useState<string | null>(null);
+
     useEffect(() => {
         if (selectedCurrencyPair.from && selectedCurrencyPair.to && amount) {
             dispatch(fetchOfferings({ from: selectedCurrencyPair.from, to: selectedCurrencyPair.to }));
@@ -49,7 +51,7 @@ const Exchange: React.FC = () => {
                     className="flex flex-col p-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg"
                 >
                     <div className="flex flex-row justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold text-white">You'll Receive</h2>
+                        <h2 className="text-2xl font-bold text-white">You&apos;ll Receive</h2>
                         <div className="relative">
                             <InformationCircleIcon className="h-6 w-6 text-white cursor-pointer" />
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg p-2 text-sm text-gray-700 hidden group-hover:block">
@@ -62,9 +64,14 @@ const Exchange: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        {matchedOfferings.map((offering: TbdexOffering) => (
-
-                            <OfferingSection key={offering.metadata.id} offering={offering as any} amount={amount} />
+                        {matchedOfferings.map((offering: TbdexOffering, index: number) => (
+                            <OfferingSection
+                                key={offering.metadata.id}
+                                offering={offering as any}
+                                amount={amount}
+                                isSelected={index === 0 || offering.metadata.id === selectedOfferingId}
+                                onClick={() => setSelectedOfferingId(offering.metadata.id)}
+                            />
                         ))}
                     </motion.div>
                 </motion.div>
