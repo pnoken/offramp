@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { CurrencyDollarIcon, ScaleIcon, UserIcon } from "@heroicons/react/24/outline";
+import { mockProviderDids } from "@/constants/mockDids";
 
 interface OfferingCardProps {
     currency: string;
@@ -11,28 +12,7 @@ interface OfferingCardProps {
 }
 
 export const OfferingCard: React.FC<OfferingCardProps> = ({ currency, returnAmount, provider, fees, slippage }) => {
-    const mockProviderDids = {
-        aquafinance_capital: {
-            uri: 'did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y',
-            name: 'AquaFinance Capital',
-            description: 'Provides exchanges with the Ghanaian Cedis: GHS to USDC, GHS to KES'
-        },
-        flowback_financial: {
-            uri: 'did:dht:zkp5gbsqgzn69b3y5dtt5nnpjtdq6sxyukpzo68npsf79bmtb9zy',
-            name: 'Flowback Financial',
-            description: 'Offers international rates with various currencies - USD to GBP, GBP to CAD.'
-        },
-        vertex_liquid_assets: {
-            uri: 'did:dht:enwguxo8uzqexq14xupe4o9ymxw3nzeb9uug5ijkj9rhfbf1oy5y',
-            name: 'Vertex Liquid Assets',
-            description: 'Offers currency exchanges between African currencies - MAD to EGP, GHS to NGN.'
-        },
-        titanium_trust: {
-            uri: 'did:dht:ozn5c51ruo7z63u1h748ug7rw5p1mq3853ytrd5gatu9a8mm8f1o',
-            name: 'Titanium Trust',
-            description: 'Provides offerings to exchange USD to African currencies - USD to GHS, USD to KES.'
-        }
-    };
+
 
     const providerName = Object.values(mockProviderDids).find(p => p.uri === provider)?.name || provider;
 
@@ -41,7 +21,7 @@ export const OfferingCard: React.FC<OfferingCardProps> = ({ currency, returnAmou
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col rounded-2xl bg-gradient-to-br from-blue-600 to-purple-700 p-6 shadow-lg"
+            className="flex flex-col rounded-2xl my-4 bg-gradient-to-br from-blue-600 to-purple-700 p-6 shadow-lg"
         >
             <motion.div
                 initial={{ scale: 0 }}

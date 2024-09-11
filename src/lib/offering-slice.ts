@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Offering } from '@tbdex/http-client';
+import { mockProviderDids } from '@/constants/mockDids';
 
 // Define the state type
 interface OfferingsState {
@@ -9,21 +10,21 @@ interface OfferingsState {
 }
 
 // Async thunk to fetch and filter offerings
-export const fetchOfferings = createAsyncThunk<Offering[], void, { rejectValue: string }>(
+export const fetchOfferings = createAsyncThunk<Offering[], { from: string; to: string }, { rejectValue: string }>(
     'offerings/fetchOfferings',
-    async (_, thunkAPI) => {
+    async ({ from, to }, thunkAPI) => {
         try {
-            // Fetch offerings using TbdexHttpClient
-            const offerings = await TbdexHttpClient.getOfferings({ pfiDid: "did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y" });
-
+            const allOfferings: Offering[] = [];
+            for (const pfi of Object.values(mockProviderDids)) {
+                const offerings = await TbdexHttpClient.getOfferings({ pfiDid: pfi.uri });
+                allOfferings.push(...offerings);
+            }
             // Filter offerings based on the currency pair
-            const filteredOfferings = offerings.filter(
+            return allOfferings.filter(
                 (offering) =>
-                    offering.data.payin.currencyCode === "GHS" &&
-                    offering.data.payout.currencyCode === "USDC"
+                    offering.data.payin.currencyCode === from &&
+                    offering.data.payout.currencyCode === to
             );
-
-            return filteredOfferings;
         } catch (error) {
             return thunkAPI.rejectWithValue('Cannot fetch offerings');
         }

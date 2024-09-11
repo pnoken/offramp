@@ -15,7 +15,7 @@ export const SwapSection: React.FC<{
         onCurrencyPairSelect('GHS', 'USDC');
     };
 
-    const currencies = ["GHS", "USDC", "KES"];
+    const currencies = ["GHS", "USDC", "KES", "USD", "NGN"];
 
     useEffect(() => {
         if (!selectedCurrencyPair.from && !selectedCurrencyPair.to) {
@@ -116,7 +116,7 @@ export const SwapSection: React.FC<{
                 whileTap={{ scale: 0.95 }}
                 className="mt-4 bg-emerald-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
             >
-                Review Exchange
+                {Number(amount) > 0 ? "Review Exchange" : "Exchange"}
             </motion.button>
         </motion.div>
     );
