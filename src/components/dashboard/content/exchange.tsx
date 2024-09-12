@@ -6,9 +6,12 @@ import SwapSection from '@/components/swap/swap-section';
 import { OfferingSection } from '@/components/offerings/offering-section';
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
 import { fetchOfferings } from '@/lib/offering-slice';
+import { createExchange } from '@/lib/exchange-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
-import { Offering as TbdexOffering } from '@tbdex/protocol';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import OfferingDetails from '@/components/offerings/offering-details';
+import { Offering as TbdexOffering } from '@/types/offering';
+
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -21,6 +24,8 @@ const Exchange: React.FC = () => {
     const { matchedOfferings = [], status = 'idle', error: offeringsError = null } = useAppSelector((state) => state.offering) || {};
 
     const [selectedOfferingId, setSelectedOfferingId] = useState<string | null>(null);
+    const [showOfferingDetails, setShowOfferingDetails] = useState(false);
+    const [selectedOffering, setSelectedOffering] = useState<TbdexOffering | null>(null);
 
     useEffect(() => {
         if (selectedCurrencyPair.from && selectedCurrencyPair.to && amount) {
@@ -34,6 +39,30 @@ const Exchange: React.FC = () => {
 
     const handleAmountChange = (value: string) => {
         setAmount(value);
+    };
+
+    const handleOfferingSelect = (offering: TbdexOffering) => {
+        setSelectedOffering(offering);
+        setSelectedOfferingId(offering.metadata.id);
+    };
+
+    const handleReviewExchange = () => {
+        if (!selectedOffering) {
+            setSelectedOffering(matchedOfferings[0]);
+        }
+        setShowOfferingDetails(true);
+    };
+
+    const handleStartExchange = () => {
+        if (selectedOffering) {
+            dispatch(createExchange({
+                offering: selectedOffering,
+                amount,
+                payoutPaymentDetails: {}, // Add necessary details
+                customerDid,
+                customerCredentials
+            }));
+        }
     };
 
     const renderOfferings = () => {
@@ -78,6 +107,19 @@ const Exchange: React.FC = () => {
             );
     };
 
+    if (showOfferingDetails) {
+        return (
+            <OfferingDetails
+                offering={selectedOffering!}
+                fromCurrency={selectedCurrencyPair.from}
+                toCurrency={selectedCurrencyPair.to}
+                amount={amount}
+                onStartExchange={handleStartExchange}
+                onBack={() => setShowOfferingDetails(false)}
+            />
+        );
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -86,20 +128,15 @@ const Exchange: React.FC = () => {
             className="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8"
         >
             <div className="max-w-4xl mx-auto">
-                <motion.h2
-                    initial={{ y: -20 }}
-                    animate={{ y: 0 }}
-                    className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500"
-                >
-                    Currency Exchange
-                </motion.h2>
 
-                <div className="bg-gray-700 rounded-lg shadow-xl p-6 mb-8">
+
+                <div className="rounded-lg shadow-xl mb-8">
                     <SwapSection
                         selectedCurrencyPair={selectedCurrencyPair}
                         onCurrencyPairSelect={handleCurrencyPairSelect}
                         amount={amount}
                         onAmountChange={handleAmountChange}
+                        onReviewExchange={handleReviewExchange}
                     />
                 </div>
 

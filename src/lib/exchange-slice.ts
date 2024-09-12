@@ -2,6 +2,14 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq } from '@tbdex/http-client';
 import { PresentationExchange } from '@web5/credentials';
 
+// Helper function to serialize an Offering
+const serializeOffering = (offering: any) => ({
+    metadata: offering.metadata,
+    data: offering.data,
+    id: offering.id,
+    // Add any other necessary serializable properties
+});
+
 // Async thunk to create an exchange
 export const createExchange = createAsyncThunk<any, {
     offering: any;
@@ -15,7 +23,7 @@ export const createExchange = createAsyncThunk<any, {
         try {
             // Select credentials required for the exchange
             const selectedCredentials = PresentationExchange.selectCredentials({
-                vcJwts: customerCredentials,
+                vcJwts: customerCredentials, //As JWT token
                 presentationDefinition: offering.data.requiredClaims,
             });
 
@@ -50,7 +58,13 @@ export const createExchange = createAsyncThunk<any, {
             // Create exchange using TbdexHttpClient
             const exchangeResponse = await TbdexHttpClient.createExchange(rfq);
 
-            return exchangeResponse;
+            const responseObject = typeof exchangeResponse === 'object' ? exchangeResponse : {};
+
+            // Return a serialized version of the response
+            return {
+                ...responseObject,
+                offering: serializeOffering(offering),
+            };
         } catch (error) {
             console.error('Failed to create exchange', error);
             return thunkAPI.rejectWithValue('Failed to create exchange');
@@ -95,6 +109,8 @@ const exchangeSlice = createSlice({
             .addCase(createExchange.rejected, (state, action) => {
                 state.isCreating = false;
                 state.error = action.payload ?? 'An unknown error occurred';
+                // Ensure we're not storing any non-serializable data
+                state.exchange = null;
             });
     },
 });

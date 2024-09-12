@@ -113,14 +113,14 @@ const tabsData: TabItem[] = [
                 <h3 className="text-lg font-semibold mb-4">Unverified Credentials</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {unverifiedCredentials.map((credential, index) => (
-                        <div key={index} className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-lg shadow-lg text-white hover:shadow-xl transition-shadow duration-300 blur-sm">
+                        <div key={index} className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-lg shadow-lg text-white hover:shadow-xl transition-shadow duration-300">
                             <div className="text-4xl mb-2">{credential.icon}</div>
                             <h4 className="text-xl font-bold mb-2">{credential.name}</h4>
                             <p className="text-sm mb-1">Issuer: {credential.issuer}</p>
                             <p className="text-sm">Issued: {credential.date}</p>
                             <div className="mt-4 flex justify-between items-center">
-                                <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">Verified ✓</span>
-                                <button className="text-xs bg-white text-blue-600 px-2 py-1 rounded hover:bg-opacity-90 transition-colors duration-300">View Details</button>
+                                <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">Unverified</span>
+                                <button className="text-xs bg-white text-blue-600 px-2 py-1 rounded hover:bg-opacity-90 transition-colors duration-300">Verify Now</button>
                             </div>
                         </div>
                     ))}
@@ -133,17 +133,21 @@ const tabsData: TabItem[] = [
 ];
 
 const Portfolio: React.FC = () => {
-    return (
-        <div className="p-4 sm:p-6 flex flex-col justify-center bg-white shadow-md rounded-lg">
+    const did = JSON.parse(localStorage.getItem('customerDid') || '{}').uri || 'Not available';
+    const shortenedDid = did.length > 10 ? `${did.substring(0, 5)}...${did.substring(did.length - 5)}` : did;
 
-            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div className="mb-2 sm:mb-0">
-                    <p className="text-base sm:text-lg">GHS Bank Account: GH-1234567890</p>
-                    <p className="text-xs sm:text-sm text-gray-600">Use this account to add GHS to your balance</p>
+    return (
+        <div className="p-4 sm:p-6 flex flex-col justify-center bg-white shadow-md rounded-lg md:ml-64">
+            <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-100 p-4 rounded-lg">
+                <div className="mb-4 sm:mb-0 bg-white p-3 rounded-md shadow-sm">
+                    <p className="text-sm text-gray-600">GHS Bank Account</p>
+                    <p className="text-lg font-semibold">GH-1234567890</p>
+                    <p className="text-xs text-gray-500 mt-1">Use this account to add GHS to your balance</p>
                 </div>
-                <div className="text-left sm:text-right">
-                    <p className="text-base sm:text-lg break-all">{JSON.parse(localStorage.getItem('customerDid') || '{}').uri || 'Not available'}</p>
-                    <p className="text-xs sm:text-sm text-gray-600">Your decentralized identifier</p>
+                <div className="bg-white p-3 rounded-md shadow-sm">
+                    <p className="text-sm text-gray-600">Your DID</p>
+                    <p className="text-lg font-semibold break-all">{shortenedDid}</p>
+                    <p className="text-xs text-gray-500 mt-1">Your decentralized identifier</p>
                 </div>
             </div>
 

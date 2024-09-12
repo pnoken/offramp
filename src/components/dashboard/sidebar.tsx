@@ -23,10 +23,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, setActiveCompo
             )}
 
             {/* Sidebar */}
-            <div
+            <aside
                 className={`
                     fixed top-0 left-0 h-full bg-gray-800 text-white transition-all duration-300 ease-in-out z-50
                     ${isOpen ? (isMobile ? 'w-64' : 'w-64') : (isMobile ? '-translate-x-full' : 'w-20')}
+                    ${isMobile ? '' : 'hidden md:block'}
                 `}
             >
                 <div className="flex flex-col h-full p-4">
@@ -59,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, setActiveCompo
                         ))}
                     </nav>
                 </div>
-            </div>
+            </aside>
         </>
     );
 };

@@ -9,7 +9,8 @@ export const SwapSection: React.FC<{
     onCurrencyPairSelect: (from: string, to: string) => void;
     amount: string;
     onAmountChange: (value: string) => void;
-}> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange }) => {
+    onReviewExchange: () => void;
+}> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange, onReviewExchange }) => {
     const handleReset = () => {
         onAmountChange('');
         onCurrencyPairSelect('GHS', 'USDC');
@@ -36,13 +37,13 @@ export const SwapSection: React.FC<{
     };
 
     const CurrencySelect = ({ value, onChange, label }) => (
-        <div className="flex flex-col w-2/5">
+        <div className="flex flex-col w-full sm:w-2/5 mb-4 sm:mb-0">
             <label className="text-white/80 mb-2">{label}</label>
             <div className="relative">
                 <select
                     value={value}
                     onChange={onChange}
-                    className="w-full appearance-none bg-white/20 text-white py-4 pl-12 pr-10 rounded-lg outline-none transition-colors duration-300 hover:bg-white/30 text-lg font-semibold"
+                    className="w-full appearance-none bg-white/20 text-white py-3 sm:py-4 pl-12 pr-10 rounded-lg outline-none transition-colors duration-300 hover:bg-white/30 text-base sm:text-lg font-semibold"
                 >
                     {currencies.map((currency) => (
                         <option key={currency} value={currency} className="bg-indigo-600">
@@ -73,9 +74,9 @@ export const SwapSection: React.FC<{
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col p-8 my-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl shadow-2xl"
+            className="flex flex-col p-4 sm:p-8 my-4 sm:my-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl shadow-2xl"
         >
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
                 <CurrencySelect
                     value={selectedCurrencyPair.from || 'GHS'}
                     onChange={handleFromCurrencyChange}
@@ -84,7 +85,7 @@ export const SwapSection: React.FC<{
                 <motion.button
                     whileHover={{ scale: 1.1, rotate: 180 }}
                     whileTap={{ scale: 0.9 }}
-                    className="bg-white text-indigo-600 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="my-4 sm:my-0 bg-white text-indigo-600 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300"
                     onClick={() => onCurrencyPairSelect(selectedCurrencyPair.to, selectedCurrencyPair.from)}
                 >
                     <ArrowsUpDownIcon className="h-6 w-6" />
@@ -95,7 +96,7 @@ export const SwapSection: React.FC<{
                     label="To"
                 />
             </div>
-            <div className="bg-white/10 p-6 rounded-xl mb-6">
+            <div className="bg-white/10 p-4 sm:p-6 rounded-xl mb-6">
                 <label className="text-white/80 mb-2 block">You send</label>
                 <SwapInput
                     label="You send"
@@ -105,16 +106,14 @@ export const SwapSection: React.FC<{
                     currencies={currencies}
                     selectValue={selectedCurrencyPair.from || 'GHS'}
                     onCurrencyChange={handleFromCurrencyChange}
-                    onReset={() => {
-                        onAmountChange('');
-                        onCurrencyPairSelect('GHS', 'USDC');
-                    }}
+                    onReset={handleReset}
                 />
             </div>
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="mt-4 bg-emerald-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                className="mt-4 bg-emerald-400 text-white py-3 sm:py-4 px-6 sm:px-8 rounded-full font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={onReviewExchange}
             >
                 {Number(amount) > 0 ? "Review Exchange" : "Exchange"}
             </motion.button>

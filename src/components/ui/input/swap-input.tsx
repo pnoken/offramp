@@ -51,11 +51,11 @@ export const SwapInput: React.FC<SwapInputProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="py-6 px-6 relative w-full min-h-fit bg-white/10 flex flex-col items-center rounded-2xl border border-white/20 shadow-lg"
+            className="py-4 sm:py-6 px-4 sm:px-6 relative w-full min-h-fit bg-white/10 flex flex-col items-center rounded-2xl border border-white/20 shadow-lg"
         >
             <div className="flex items-center justify-between w-full font-medium mb-4 text-white/80">
                 <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold">{label}</span>
+                    <span className="text-xs sm:text-sm font-semibold">{label}</span>
                     {!isReadOnly && (
                         <motion.button
                             whileHover={{ scale: 1.1 }}
@@ -73,7 +73,7 @@ export const SwapInput: React.FC<SwapInputProps> = ({
 
                 <motion.button
                     whileHover={{ scale: 1.05 }}
-                    className="text-sm gap-1.5 flex items-center cursor-pointer text-white/80 hover:text-white transition-all duration-300"
+                    className="text-xs sm:text-sm gap-1.5 flex items-center cursor-pointer text-white/80 hover:text-white transition-all duration-300"
                     aria-label="Wallet Balance"
                 >
                     <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-xs relative top-[1px]" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -82,30 +82,26 @@ export const SwapInput: React.FC<SwapInputProps> = ({
                     0
                 </motion.button>
             </div>
-            <div className="flex items-center justify-between w-full">
-                <div className="relative flex items-center w-full">
-                    <div className="flex items-center bg-white/20 text-white py-2 px-3 rounded-lg transition-colors duration-300 hover:bg-white/30 mr-3">
-                        <Image
-                            src={`/images/currencies/${selectValue.toLowerCase()}.png`}
-                            alt={`${selectValue} logo`}
-                            width={24}
-                            height={24}
-                            className="rounded-full mr-2"
-                        />
-                        <span className="text-base font-semibold">{selectValue}</span>
-                    </div>
-                    <input
-                        type="text"
-                        placeholder={placeholder}
-                        value={displayValue}
-                        onChange={handleInputChange}
-                        readOnly={isReadOnly}
-                        className="flex-grow bg-transparent text-white font-semibold outline-none text-3xl"
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full">
+                <div className="flex items-center bg-white/20 text-white py-2 px-3 rounded-lg transition-colors duration-300 hover:bg-white/30 mb-2 sm:mb-0 sm:mr-3">
+                    <Image
+                        src={`/images/currencies/${selectValue.toLowerCase()}.png`}
+                        alt={`${selectValue} logo`}
+                        width={20}
+                        height={20}
+                        className="rounded-full mr-2"
                     />
+                    <span className="text-sm sm:text-base font-semibold">{selectValue}</span>
                 </div>
+                <input
+                    type="text"
+                    placeholder={placeholder}
+                    value={displayValue}
+                    onChange={handleInputChange}
+                    readOnly={isReadOnly}
+                    className="flex-grow bg-transparent text-white font-semibold outline-none text-xl sm:text-3xl w-full sm:w-auto text-right"
+                />
             </div>
-
-
         </motion.div>
     );
 };

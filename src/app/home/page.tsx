@@ -5,6 +5,7 @@ import Sidebar from '@/components/dashboard/sidebar';
 import Portfolio from '@/components/dashboard/content/portfolio';
 import Earnings from '@/components/dashboard/content/earning';
 import Exchange from '@/components/dashboard/content/exchange';
+import MobileSidebar from '@/components/dashboard/mobile-sidebar';
 
 const Dashboard: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
@@ -42,28 +43,29 @@ const Dashboard: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-            {/* Sidebar */}
-            <Sidebar
-                isOpen={isSidebarOpen}
-                toggleSidebar={toggleSidebar}
-                setActiveComponent={setActiveComponent}
-                isMobile={isMobile}
-            />
-
+        <div className="flex flex-col min-h-screen bg-gray-100">
             {/* Main Content Area */}
-            <div
-                className={`
-                    flex-1 transition-all duration-300 ease-in-out 
-                    ${isMobile ? 'w-full' : (isSidebarOpen ? 'md:ml-64' : 'md:ml-20')}
-                    p-4 md:p-8
-                `}
-            >
-                <div className="bg-gray-100 rounded-lg p-6 md:p-8">
-                    <h1 className="text-3xl font-bold mb-6 text-gray-800">{activeComponent}</h1>
-                    {renderContent()}
-                </div>
+            <div className="flex-1">
+                {renderContent()}
             </div>
+
+            {/* Sidebar for desktop */}
+            {!isMobile && (
+                <Sidebar
+                    isOpen={isSidebarOpen}
+                    toggleSidebar={toggleSidebar}
+                    setActiveComponent={setActiveComponent}
+                    isMobile={isMobile}
+                />
+            )}
+
+            {/* Mobile bottom bar */}
+            {isMobile && (
+                <MobileSidebar
+                    setActiveComponent={setActiveComponent}
+                    activeComponent={activeComponent}
+                />
+            )}
         </div>
     );
 };
