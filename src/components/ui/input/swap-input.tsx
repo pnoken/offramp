@@ -1,6 +1,8 @@
 import React, { ChangeEventHandler, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useAppSelector } from '@/hooks/use-app-dispatch';
+import { RootState } from '@/lib/store';
 
 interface SwapInputProps {
     label: string;
@@ -26,6 +28,13 @@ export const SwapInput: React.FC<SwapInputProps> = ({
     isReadOnly = false
 }) => {
     const [displayValue, setDisplayValue] = useState(value);
+    const [error, setError] = useState('');
+
+    // Get token balances from Redux store
+    const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
+
+    // Get the balance of the selected currency
+    const selectedBalance = tokenBalances.find(token => token.token === selectValue)?.amount || 0;
 
     useEffect(() => {
         setDisplayValue(formatNumber(value));
@@ -42,6 +51,13 @@ export const SwapInput: React.FC<SwapInputProps> = ({
         const parts = inputValue.split('.');
         if (parts.length > 2) return; // Prevent multiple decimal points
         if (parts[1] && parts[1].length > 2) return; // Limit to 2 decimal places
+
+        const numericValue = parseFloat(inputValue);
+        if (numericValue > selectedBalance) {
+            setError('Insufficient balance');
+        } else {
+            setError('');
+        }
 
         onChange(inputValue);
     };
@@ -79,7 +95,7 @@ export const SwapInput: React.FC<SwapInputProps> = ({
                     <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-xs relative top-[1px]" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                         <path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V192c0-35.3-28.7-64-64-64H80c-8.8 0-16-7.2-16-16s7.2-16 16-16H448c17.7 0 32-14.3 32-32s-14.3-32-32-32H64zM416 272a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
                     </svg>
-                    0
+                    {selectedBalance.toFixed(2)}
                 </motion.button>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full">
@@ -91,7 +107,15 @@ export const SwapInput: React.FC<SwapInputProps> = ({
                         height={20}
                         className="rounded-full mr-2"
                     />
-                    <span className="text-sm sm:text-base font-semibold">{selectValue}</span>
+                    <select
+                        value={selectValue}
+                        onChange={onCurrencyChange}
+                        className="bg-transparent text-sm sm:text-base font-semibold outline-none"
+                    >
+                        {currencies.map((currency) => (
+                            <option key={currency} value={currency}>{currency}</option>
+                        ))}
+                    </select>
                 </div>
                 <input
                     type="text"
@@ -102,6 +126,7 @@ export const SwapInput: React.FC<SwapInputProps> = ({
                     className="flex-grow bg-transparent text-white font-semibold outline-none text-xl sm:text-3xl w-full sm:w-auto text-right"
                 />
             </div>
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </motion.div>
     );
 };

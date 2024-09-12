@@ -1,7 +1,15 @@
 // src/store/walletSlice.js
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { DidDht } from '@web5/dids';
 import Cookies from 'js-cookie';
+
+// Define the structure for a token balance
+interface TokenBalance {
+    token: string;
+    amount: number;
+    usdRate: number;
+    image: string;
+}
 
 // Async thunk to create a new wallet
 export const createNewWallet = createAsyncThunk<
@@ -38,6 +46,7 @@ export const setUserCredentials = createAsyncThunk<
     }
 });
 
+// Extend the WalletState interface
 interface WalletState {
     portableDid: any | null; // Initial portable DID state
     did: string | null; // Initial DID URI state
@@ -45,6 +54,7 @@ interface WalletState {
     walletCreated: boolean; // State to confirm wallet creation
     error: string | null; // Error state
     userCredentials: string | null; // New property for user credentials
+    tokenBalances: TokenBalance[]; // New property for token balances
 }
 
 const initialState: WalletState = {
@@ -54,6 +64,14 @@ const initialState: WalletState = {
     walletCreated: false,
     error: null,
     userCredentials: Cookies.get('userCredentials') || null, // New initial value
+    tokenBalances: [
+        { token: 'USDC', amount: 100.50, usdRate: 1, image: `/images/currencies/usdc.png` },
+        { token: 'USDT', amount: 75.25, usdRate: 1, image: `/images/currencies/usdt.png` },
+        { token: 'GHS', amount: 500.00, usdRate: 0.0833, image: `/images/currencies/ghs.png` },
+        { token: 'KES', amount: 10000.00, usdRate: 0.00694, image: `/images/currencies/kes.png` },
+        { token: 'USD', amount: 500.00, usdRate: 1, image: `/images/currencies/usd.png` },
+        { token: 'NGN', amount: 10000.00, usdRate: 0.00060, image: `/images/currencies/ngn.png` }
+    ],
 };
 
 const walletSlice = createSlice({
@@ -66,10 +84,22 @@ const walletSlice = createSlice({
             state.isCreating = false;
             state.walletCreated = false;
             state.error = null;
+            state.tokenBalances = []; // Clear token balances
         },
         clearUserCredentials: (state) => {
             state.userCredentials = null;
             Cookies.remove('userCredentials');
+        },
+        updateTokenBalance: (state, action: PayloadAction<TokenBalance>) => {
+            const index = state.tokenBalances.findIndex(tb => tb.token === action.payload.token);
+            if (index !== -1) {
+                state.tokenBalances[index] = action.payload;
+            } else {
+                state.tokenBalances.push(action.payload);
+            }
+        },
+        removeTokenBalance: (state, action: PayloadAction<string>) => {
+            state.tokenBalances = state.tokenBalances.filter(tb => tb.token !== action.payload);
         },
     },
     extraReducers: (builder) => {
@@ -98,6 +128,11 @@ const walletSlice = createSlice({
     },
 });
 
-export const { clearWalletState, clearUserCredentials } = walletSlice.actions; // Export clear actions
+export const {
+    clearWalletState,
+    clearUserCredentials,
+    updateTokenBalance,
+    removeTokenBalance
+} = walletSlice.actions; // Export clear actions
 
 export default walletSlice.reducer;
