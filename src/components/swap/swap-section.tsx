@@ -1,8 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
+import { ArrowsUpDownIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { SwapInput } from "../ui/input/swap-input";
+import { Drawer } from "../ui/drawer";
 
 export const SwapSection: React.FC<{
     selectedCurrencyPair: { from: string; to: string };
@@ -11,6 +12,8 @@ export const SwapSection: React.FC<{
     onAmountChange: (value: string) => void;
     onReviewExchange: () => void;
 }> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange, onReviewExchange }) => {
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
     const handleReset = () => {
         onAmountChange('');
         onCurrencyPairSelect('GHS', 'USDC');
@@ -101,7 +104,15 @@ export const SwapSection: React.FC<{
                 />
             </div>
             <div className="bg-white/10 p-4 sm:p-6 rounded-xl mb-6">
-                <label className="text-white/80 mb-2 block">You send</label>
+                <div className="flex justify-between items-center mb-2">
+                    <label className="text-white/80">You send</label>
+                    <button
+                        className="text-white/80 hover:text-white"
+                        onClick={() => setIsDrawerOpen(true)}
+                    >
+                        <Cog6ToothIcon className="h-5 w-5" />
+                    </button>
+                </div>
                 <SwapInput
                     label="You send"
                     placeholder="0.00"
@@ -119,6 +130,10 @@ export const SwapSection: React.FC<{
             >
                 {Number(amount) > 0 ? "Review Exchange" : "Exchange"}
             </motion.button>
+
+            <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} ><div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+                Settings
+            </div></Drawer>
         </motion.div>
     );
 };
