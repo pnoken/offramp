@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Offering } from '@/types/offering';
@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import VerifiableCredentialsForm from '@/components/credentials/verifiable-credentials-form';
 import { createExchange } from '@/lib/exchange-slice';
+import { mockProviderDids } from '@/constants/mockDids';
+import { RootState } from '@/lib/store';
 
 interface OfferingDetailsProps {
     offering: Offering;
@@ -26,27 +28,35 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
 }) => {
     const dispatch = useAppDispatch();
     const [showCredentialsForm, setShowCredentialsForm] = useState(false);
+    const [error, setError] = useState('');
     const userCredentials = useAppSelector(state => state.wallet.userCredentials);
     const customerDid = useAppSelector(state => state.wallet.portableDid);
+    const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
 
-    const handleExchange = () => {
+    const selectedBalance = useMemo(() =>
+        tokenBalances.find(token => token.token === fromCurrency)?.amount || 0,
+        [tokenBalances, fromCurrency]);
+
+    const isBalanceInsufficient = useMemo(() => {
+        const numericAmount = parseFloat(amount);
+        if (numericAmount > selectedBalance) setError("You don't have enough funds to complete the transaction.")
+        return (numericAmount > selectedBalance)
+    }, [amount, selectedBalance]);
+
+    const handleExchange = useCallback(() => {
         if (!userCredentials) {
             setShowCredentialsForm(true);
         } else {
             performExchange();
         }
-    };
+    }, [userCredentials]);
 
-
-    console.log("did", customerDid);
-    console.log("user creds", userCredentials);
-
-    const handleCredentialsComplete = () => {
+    const handleCredentialsComplete = useCallback(() => {
         setShowCredentialsForm(false);
         performExchange();
-    };
+    }, []);
 
-    const performExchange = async () => {
+    const performExchange = useCallback(async () => {
         if (!userCredentials) {
             console.error('Customer DID or credentials not available');
             return;
@@ -69,9 +79,11 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
             onStartExchange();
         } catch (error) {
             console.error('Failed to create exchange:', error);
-            // Handle error (e.g., show error message to user)
+            setError('Failed to create exchange. Please try again.');
         }
-    };
+    }, [dispatch, offering, amount, customerDid, userCredentials, onStartExchange]);
+
+    const providerName = Object.values(mockProviderDids).find(p => p.uri === offering.metadata.from)?.name || offering.metadata.from;
 
     return (
         <motion.div
@@ -139,13 +151,17 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                             </div>
                             <div className="bg-white/10 p-4 rounded-xl mb-8">
                                 <p className="text-sm text-white/80 mb-2">Provider</p>
-                                <p className="text-lg font-semibold text-white">{offering.metadata.from}</p>
+                                <p className="text-lg font-semibold text-white">{providerName}</p>
                             </div>
+                            {error && <div className="bg-red-500/10 p-4 rounded-xl mb-8">
+                                <p className="text-lg font-semibold text-white">{error}</p>
+                            </div>}
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleExchange}
-                                className="bg-emerald-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                                disabled={isBalanceInsufficient}
+                                className="bg-emerald-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Start Exchange
                             </motion.button>
