@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
-import { Drawer } from '@/components/ui/drawer';
+import { Drawer } from '@/components/ui/drawer/drawer';
 import { useRouter } from 'next/navigation';
 import { createNewWallet } from '@/lib/wallet-slice';
 import Spinner from '@/components/spinner';

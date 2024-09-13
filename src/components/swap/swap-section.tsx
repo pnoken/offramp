@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import { ArrowsUpDownIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { SwapInput } from "../ui/input/swap-input";
-import { Drawer } from "../ui/drawer";
+import { Drawer } from "../ui/drawer/drawer";
+import { DialogTitle } from "@headlessui/react";
 
 export const SwapSection: React.FC<{
     selectedCurrencyPair: { from: string; to: string };
@@ -19,7 +20,7 @@ export const SwapSection: React.FC<{
         onCurrencyPairSelect('GHS', 'USDC');
     };
 
-    const currencies = ["GHS", "USDC", "KES", "USD", "NGN"];
+    const currencies = ["GHS", "USDC", "KES", "USD", "NGN", "GBP", "EUR"];
 
     useEffect(() => {
         if (!selectedCurrencyPair.from && !selectedCurrencyPair.to) {
@@ -53,7 +54,7 @@ export const SwapSection: React.FC<{
                     className="w-full appearance-none bg-white/20 text-white py-3 sm:py-4 pl-12 pr-10 rounded-lg outline-none transition-colors duration-300 hover:bg-white/30 text-base sm:text-lg font-semibold"
                 >
                     {currencies.map((currency) => (
-                        <option key={currency} value={currency} className="bg-indigo-600">
+                        <option key={currency} value={currency} className="bg-indigo-600 flex items-center">
                             {currency}
                         </option>
                     ))}
@@ -132,7 +133,35 @@ export const SwapSection: React.FC<{
             </motion.button>
 
             <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} ><div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
-                Settings
+                <div className="flex flex-col p-4">
+                    <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-4">
+                        Exchange Settings
+                    </DialogTitle>
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="exchangePreference" className="block text-sm font-medium text-gray-700">
+                                Exchange Preference
+                            </label>
+                            <select
+                                id="exchangePreference"
+                                name="exchangePreference"
+                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                defaultValue="bestReturns"
+                            >
+                                <option value="bestReturns">Best Returns</option>
+                                <option value="fastestRoute">Fastest Route</option>
+                                <option value="highestRated">Highest Rated</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className="mt-5 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                        onClick={() => setIsDrawerOpen(false)}
+                    >
+                        Apply Settings
+                    </button>
+                </div>
             </div></Drawer>
         </motion.div>
     );

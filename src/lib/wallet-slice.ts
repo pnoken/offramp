@@ -23,12 +23,8 @@ export const createNewWallet = createAsyncThunk<
         const did = didDht.uri;
         const portableDid = await didDht.export(); // Export portable DID
 
-        // Create a safe version of portableDid without private keys
-        // const safeDid = {
-        //     uri: portableDid.uri,
-        //     document: portableDid.document,
-        //     metadata: portableDid.metadata
-        // };
+        //Temporarily set customer Did (whilst finding a sln to decode Did)
+        localStorage.setItem("customerDid", JSON.stringify(portableDid));
 
         // Encode the safe version of the DID
         const encodedDid = await encodeJWT(portableDid);
@@ -69,7 +65,7 @@ interface WalletState {
 const storedDid = localStorage.getItem('customerDid');
 
 const initialState: WalletState = {
-    portableDid: null,
+    portableDid: storedDid ? JSON.parse(storedDid) : null,
     did: null,
     isCreating: false,
     walletCreated: false,
@@ -81,7 +77,9 @@ const initialState: WalletState = {
         { token: 'GHS', amount: 500.00, usdRate: 0.0833, image: `/images/currencies/ghs.png` },
         { token: 'KES', amount: 10000.00, usdRate: 0.00694, image: `/images/currencies/kes.png` },
         { token: 'USD', amount: 500.00, usdRate: 1, image: `/images/currencies/usd.png` },
-        { token: 'NGN', amount: 10000.00, usdRate: 0.00060, image: `/images/currencies/ngn.png` }
+        { token: 'NGN', amount: 10000.00, usdRate: 0.00060, image: `/images/currencies/ngn.png` },
+        { token: 'GBP', amount: 300.00, usdRate: 1.315, image: `/images/currencies/gbp.png` },
+        { token: 'EUR', amount: 350.00, usdRate: 1.110, image: `/images/currencies/eur.png` }
     ],
 };
 
@@ -103,7 +101,6 @@ export const initializeWallet = createAsyncThunk(
         return null;
     }
 );
-}
 
 const walletSlice = createSlice({
     name: 'wallet',
