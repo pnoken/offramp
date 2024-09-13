@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
-import { Drawer } from '@/components/ui/drawer';
+import { Drawer } from '@/components/ui/drawer/drawer';
 import { useRouter } from 'next/navigation';
 import { createNewWallet } from '@/lib/wallet-slice';
 import Spinner from '@/components/spinner';
 import { motion } from 'framer-motion';
+import { XMarkIcon, KeyIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline'
+import { DialogTitle } from '@headlessui/react'
 
 export default function WebWallet() {
   const dispatch = useAppDispatch();
@@ -29,6 +31,14 @@ export default function WebWallet() {
   if (walletCreated) router.push("/account/new-did");
 
   const handleCreateNewWallet = () => dispatch(createNewWallet());
+
+  const handleImport = (type: 'privateKey' | 'json') => {
+    // Store the import type in localStorage
+    localStorage.setItem('importType', type);
+    // Navigate to password creation page
+    router.push('/password/create');
+    setIsOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4">
@@ -86,7 +96,47 @@ export default function WebWallet() {
           </div>
         </div>
       </motion.div>
-      <Drawer isOpen={isOpen} setIsOpen={setIsOpen} />
+      <Drawer isOpen={isOpen} setIsOpen={setIsOpen}>
+        <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+          <div className="px-4 sm:px-6 py-6">
+            <div className="flex items-start justify-between">
+              <DialogTitle className="text-lg font-semibold text-gray-900">
+                Import Account
+              </DialogTitle>
+              <div className="ml-3 flex h-7 items-center">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                  <span className="sr-only">Close panel</span>
+                  <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+            <div className="mt-8 space-y-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={() => handleImport('privateKey')}
+              >
+                <KeyIcon className="h-5 w-5" />
+                Import with Private Key
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={() => handleImport('json')}
+              >
+                <DocumentArrowUpIcon className="h-5 w-5" />
+                Import from DID (JSON)
+              </motion.button>
+            </div>
+          </div>
+
+        </div>
+      </Drawer>
       <p className="absolute bottom-4 left-4 text-sm text-gray-500">Web Wallet v 1.00</p>
     </div>
   )

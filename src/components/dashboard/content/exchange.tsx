@@ -10,6 +10,8 @@ import { createExchange } from '@/lib/exchange-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import OfferingDetails from '@/components/offerings/offering-details';
+import { CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 //import { Offering as TbdexOffering } from '@/types/offering';
 import { Offering as TbdexOffering } from '@tbdex/http-client';
 
@@ -26,12 +28,34 @@ const Exchange: React.FC = () => {
     const [selectedOfferingId, setSelectedOfferingId] = useState<string | null>(null);
     const [showOfferingDetails, setShowOfferingDetails] = useState(false);
     const [selectedOffering, setSelectedOffering] = useState<TbdexOffering | null>(null);
+    const [timeLeft, setTimeLeft] = useState(42000);
 
     useEffect(() => {
-        if (selectedCurrencyPair.from && selectedCurrencyPair.to && amount) {
+        if (Number(amount) > 0) {
             dispatch(fetchOfferings({ from: selectedCurrencyPair.from, to: selectedCurrencyPair.to }));
         }
-    }, [selectedCurrencyPair, amount, dispatch]);
+    }, [amount, selectedCurrencyPair, dispatch]);
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (matchedOfferings.length > 0) {
+            setTimeLeft(42000);
+            timer = setInterval(() => {
+                setTimeLeft((prevTime) => {
+                    if (prevTime <= 0) {
+                        clearInterval(timer);
+                        dispatch(fetchOfferings({ from: selectedCurrencyPair.from, to: selectedCurrencyPair.to }));
+                        return 42000;
+                    }
+                    return prevTime - 1000;
+                });
+            }, 1000);
+        }
+
+        return () => {
+            if (timer) clearInterval(timer);
+        };
+    }, [matchedOfferings, dispatch, selectedCurrencyPair]);
 
     const handleCurrencyPairSelect = (from: string, to: string) => {
         setSelectedCurrencyPair({ from, to });
@@ -81,11 +105,16 @@ const Exchange: React.FC = () => {
                 >
                     <div className="flex flex-row justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold text-white">You&apos;ll Receive</h2>
-                        <div className="relative">
-                            <InformationCircleIcon className="h-6 w-6 text-white cursor-pointer" />
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg p-2 text-sm text-gray-700 hidden group-hover:block">
-                                Exchange rate and fees may vary
-                            </div>
+                        <div className="w-10 h-10">
+                            <CircularProgressbar
+                                value={timeLeft}
+                                maxValue={42000}
+                                text={`${Math.ceil(timeLeft / 1000)}s`}
+                                styles={{
+                                    path: { stroke: '#ffffff' },
+                                    text: { fill: '#ffffff', fontSize: '30px' },
+                                }}
+                            />
                         </div>
                     </div>
                     <motion.div

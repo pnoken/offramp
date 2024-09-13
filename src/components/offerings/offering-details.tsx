@@ -8,6 +8,8 @@ import VerifiableCredentialsForm from '@/components/credentials/verifiable-crede
 import { createExchange } from '@/lib/exchange-slice';
 import { mockProviderDids } from '@/constants/mockDids';
 import { RootState } from '@/lib/store';
+import { decodeJWT } from '@/utils/jwt';
+import Cookies from 'js-cookie';
 
 interface OfferingDetailsProps {
     offering: Offering;
@@ -44,7 +46,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     }, [amount, selectedBalance]);
 
     const performExchange = useCallback(async () => {
-        if (!userCredentials) {
+        if (!userCredentials || !customerDid) {
             console.error('Customer DID or credentials not available');
             return;
         }

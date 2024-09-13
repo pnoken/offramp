@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { DidDht } from '@web5/dids';
 import Cookies from 'js-cookie';
-
+import { encodeJWT, decodeJWT } from '@/utils/jwt';
 // Define the structure for a token balance
 interface TokenBalance {
     token: string;
@@ -23,11 +23,16 @@ export const createNewWallet = createAsyncThunk<
         const did = didDht.uri;
         const portableDid = await didDht.export(); // Export portable DID
 
-        // Store the DID in local storage
-        localStorage.setItem('customerDid', JSON.stringify(portableDid));
+        //Temporarily set customer Did (whilst finding a sln to decode Did)
+        localStorage.setItem("customerDid", JSON.stringify(portableDid));
+
+        // Encode the safe version of the DID
+        const encodedDid = await encodeJWT(portableDid);
+        Cookies.set('customerDid', encodedDid, { expires: 10 }); // Expires in 10 days
 
         return { portableDid, did }; // Return DID for further state management
     } catch (error) {
+        console.error('Error creating wallet:', error);
         return thunkAPI.rejectWithValue('Failed to create a new wallet'); // Handle errors
     }
 });
@@ -72,9 +77,30 @@ const initialState: WalletState = {
         { token: 'GHS', amount: 500.00, usdRate: 0.0833, image: `/images/currencies/ghs.png` },
         { token: 'KES', amount: 10000.00, usdRate: 0.00694, image: `/images/currencies/kes.png` },
         { token: 'USD', amount: 500.00, usdRate: 1, image: `/images/currencies/usd.png` },
-        { token: 'NGN', amount: 10000.00, usdRate: 0.00060, image: `/images/currencies/ngn.png` }
+        { token: 'NGN', amount: 10000.00, usdRate: 0.00060, image: `/images/currencies/ngn.png` },
+        { token: 'GBP', amount: 300.00, usdRate: 1.315, image: `/images/currencies/gbp.png` },
+        { token: 'EUR', amount: 350.00, usdRate: 1.110, image: `/images/currencies/eur.png` }
     ],
 };
+
+// Add this function to initialize the state
+export const initializeWallet = createAsyncThunk(
+    'wallet/initializeWallet',
+    async (_, thunkAPI) => {
+        const storedDid = Cookies.get('customerDid');
+        if (storedDid) {
+            try {
+                const decodedDid = await decodeJWT(storedDid);
+                if (decodedDid) {
+                    return { portableDid: decodedDid, did: decodedDid.uri };
+                }
+            } catch (error) {
+                console.error('Failed to decode stored DID:', error);
+            }
+        }
+        return null;
+    }
+);
 
 const walletSlice = createSlice({
     name: 'wallet',
@@ -87,6 +113,7 @@ const walletSlice = createSlice({
             state.walletCreated = false;
             state.error = null;
             state.tokenBalances = []; // Clear token balances
+            Cookies.remove('customerDid');
         },
         clearUserCredentials: (state) => {
             state.userCredentials = null;
@@ -106,15 +133,15 @@ const walletSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(createNewWallet.pending, (state) => {
-                state.isCreating = true; // Set creating state to true
-                state.error = null;
-            })
             .addCase(createNewWallet.fulfilled, (state, action) => {
                 state.isCreating = false;
-                state.walletCreated = true; // Wallet successfully created
-                state.portableDid = action.payload.portableDid; // Store portable DID in state
-                state.did = action.payload.did; // Store DID URI in state
+                state.walletCreated = true;
+                state.portableDid = action.payload.portableDid;
+                state.did = action.payload.did;
+                // Encode and store the DID
+                encodeJWT(action.payload.portableDid).then(encodedDid => {
+                    Cookies.set('customerDid', encodedDid, { expires: 10 }); // Expires in 10 days
+                });
             })
             .addCase(createNewWallet.rejected, (state, action) => {
                 state.isCreating = false;
@@ -126,7 +153,15 @@ const walletSlice = createSlice({
             })
             .addCase(setUserCredentials.rejected, (state, action) => {
                 state.error = action.payload ?? null;
-            });
+            })
+            .addCase(initializeWallet.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.portableDid = action.payload.portableDid;
+                    state.did = action.payload.did;
+                    state.walletCreated = true;
+                }
+            })
+
     },
 });
 
