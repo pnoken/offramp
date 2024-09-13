@@ -17,7 +17,7 @@ export const createExchange = createAsyncThunk<any, {
             console.log("customer credentials", customerCredentials);
             // Select credentials required for the exchange
             const selectedCredentials = PresentationExchange.selectCredentials({
-                vcJwts: customerCredentials, //As JWT token
+                vcJwts: customerCredentials,
                 presentationDefinition: offering.data.requiredClaims,
             });
 

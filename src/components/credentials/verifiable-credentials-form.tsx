@@ -13,7 +13,7 @@ const VerifiableCredentialsForm: React.FC<VerifiableCredentialsFormProps> = ({ o
     const [isLoading, setIsLoading] = useState(false);
 
     // Get customerDID from localStorage or state
-    const customerDID = JSON.parse(localStorage.getItem('customerDid') || '{}').uri;
+    const customerDID = useAppSelector((state) => state.wallet.did)
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
@@ -27,8 +27,9 @@ const VerifiableCredentialsForm: React.FC<VerifiableCredentialsFormProps> = ({ o
                 throw new Error('Failed to fetch credentials');
             }
 
-            const token = await response.text(); // Get the response as text
-            await dispatch(setUserCredentials(token)).unwrap(); // Pass the token directly
+
+            const token = await response.text();
+            await dispatch(setUserCredentials(token));
             onComplete();
         } catch (error) {
             console.error('Failed to set credentials:', error);

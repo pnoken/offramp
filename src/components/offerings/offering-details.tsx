@@ -8,8 +8,6 @@ import VerifiableCredentialsForm from '@/components/credentials/verifiable-crede
 import { createExchange } from '@/lib/exchange-slice';
 import { mockProviderDids } from '@/constants/mockDids';
 import { RootState } from '@/lib/store';
-import { decodeJWT } from '@/utils/jwt';
-import Cookies from 'js-cookie';
 
 interface OfferingDetailsProps {
     offering: Offering;
@@ -31,9 +29,8 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     const dispatch = useAppDispatch();
     const [showCredentialsForm, setShowCredentialsForm] = useState(false);
     const [error, setError] = useState('');
-    const userCredentials = useAppSelector(state => state.wallet.userCredentials);
+    const { customerCredentials, tokenBalances } = useAppSelector(state => state.wallet);
     const customerDid = useAppSelector(state => state.wallet.portableDid);
-    const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
 
     const selectedBalance = useMemo(() =>
         tokenBalances.find(token => token.token === fromCurrency)?.amount || 0,
@@ -46,8 +43,8 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     }, [amount, selectedBalance]);
 
     const performExchange = useCallback(async () => {
-        if (!userCredentials || !customerDid) {
-            console.error('Customer DID or credentials not available');
+        if (customerCredentials.length === 0) {
+            setError('Customer DID or credentials not available');
             return;
         }
 
@@ -61,7 +58,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                 amount,
                 payoutPaymentDetails,
                 customerDid,
-                customerCredentials: userCredentials
+                customerCredentials
             })).unwrap();
 
             console.log('Exchange created:', result);
@@ -70,15 +67,15 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
             console.error('Failed to create exchange:', error);
             setError('Failed to create exchange. Please try again.');
         }
-    }, [dispatch, offering, amount, customerDid, userCredentials, onStartExchange]);
+    }, [dispatch, offering, amount, customerDid, customerCredentials, onStartExchange]);
 
     const handleExchange = useCallback(() => {
-        if (!userCredentials) {
+        if (customerCredentials.length === 0) {
             setShowCredentialsForm(true);
         } else {
             performExchange();
         }
-    }, [userCredentials, performExchange]);
+    }, [customerCredentials, performExchange]);
 
     const handleCredentialsComplete = useCallback(() => {
         setShowCredentialsForm(false);

@@ -68,6 +68,7 @@ interface WalletState {
 }
 
 const storedDid = localStorage.getItem('customerDid');
+const storedCredentials = localStorage.getItem('customerCredentials');
 
 const initialState: WalletState = {
     portableDid: storedDid ? JSON.parse(storedDid) : null,
@@ -75,7 +76,7 @@ const initialState: WalletState = {
     isCreating: false,
     walletCreated: false,
     error: null,
-    customerCredentials: JSON.parse(localStorage.getItem('customerCredentials') || '[]'),
+    customerCredentials: storedCredentials ? JSON.parse(storedCredentials) : '[]',
     tokenBalances: [
         { token: 'USDC', amount: 100.50, usdRate: 1, image: `/images/currencies/usdc.png` },
         { token: 'USDT', amount: 75.25, usdRate: 1, image: `/images/currencies/usdt.png` },
