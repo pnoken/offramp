@@ -3,6 +3,9 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { DidDht } from '@web5/dids';
 import Cookies from 'js-cookie';
 import { encodeJWT, decodeJWT } from '@/utils/jwt';
+import { VerifiableCredential } from '@web5/credentials';
+import { RootState } from './store';
+
 // Define the structure for a token balance
 interface TokenBalance {
     token: string;
@@ -39,13 +42,15 @@ export const createNewWallet = createAsyncThunk<
 
 // Add this new async thunk
 export const setUserCredentials = createAsyncThunk<
-    string,
-    string,
-    { rejectValue: string }
->('wallet/setUserCredentials', async (credentials, thunkAPI) => {
+    VerifiableCredential[],
+    VerifiableCredential,
+    { state: RootState, rejectValue: string }
+>('wallet/setUserCredentials', async (credential, thunkAPI) => {
     try {
-        Cookies.set('userCredentials', credentials);
-        return credentials;
+        const state = thunkAPI.getState().wallet;
+        const updatedCredentials = [...state.customerCredentials, credential];
+        localStorage.setItem('customerCredentials', JSON.stringify(updatedCredentials));
+        return updatedCredentials;
     } catch (error) {
         return thunkAPI.rejectWithValue('Failed to set user credentials');
     }
@@ -58,7 +63,7 @@ interface WalletState {
     isCreating: boolean; // State for creating process
     walletCreated: boolean; // State to confirm wallet creation
     error: string | null; // Error state
-    userCredentials: string | null; // New property for user credentials
+    customerCredentials: VerifiableCredential[];
     tokenBalances: TokenBalance[]; // New property for token balances
 }
 
@@ -70,7 +75,7 @@ const initialState: WalletState = {
     isCreating: false,
     walletCreated: false,
     error: null,
-    userCredentials: Cookies.get('userCredentials') || null, // New initial value
+    customerCredentials: JSON.parse(localStorage.getItem('customerCredentials') || '[]'),
     tokenBalances: [
         { token: 'USDC', amount: 100.50, usdRate: 1, image: `/images/currencies/usdc.png` },
         { token: 'USDT', amount: 75.25, usdRate: 1, image: `/images/currencies/usdt.png` },
@@ -87,15 +92,15 @@ const initialState: WalletState = {
 export const initializeWallet = createAsyncThunk(
     'wallet/initializeWallet',
     async (_, thunkAPI) => {
-        const storedDid = Cookies.get('customerDid');
+        const storedDid = localStorage.getItem('customerDid');
         if (storedDid) {
             try {
-                const decodedDid = await decodeJWT(storedDid);
-                if (decodedDid) {
-                    return { portableDid: decodedDid, did: decodedDid.uri };
+                const customerDid = await DidDht.import({ portableDid: JSON.parse(storedDid) });
+                if (customerDid) {
+                    return customerDid
                 }
             } catch (error) {
-                console.error('Failed to decode stored DID:', error);
+                console.error('Failed to find stored DID:', error);
             }
         }
         return null;
@@ -116,8 +121,8 @@ const walletSlice = createSlice({
             Cookies.remove('customerDid');
         },
         clearUserCredentials: (state) => {
-            state.userCredentials = null;
-            Cookies.remove('userCredentials');
+            state.customerCredentials = [];
+            localStorage.removeItem('customerCredentials');
         },
         updateTokenBalance: (state, action: PayloadAction<TokenBalance>) => {
             const index = state.tokenBalances.findIndex(tb => tb.token === action.payload.token);
@@ -149,16 +154,16 @@ const walletSlice = createSlice({
                 state.error = action.payload ?? null; // Store error message
             })
             .addCase(setUserCredentials.fulfilled, (state, action) => {
-                state.userCredentials = action.payload;
+                state.customerCredentials = action.payload;
             })
             .addCase(setUserCredentials.rejected, (state, action) => {
                 state.error = action.payload ?? null;
             })
             .addCase(initializeWallet.fulfilled, (state, action) => {
                 if (action.payload) {
-                    state.portableDid = action.payload.portableDid;
-                    state.did = action.payload.did;
-                    state.walletCreated = true;
+                    state.portableDid = action.payload,
+                        state.did = action.payload.uri,
+                        state.walletCreated = true;
                 }
             })
 

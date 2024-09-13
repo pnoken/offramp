@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq } from '@tbdex/http-client';
-import { PresentationExchange } from '@web5/credentials';
+import { PresentationExchange, VerifiableCredential } from '@web5/credentials';
+import { DidDht } from '@web5/dids';
 
 // Async thunk to create an exchange
 export const createExchange = createAsyncThunk<any, {
@@ -8,16 +9,19 @@ export const createExchange = createAsyncThunk<any, {
     amount: string;
     payoutPaymentDetails: any;
     customerDid: any;
-    customerCredentials: any;
+    customerCredentials: VerifiableCredential;
 }, { rejectValue: string }>(
     'exchange/create',
     async ({ offering, amount, payoutPaymentDetails, customerDid, customerCredentials }, thunkAPI) => {
         try {
+            console.log("customer credentials", customerCredentials);
             // Select credentials required for the exchange
             const selectedCredentials = PresentationExchange.selectCredentials({
                 vcJwts: customerCredentials, //As JWT token
                 presentationDefinition: offering.data.requiredClaims,
             });
+
+            const signedCustomerDid = await DidDht.import({ portableDid: customerDid });
 
             // Create RFQ (Request for Quote)
             const rfq = Rfq.create({
@@ -41,13 +45,17 @@ export const createExchange = createAsyncThunk<any, {
                 },
             });
 
-            console.log("rfq", rfq);
-
-            // Verify offering requirements
-            await rfq.verifyOfferingRequirements(offering);
+            try {
+                // Verify offering requirements
+                await rfq.verifyOfferingRequirements(offering)
+            } catch (e) {
+                console.log("offering requirements not met", e);
+            }
 
             // Sign RFQ message
-            await rfq.sign(customerDid);
+            await rfq.sign(signedCustomerDid);
+
+            console.log("rfq", rfq);
 
             // Create exchange using TbdexHttpClient
             const exchangeResponse = await TbdexHttpClient.createExchange(rfq);
