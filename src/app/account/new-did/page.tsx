@@ -81,10 +81,10 @@ const NewSeedPhrase: React.FC = () => {
                             <h3 className="text-2xl font-semibold mb-4 text-gray-800">What is a portable DID?</h3>
                             <p className="text-gray-600 mb-4">
                                 A portable DID (Decentralized Identifier) is like a digital passport for your online identity.
-                                It's a unique string of characters that represents you in the decentralized web.
+                                It&apos;s a unique string of characters that represents you in the decentralized web.
                             </p>
                             <p className="text-gray-600 mb-6">
-                                It's safe to use with Fiatsend wallet. Your DID is stored locally and never leaves your
+                                It&apos;s safe to use with Fiatsend wallet. Your DID is stored locally and never leaves your
                                 device without your explicit permission.
                             </p>
                             <div className="flex items-center justify-center">

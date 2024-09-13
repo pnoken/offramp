@@ -2,14 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq } from '@tbdex/http-client';
 import { PresentationExchange } from '@web5/credentials';
 
-// Helper function to serialize an Offering
-const serializeOffering = (offering: any) => ({
-    metadata: offering.metadata,
-    data: offering.data,
-    id: offering.id,
-    // Add any other necessary serializable properties
-});
-
 // Async thunk to create an exchange
 export const createExchange = createAsyncThunk<any, {
     offering: any;
@@ -35,7 +27,7 @@ export const createExchange = createAsyncThunk<any, {
                     protocol: '1.0',
                 },
                 data: {
-                    offeringId: offering.id,
+                    offeringId: offering.metadata.id,
                     payin: {
                         amount: amount,
                         kind: offering.data.payin.methods[0].kind,
@@ -49,6 +41,8 @@ export const createExchange = createAsyncThunk<any, {
                 },
             });
 
+            console.log("rfq", rfq);
+
             // Verify offering requirements
             await rfq.verifyOfferingRequirements(offering);
 
@@ -58,13 +52,8 @@ export const createExchange = createAsyncThunk<any, {
             // Create exchange using TbdexHttpClient
             const exchangeResponse = await TbdexHttpClient.createExchange(rfq);
 
-            const responseObject = typeof exchangeResponse === 'object' ? exchangeResponse : {};
+            return exchangeResponse;
 
-            // Return a serialized version of the response
-            return {
-                ...responseObject,
-                offering: serializeOffering(offering),
-            };
         } catch (error) {
             console.error('Failed to create exchange', error);
             return thunkAPI.rejectWithValue('Failed to create exchange');

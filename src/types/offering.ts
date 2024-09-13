@@ -1,3 +1,5 @@
+import { PayoutMethod, PayinMethod } from '@tbdex/protocol';
+
 interface Offering {
     metadata: {
         from: string;
@@ -11,18 +13,11 @@ interface Offering {
         payoutUnitsPerPayinUnit: string;
         payout: {
             currencyCode: string;
-            methods: Array<{
-                kind: string;
-                estimatedSettlementTime?: number;
-                requiredPaymentDetails: any;
-            }>;
+            methods: PayoutMethod[];
         };
         payin: {
             currencyCode: string;
-            methods: Array<{
-                kind: string;
-                requiredPaymentDetails: any;
-            }>;
+            methods: PayinMethod[];
         };
         requiredClaims: {
             id: string;

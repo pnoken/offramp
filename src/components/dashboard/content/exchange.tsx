@@ -10,8 +10,8 @@ import { createExchange } from '@/lib/exchange-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import OfferingDetails from '@/components/offerings/offering-details';
-import { Offering as TbdexOffering } from '@/types/offering';
-
+//import { Offering as TbdexOffering } from '@/types/offering';
+import { Offering as TbdexOffering } from '@tbdex/http-client';
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -93,7 +93,7 @@ const Exchange: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        {matchedOfferings.map((offering: TbdexOffering, index: number) => (
+                        {matchedOfferings.map((offering, index: number) => (
                             <OfferingSection
                                 key={offering.metadata.id}
                                 offering={offering as any}
@@ -110,7 +110,7 @@ const Exchange: React.FC = () => {
     if (showOfferingDetails) {
         return (
             <OfferingDetails
-                offering={selectedOffering!}
+                offering={selectedOffering as TbdexOffering}
                 fromCurrency={selectedCurrencyPair.from}
                 toCurrency={selectedCurrencyPair.to}
                 amount={amount}

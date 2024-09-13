@@ -57,8 +57,10 @@ interface WalletState {
     tokenBalances: TokenBalance[]; // New property for token balances
 }
 
+const storedDid = localStorage.getItem('customerDid');
+
 const initialState: WalletState = {
-    portableDid: localStorage.getItem('customerDid'),
+    portableDid: storedDid ? JSON.parse(storedDid) : null,
     did: null,
     isCreating: false,
     walletCreated: false,

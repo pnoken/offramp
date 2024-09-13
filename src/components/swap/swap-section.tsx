@@ -22,7 +22,7 @@ export const SwapSection: React.FC<{
         if (!selectedCurrencyPair.from && !selectedCurrencyPair.to) {
             onCurrencyPairSelect('GHS', 'USDC');
         }
-    }, []);
+    }, [selectedCurrencyPair.from, selectedCurrencyPair.to, onCurrencyPairSelect]);
 
     const handleFromCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onCurrencyPairSelect(e.target.value, selectedCurrencyPair.to);
@@ -36,7 +36,11 @@ export const SwapSection: React.FC<{
         onAmountChange(value);
     };
 
-    const CurrencySelect = ({ value, onChange, label }) => (
+    const CurrencySelect: React.FC<{
+        value: string;
+        onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+        label: string;
+    }> = ({ value, onChange, label }) => (
         <div className="flex flex-col w-full sm:w-2/5 mb-4 sm:mb-0">
             <label className="text-white/80 mb-2">{label}</label>
             <div className="relative">
@@ -103,9 +107,7 @@ export const SwapSection: React.FC<{
                     placeholder="0.00"
                     value={amount}
                     onChange={handleAmountChange}
-                    currencies={currencies}
                     selectValue={selectedCurrencyPair.from || 'GHS'}
-                    onCurrencyChange={handleFromCurrencyChange}
                     onReset={handleReset}
                 />
             </div>

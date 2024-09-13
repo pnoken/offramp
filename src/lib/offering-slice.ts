@@ -4,13 +4,51 @@ import { mockProviderDids } from '@/constants/mockDids';
 
 // Define the state type
 interface OfferingsState {
-    matchedOfferings: Offering[];
+    matchedOfferings: SerializedOffering[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
 }
 
+// Define a type for the serialized offering
+interface SerializedOffering {
+    metadata: {
+        from: string;
+        protocol: string;
+        kind: string;
+        id: string;
+        createdAt: string;
+    };
+    data: {
+        description: string;
+        payoutUnitsPerPayinUnit: string;
+        payout: any; // Consider creating a more specific type if possible
+        payin: any; // Consider creating a more specific type if possible
+        requiredClaims: any; // Consider creating a more specific type if possible
+    };
+    signature: string;
+}
+
+// Helper function to serialize an Offering
+const serializeOffering = (offering: Offering): SerializedOffering => ({
+    metadata: {
+        from: offering.metadata.from,
+        protocol: offering.metadata.protocol,
+        kind: offering.metadata.kind,
+        id: offering.metadata.id,
+        createdAt: offering.metadata.createdAt,
+    },
+    data: {
+        description: offering.data.description,
+        payoutUnitsPerPayinUnit: offering.data.payoutUnitsPerPayinUnit,
+        payout: offering.data.payout,
+        payin: offering.data.payin,
+        requiredClaims: offering.data.requiredClaims,
+    },
+    signature: offering.signature ?? '',
+});
+
 // Async thunk to fetch and filter offerings
-export const fetchOfferings = createAsyncThunk<Offering[], { from: string; to: string }, { rejectValue: string }>(
+export const fetchOfferings = createAsyncThunk<SerializedOffering[], { from: string; to: string }, { rejectValue: string }>(
     'offerings/fetchOfferings',
     async ({ from, to }, thunkAPI) => {
         try {
@@ -19,12 +57,13 @@ export const fetchOfferings = createAsyncThunk<Offering[], { from: string; to: s
                 const offerings = await TbdexHttpClient.getOfferings({ pfiDid: pfi.uri });
                 allOfferings.push(...offerings);
             }
-            // Filter offerings based on the currency pair
-            return allOfferings.filter(
-                (offering) =>
+            // Filter offerings based on the currency pair and serialize them
+            return allOfferings
+                .filter(offering =>
                     offering.data.payin.currencyCode === from &&
                     offering.data.payout.currencyCode === to
-            );
+                )
+                .map(serializeOffering);
         } catch (error) {
             return thunkAPI.rejectWithValue('Cannot fetch offerings');
         }
@@ -46,7 +85,7 @@ const offeringsSlice = createSlice({
             .addCase(fetchOfferings.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(fetchOfferings.fulfilled, (state, action: PayloadAction<Offering[]>) => {
+            .addCase(fetchOfferings.fulfilled, (state, action: PayloadAction<SerializedOffering[]>) => {
                 state.status = 'succeeded';
                 state.matchedOfferings = action.payload;
             })

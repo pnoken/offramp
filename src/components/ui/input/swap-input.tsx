@@ -3,29 +3,26 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useAppSelector } from '@/hooks/use-app-dispatch';
 import { RootState } from '@/lib/store';
+import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 interface SwapInputProps {
     label: string;
     placeholder: string;
     value: string;
-    currencies: Array<string>;
     selectValue: string;
     onReset: () => void;
-    onCurrencyChange: ChangeEventHandler<HTMLSelectElement>
     onChange: (value: string) => void;
     isReadOnly?: boolean;
 }
 
 export const SwapInput: React.FC<SwapInputProps> = ({
     label,
-    onCurrencyChange,
     selectValue,
-    currencies,
     placeholder,
     onChange,
     value,
     onReset,
-    isReadOnly = false
+    isReadOnly = false,
 }) => {
     const [displayValue, setDisplayValue] = useState(value);
     const [error, setError] = useState('');
@@ -99,7 +96,10 @@ export const SwapInput: React.FC<SwapInputProps> = ({
                 </motion.button>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full">
-                <div className="flex items-center bg-white/20 text-white py-2 px-3 rounded-lg transition-colors duration-300 hover:bg-white/30 mb-2 sm:mb-0 sm:mr-3">
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center bg-white/20 text-white py-2 px-3 rounded-lg transition-colors duration-300 hover:bg-white/30 mb-2 sm:mb-0 sm:mr-3"
+                >
                     <Image
                         src={`/images/currencies/${selectValue.toLowerCase()}.png`}
                         alt={`${selectValue} logo`}
@@ -107,16 +107,9 @@ export const SwapInput: React.FC<SwapInputProps> = ({
                         height={20}
                         className="rounded-full mr-2"
                     />
-                    <select
-                        value={selectValue}
-                        onChange={onCurrencyChange}
-                        className="bg-transparent text-sm sm:text-base font-semibold outline-none"
-                    >
-                        {currencies.map((currency) => (
-                            <option key={currency} value={currency}>{currency}</option>
-                        ))}
-                    </select>
-                </div>
+                    <span className="text-sm sm:text-base font-semibold">{selectValue}</span>
+
+                </motion.button>
                 <input
                     type="text"
                     placeholder={placeholder}

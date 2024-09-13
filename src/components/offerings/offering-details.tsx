@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { Offering } from '@/types/offering';
+import { Offering } from '@tbdex/http-client';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import VerifiableCredentialsForm from '@/components/credentials/verifiable-credentials-form';
@@ -43,19 +43,6 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
         return (numericAmount > selectedBalance)
     }, [amount, selectedBalance]);
 
-    const handleExchange = useCallback(() => {
-        if (!userCredentials) {
-            setShowCredentialsForm(true);
-        } else {
-            performExchange();
-        }
-    }, [userCredentials]);
-
-    const handleCredentialsComplete = useCallback(() => {
-        setShowCredentialsForm(false);
-        performExchange();
-    }, []);
-
     const performExchange = useCallback(async () => {
         if (!userCredentials) {
             console.error('Customer DID or credentials not available');
@@ -82,6 +69,21 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
             setError('Failed to create exchange. Please try again.');
         }
     }, [dispatch, offering, amount, customerDid, userCredentials, onStartExchange]);
+
+    const handleExchange = useCallback(() => {
+        if (!userCredentials) {
+            setShowCredentialsForm(true);
+        } else {
+            performExchange();
+        }
+    }, [userCredentials, performExchange]);
+
+    const handleCredentialsComplete = useCallback(() => {
+        setShowCredentialsForm(false);
+        performExchange();
+    }, [performExchange]);
+
+
 
     const providerName = Object.values(mockProviderDids).find(p => p.uri === offering.metadata.from)?.name || offering.metadata.from;
 

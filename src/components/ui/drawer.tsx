@@ -32,7 +32,7 @@ export const Drawer = ({ isOpen, setIsOpen }: DrawerProps) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                // transition={{ duration: 0.3 }}
                 className="fixed inset-0 bg-gray-500 bg-opacity-75"
             />
 
@@ -44,7 +44,7 @@ export const Drawer = ({ isOpen, setIsOpen }: DrawerProps) => {
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                            // transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                             className="pointer-events-auto relative w-screen max-w-md"
                         >
                             <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
