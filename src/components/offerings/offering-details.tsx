@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import VerifiableCredentialsForm from '@/components/credentials/verifiable-credentials-form';
 import { createExchange } from '@/lib/exchange-slice';
 import { mockProviderDids } from '@/constants/mockDids';
-import { RootState } from '@/lib/store';
 
 interface OfferingDetailsProps {
     offering: Offering;
@@ -29,8 +28,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     const dispatch = useAppDispatch();
     const [showCredentialsForm, setShowCredentialsForm] = useState(false);
     const [error, setError] = useState('');
-    const { customerCredentials, tokenBalances } = useAppSelector(state => state.wallet);
-    const customerDid = useAppSelector(state => state.wallet.portableDid);
+    const { customerCredentials, tokenBalances, customerDid } = useAppSelector(state => state.wallet);
 
     const selectedBalance = useMemo(() =>
         tokenBalances.find(token => token.token === fromCurrency)?.amount || 0,
@@ -56,9 +54,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
             const result = await dispatch(createExchange({
                 offering,
                 amount,
-                payoutPaymentDetails,
-                customerDid,
-                customerCredentials
+                payoutPaymentDetails
             })).unwrap();
 
             console.log('Exchange created:', result);
