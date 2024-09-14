@@ -27,7 +27,6 @@ const VerifiableCredentialsForm: React.FC<VerifiableCredentialsFormProps> = ({ o
                 throw new Error('Failed to fetch credentials');
             }
 
-
             const token = await response.text();
             await dispatch(setUserCredentials(token));
             onComplete();

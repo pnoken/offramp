@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 const NewSeedPhrase: React.FC = () => {
-    const { portableDid } = useAppSelector((state) => state.wallet);
+    const { customerDid } = useAppSelector((state) => state.wallet);
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -23,8 +23,8 @@ const NewSeedPhrase: React.FC = () => {
     }, []);
 
     const createDownloadLink = () => {
-        if (!portableDid) return null;
-        const blob = new Blob([JSON.stringify(portableDid, null, 2)], { type: 'application/json' });
+        if (!customerDid) return null;
+        const blob = new Blob([JSON.stringify(customerDid, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -63,16 +63,16 @@ const NewSeedPhrase: React.FC = () => {
                                 Anyone with this information can take control of your assets.
                             </p>
                             <div className="bg-white/10 rounded-lg p-4 mb-6">
-                                <CodeBlock data={portableDid} />
+                                <CodeBlock data={customerDid} />
                             </div>
-                            {portableDid && <DownloadData onDownloadClick={createDownloadLink} />}
+                            {customerDid && <DownloadData onDownloadClick={createDownloadLink} />}
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 type="button"
                                 onClick={handleIsSaved}
                                 className="w-full mt-4 px-4 py-2 text-blue-600 bg-white rounded-md hover:bg-blue-50 focus:outline-none transition duration-300 ease-in-out"
-                                disabled={!portableDid}
+                                disabled={!customerDid}
                             >
                                 I have saved it somewhere safe
                             </motion.button>

@@ -12,14 +12,14 @@ import DrawerContent from '@/components/drawer/content/import';
 const WebWallet: React.FC = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { did } = useAppSelector((state) => state.wallet);
+  const { customerDid } = useAppSelector((state) => state.wallet);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (did) {
+    if (customerDid) {
       router.push('/home');
     }
-  }, [did, router]);
+  }, [customerDid, router]);
 
   const handleCreateNewWallet = async () => {
     try {
