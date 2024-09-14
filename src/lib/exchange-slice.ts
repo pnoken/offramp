@@ -1,23 +1,37 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq } from '@tbdex/http-client';
-import { PresentationExchange, VerifiableCredential } from '@web5/credentials';
+import { PresentationExchange } from '@web5/credentials';
 import { DidDht } from '@web5/dids';
+import { RootState } from './store';
+import { formatMessages } from '@/utils/helper/format-messages';
+
+interface ExchangeState {
+    isCreating: boolean;
+    exchange: any | null;
+    error: string | null;
+}
+
+const initialState: ExchangeState = {
+    isCreating: false,
+    exchange: null,
+    error: null,
+};
+
 
 // Async thunk to create an exchange
 export const createExchange = createAsyncThunk<any, {
     offering: any;
     amount: string;
     payoutPaymentDetails: any;
-    customerDid: any;
-    customerCredentials: VerifiableCredential;
 }, { rejectValue: string }>(
     'exchange/create',
-    async ({ offering, amount, payoutPaymentDetails, customerDid, customerCredentials }, thunkAPI) => {
+    async ({ offering, amount, payoutPaymentDetails }, thunkAPI) => {
+        const state = thunkAPI.getState() as RootState;
+        const { customerCredentials, customerDid } = state.wallet;
         try {
-            console.log("customer credentials", customerCredentials);
             // Select credentials required for the exchange
             const selectedCredentials = PresentationExchange.selectCredentials({
-                vcJwts: customerCredentials,
+                vcJwts: customerCredentials as unknown as string[],
                 presentationDefinition: offering.data.requiredClaims,
             });
 
@@ -69,17 +83,19 @@ export const createExchange = createAsyncThunk<any, {
     }
 );
 
-interface ExchangeState {
-    isCreating: boolean;
-    exchange: any | null;
-    error: string | null;
-}
+// New async thunk for fetching exchanges
+export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }>(
+    'exchange/fetchExchanges',
+    async (pfiUri, { getState }) => {
+        const state = getState();
+        const exchanges = await TbdexHttpClient.getExchanges({
+            pfiDid: pfiUri,
+            did: state.wallet.customerDid
+        });
+        return formatMessages(exchanges);
+    }
+);
 
-const initialState: ExchangeState = {
-    isCreating: false,
-    exchange: null,
-    error: null,
-};
 
 // Slice definition
 const exchangeSlice = createSlice({

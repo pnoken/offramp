@@ -16,7 +16,7 @@ interface TokenBalance {
 
 // Async thunk to create a new wallet
 export const createNewWallet = createAsyncThunk<
-    { portableDid: any; did: string },
+    { customerDid: any; did: string },
     void,
     { rejectValue: string }
 >('wallet/createNewWallet', async (_, thunkAPI) => {
@@ -24,16 +24,15 @@ export const createNewWallet = createAsyncThunk<
         const didDht = await DidDht.create({ options: { publish: true } }); // Create new DID
 
         const did = didDht.uri;
-        const portableDid = await didDht.export(); // Export portable DID
+        const customerDid = await didDht.export(); // Export portable DID
 
         //Temporarily set customer Did (whilst finding a sln to decode Did)
-        localStorage.setItem("customerDid", JSON.stringify(portableDid));
+        localStorage.setItem("customerDid", JSON.stringify(customerDid));
 
-        // Encode the safe version of the DID
-        const encodedDid = await encodeJWT(portableDid);
-        Cookies.set('customerDid', encodedDid, { expires: 10 }); // Expires in 10 days
+        // const encodedDid = await encodeJWT(customerDid);
+        // Cookies.set('customerDid', encodedDid, { expires: 10 });
 
-        return { portableDid, did }; // Return DID for further state management
+        return { customerDid, did }; // Return DID for further state management
     } catch (error) {
         console.error('Error creating wallet:', error);
         return thunkAPI.rejectWithValue('Failed to create a new wallet'); // Handle errors
@@ -58,7 +57,7 @@ export const setUserCredentials = createAsyncThunk<
 
 // Extend the WalletState interface
 interface WalletState {
-    portableDid: any | null; // Initial portable DID state
+    customerDid: any | null; // Initial portable DID state
     did: string | null; // Initial DID URI state
     isCreating: boolean; // State for creating process
     walletCreated: boolean; // State to confirm wallet creation
@@ -71,7 +70,7 @@ const storedDid = localStorage.getItem('customerDid');
 const storedCredentials = localStorage.getItem('customerCredentials');
 
 const initialState: WalletState = {
-    portableDid: storedDid ? JSON.parse(storedDid) : null,
+    customerDid: storedDid ? JSON.parse(storedDid) : null,
     did: null,
     isCreating: false,
     walletCreated: false,
@@ -113,7 +112,7 @@ const walletSlice = createSlice({
     initialState,
     reducers: {
         clearWalletState: (state) => {
-            state.portableDid = null;
+            state.customerDid = null;
             state.did = null;
             state.isCreating = false;
             state.walletCreated = false;
@@ -142,10 +141,10 @@ const walletSlice = createSlice({
             .addCase(createNewWallet.fulfilled, (state, action) => {
                 state.isCreating = false;
                 state.walletCreated = true;
-                state.portableDid = action.payload.portableDid;
+                state.customerDid = action.payload.customerDid;
                 state.did = action.payload.did;
                 // Encode and store the DID
-                encodeJWT(action.payload.portableDid).then(encodedDid => {
+                encodeJWT(action.payload.customerDid).then(encodedDid => {
                     Cookies.set('customerDid', encodedDid, { expires: 10 }); // Expires in 10 days
                 });
             })
@@ -162,7 +161,7 @@ const walletSlice = createSlice({
             })
             .addCase(initializeWallet.fulfilled, (state, action) => {
                 if (action.payload) {
-                    state.portableDid = action.payload,
+                    state.customerDid = action.payload,
                         state.did = action.payload.uri,
                         state.walletCreated = true;
                 }
