@@ -6,6 +6,27 @@
 
 fsWallet is a Web5 wallet designed for cross-border transfers in Africa, developed as part of the TBDex challenge. The wallet leverages decentralized technologies to facilitate secure, fast, and low-cost financial transactions across borders within the African continent.
 
+## Design Considerations
+
+### Profitability
+fsWallet generates revenue through:
+- Small transaction fees on successful transfers
+
+### Optionality
+- Implements a matching algorithm to compare offerings from multiple PFIs
+- Allows users to sort and filter PFI offerings based on various criteria
+- Provides a comparison view of top matches for user selection
+
+### Customer Management
+- Utilizes Web5 DID protocols for secure identity management
+- Implements a user-friendly interface for DID creation, import, and export
+- Stores Verifiable Credentials securely within the wallet
+
+### Customer Satisfaction
+- Implements a rating system for users to review PFIs after transactions
+- Aggregates and displays PFI ratings to help users make informed decisions
+- Provides a feedback mechanism for continuous improvement
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -25,6 +46,9 @@ fsWallet is a Web5 wallet designed for cross-border transfers in Africa, develop
 - **Multi-Currency Support:** Supports multiple African currencies (e.g., GHS) and digital currencies (e.g., USDC) to facilitate local and international transactions.
 - **User-Friendly Interface:** Designed with simplicity and ease of use in mind, catering to users of all technical levels.
 - **Portable DID Management:** Allows users to create, export, and manage their Decentralized Identifiers.
+- **PFI Comparison:** Allows users to compare offerings from multiple PFIs.
+- **Rating System:** Enables users to rate and review PFIs based on their experience.
+- **Secure Credential Storage:** Safely stores and manages users' Verifiable Credentials.
 
 ## Technology Stack
 
