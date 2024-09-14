@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq, Exchange } from '@tbdex/http-client';
 import { PresentationExchange } from '@web5/credentials';
 import { RootState } from './store';
+import { formatMessages } from '@/utils/helper/format-messages';
 
 interface ExchangeState {
     isCreating: boolean;
@@ -91,10 +92,13 @@ export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }
     'exchange/fetchExchanges',
     async (pfiUri, { getState }) => {
         const state = getState();
+        const { DidDht } = await import('@web5/dids');
+        const signedCustomerDid = await DidDht.import({ portableDid: state.wallet.customerDid });
         const exchanges = await TbdexHttpClient.getExchanges({
             pfiDid: pfiUri,
-            did: state.wallet.customerDid
+            did: signedCustomerDid
         });
+        console.log("exchanges", formatMessages(exchanges));
         return exchanges;
     }
 );
