@@ -28,7 +28,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     const dispatch = useAppDispatch();
     const [showCredentialsForm, setShowCredentialsForm] = useState(false);
     const [error, setError] = useState('');
-    const { customerCredentials, tokenBalances, customerDid } = useAppSelector(state => state.wallet);
+    const { customerCredentials, tokenBalances } = useAppSelector(state => state.wallet);
 
     const selectedBalance = useMemo(() =>
         tokenBalances.find(token => token.token === fromCurrency)?.amount || 0,
