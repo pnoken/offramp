@@ -63,7 +63,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
             console.error('Failed to create exchange:', error);
             setError('Failed to create exchange. Please try again.');
         }
-    }, [dispatch, offering, amount, customerDid, customerCredentials, onStartExchange]);
+    }, [dispatch, offering, amount, customerCredentials, onStartExchange]);
 
     const handleExchange = useCallback(() => {
         if (customerCredentials.length === 0) {
