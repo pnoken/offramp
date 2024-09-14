@@ -20,6 +20,16 @@ const initialState: ExchangeState = {
     exchanges: [],
 };
 
+// Helper function to serialize Exchange objects
+const serializeExchange = (exchange: Exchange[]) => {
+    return exchange.map(message => ({
+        ...message,
+        kind: message.kind,
+        data: JSON.parse(JSON.stringify(message.data)),
+        privateData: message.privateData ? JSON.parse(JSON.stringify(message.privateData)) : null,
+        validNext: message.validNext ? Array.from(message.validNext) : null, // Convert Set to Array
+    }));
+};
 
 // Async thunk to create an exchange
 export const createExchange = createAsyncThunk<any, {
@@ -87,7 +97,7 @@ export const createExchange = createAsyncThunk<any, {
     }
 );
 
-// New async thunk for fetching exchanges
+// Updated async thunk for fetching exchanges
 export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }>(
     'exchange/fetchExchanges',
     async (pfiUri, { getState }) => {
@@ -98,11 +108,12 @@ export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }
             pfiDid: pfiUri,
             did: signedCustomerDid
         });
-        console.log("exchanges", formatMessages(exchanges));
-        return exchanges;
+        // Serialize exchanges before returning
+        const serializedExchanges = exchanges.map(serializeExchange);
+        console.log("exchanges", formatMessages(serializedExchanges));
+        return serializedExchanges;
     }
 );
-
 
 // Slice definition
 const exchangeSlice = createSlice({

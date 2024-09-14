@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchExchanges } from '@/lib/exchange-slice';
 import { RootState, AppDispatch } from '@/lib/store';
-import { Exchange } from '@tbdex/http-client';
 import { mockProviderDids } from '@/constants/mockDids';
+import { Exchange } from '@tbdex/http-client';
 
 const ActiveExchanges: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -13,8 +13,8 @@ const ActiveExchanges: React.FC = () => {
 
     const fetchActiveExchanges = useCallback(async () => {
         if (customerDid) {
-            dispatch(fetchExchanges("did:dht:3fkz5ssfxbriwks3iy5nwys3q5kyx64ettp9wfn1yfekfkiguj1y"));
-            //await Promise.all(pfiUris.map(uri => ));
+            const pfiUris = Object.values(mockProviderDids).map(pfi => pfi.uri);
+            await Promise.all(pfiUris.map(uri => dispatch(fetchExchanges(uri))));
             setLastUpdated(new Date());
         }
     }, [customerDid, dispatch]);
@@ -23,14 +23,60 @@ const ActiveExchanges: React.FC = () => {
         fetchActiveExchanges();
     }, [fetchActiveExchanges]);
 
-    const renderExchangeCard = (exchange: Exchange) => (
-        <div key={exchange.id} className="shadow-md rounded-lg p-4 mb-4">
-            <h3 className="text-lg font-semibold">{exchange.id}</h3>
-            <p>Status: {exchange.status}</p>
-            <p>Amount: {exchange.payinAmount} {exchange.payinCurrency}</p>
-            <p>Created: {new Date(exchange.createdTime).toLocaleString()}</p>
-        </div>
-    );
+    const renderExchangeCard = (exchange: Exchange) => {
+        const rfq = exchange.find(msg => msg.metadata.kind === 'rfq');
+        const quote = exchange.find(msg => msg.metadata.kind === 'quote');
+
+        if (!rfq || !quote) return null;
+
+        return (
+            <div key={rfq.metadata.exchangeId} className="bg-white shadow-md rounded-lg p-4 mb-4 text-grey-800 hover:bg-gray-700 transition-colors duration-300">
+                <h3 className="text-lg font-semibold mb-2 truncate" title={rfq.metadata.exchangeId}>
+                    Exchange ID: {rfq.metadata.exchangeId.substring(0, 10)}...
+                </h3>
+                <div className="flex flex-col space-y-2">
+                    <div className="flex justify-between items-center">
+                        <span className="font-medium">Status:</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${quote.metadata.kind === 'quote' ? 'bg-green-500' : 'bg-yellow-500'}`}>
+                            {quote.metadata.kind}
+                        </span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="font-medium">Pay in:</span>
+                        <span className="truncate ml-2" title={`${quote.data.payin?.amount} ${quote.data.payin?.currencyCode}`}>
+                            {quote.data.payin?.amount} {quote.data.payin?.currencyCode}
+                        </span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="font-medium">Pay out:</span>
+                        <span className="truncate ml-2" title={`${quote.data.payout?.amount} ${quote.data.payout?.currencyCode}`}>
+                            {quote.data.payout?.amount} {quote.data.payout?.currencyCode}
+                        </span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="font-medium">To:</span>
+                        <span className="truncate ml-2" title={rfq.privateData?.payout?.paymentDetails?.address || 'Unknown'}>
+                            {rfq.privateData?.payout?.paymentDetails?.address
+                                ? rfq.privateData.payout.paymentDetails.address.substring(0, 10) + '...'
+                                : 'Unknown'}
+                        </span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="font-medium">Expires:</span>
+                        <span className="truncate ml-2" title={new Date(quote.data.expiresAt || '').toLocaleString()}>
+                            {new Date(quote.data.expiresAt || '').toLocaleString()}
+                        </span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="font-medium">Created:</span>
+                        <span className="truncate ml-2" title={new Date(rfq.metadata.createdAt).toLocaleString()}>
+                            {new Date(rfq.metadata.createdAt).toLocaleString()}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="p-4">

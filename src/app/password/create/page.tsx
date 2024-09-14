@@ -1,10 +1,13 @@
 'use client'
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
-import { encryptData } from "@/utils/password";
+import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import { encryptData } from "@/utils/encryption/encrypt-data";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { EyeIcon, EyeSlashIcon, LockClosedIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { setMasterPassword } from '@/lib/wallet-slice'; // We'll create this action
+import { useAppDispatch } from "@/hooks/use-app-dispatch";
+import TermsConditionsModal from "@/components/modals/terms-and-conditons";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
 const ConfirmPasswordForm: React.FC = () => {
@@ -12,18 +15,35 @@ const ConfirmPasswordForm: React.FC = () => {
     const [confirmPassword, setConfirmPassword] = useState<string>("");
     const [passwordError, setPasswordError] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const router = useRouter();
-    const [, setStoredPassword] = useLocalStorage("fs-encryptedPassword", "");
-    const [, setStoredIv] = useLocalStorage("iv", "");
+    const dispatch = useAppDispatch()
+    const [, setWalletLock] = useLocalStorage("walletLocked", 'false');
+    const [, setLastActivity] = useLocalStorage('lastActivity', Date.now().toString());
 
     const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPassword(e.target.value);
     };
 
+    useEffect(() => {
+        const termsAccepted = localStorage.getItem('termsAccepted');
+        if (!termsAccepted) {
+            setIsModalOpen(true);
+        }
+    }, []);
+
     const handleStorePassword = async () => {
-        const { iv, encryptedData } = await encryptData(password, password);
-        setStoredIv(JSON.stringify(Array.from(iv)));
-        setStoredPassword(JSON.stringify(Array.from(new Uint8Array(encryptedData))));
+        try {
+            const { encryptedPassword, iv } = await encryptData(password);
+            dispatch(setMasterPassword({ encryptedPassword, iv }));
+            // localStorage.setItem('walletLocked', 'false');
+            setWalletLock
+            //localStorage.setItem('lastActivity', Date.now().toString());
+            setLastActivity
+        } catch (error) {
+            console.error('Error encrypting password:', error);
+            setPasswordError('An error occurred. Please try again.');
+        }
     };
 
     const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -37,6 +57,10 @@ const ConfirmPasswordForm: React.FC = () => {
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (password.length < 8) {
+            setPasswordError('Password must be at least 8 characters long');
+            return;
+        }
         if (password === confirmPassword) {
             handleStorePassword().then(() => {
                 const importType = localStorage.getItem('importType');
@@ -46,7 +70,7 @@ const ConfirmPasswordForm: React.FC = () => {
                     router.push('/account/restore-json');
                 } else {
                     // Default fallback, you can change this as needed
-                    router.push('/account/privatekey/import');
+                    router.push('/account/new-did');
                 }
                 // Clear the importType from localStorage
                 localStorage.removeItem('importType');
@@ -54,6 +78,11 @@ const ConfirmPasswordForm: React.FC = () => {
         } else {
             setPasswordError("Passwords do not match");
         }
+    };
+
+    const handleAcceptTerms = () => {
+        setIsModalOpen(false);
+        // You can add additional logic here if needed
     };
 
     const toggleShowPassword = () => {
@@ -156,8 +185,12 @@ const ConfirmPasswordForm: React.FC = () => {
                             </div>
                         </motion.form>
                     </div>
+
                 </div>
             </div>
+            <TermsConditionsModal isOpen={isModalOpen}
+                onClose={() => router.push('/')} // Navigate back if user doesn't accept
+                onAccept={handleAcceptTerms} />
         </motion.div>
     );
 };

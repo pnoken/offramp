@@ -164,7 +164,7 @@ const Exchange: React.FC = () => {
 
 
                 <div className="rounded-lg shadow-xl mb-8">
-                    <ActiveExchanges />
+                    {/* <ActiveExchanges /> */}
                     <SwapSection
                         selectedCurrencyPair={selectedCurrencyPair}
                         onCurrencyPairSelect={handleCurrencyPairSelect}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import { setUserCredentials } from '@/lib/wallet-slice';
+import { fetchCredentialToken } from '@/utils/request/fetch-credential-token';
 
 interface VerifiableCredentialsFormProps {
     onComplete: () => void;
@@ -13,30 +14,28 @@ const VerifiableCredentialsForm: React.FC<VerifiableCredentialsFormProps> = ({ o
     const [isLoading, setIsLoading] = useState(false);
 
     // Get customerDID from localStorage or state
-    const customerDID = useAppSelector((state) => state.wallet.did) || '';
+    const { did } = useAppSelector((state) => state.wallet);
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
 
-        try {
-            const response = await fetch(
-                `https://mock-idv.tbddev.org/kcc?name=${encodeURIComponent(name)}&country=${encodeURIComponent(countryCode)}&did=${encodeURIComponent(customerDID)}`
-            );
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch credentials');
-            }
-
-            const token = await response.json();
-            await dispatch(setUserCredentials(token));
-            onComplete();
-        } catch (error) {
-            console.error('Failed to set credentials:', error);
-            // Handle error (e.g., show error message to user)
-        } finally {
-            setIsLoading(false);
+        const credentials = {
+            customerName: name,
+            countryCode: countryCode,
+            customerDID: did
         }
-    };
+
+        fetchCredentialToken(credentials)
+            .then((token) => dispatch(setUserCredentials(token)))
+            .then(() => onComplete())
+            .catch((error) => {
+                console.error('Failed to set credentials:', error)
+                // Handle error (e.g., show error message to user)
+                setIsLoading(false)
+            }
+            )
+    }
+
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">

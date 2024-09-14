@@ -13,6 +13,12 @@ interface TokenBalance {
     image: string;
 }
 
+// Define the structure for payment methods
+interface PaymentMethods {
+    type: string;
+    details: {}
+}
+
 // Async thunk to create a new wallet
 export const createNewWallet = createAsyncThunk<
     { customerDid: any; did: string },
@@ -58,12 +64,20 @@ export const setUserCredentials = createAsyncThunk<
 // Extend the WalletState interface
 interface WalletState {
     customerDid: any | null; // Initial portable DID state
-    did: string | null; // Initial DID URI state
+    did: string; // Initial DID URI state
     isCreating: boolean; // State for creating process
     walletCreated: boolean; // State to confirm wallet creation
     error: string | null; // Error state
     customerCredentials: VerifiableCredential[];
     tokenBalances: TokenBalance[]; // New property for token balances
+    paymentMethods: PaymentMethods[]
+}
+
+interface WalletState {
+    encryptedMasterPassword: string | null;
+    iv: string | null;
+    isLocked: boolean;
+    // ... other wallet state properties
 }
 
 const storedDid = isClient ? localStorage.getItem('customerDid') : null;
@@ -71,11 +85,14 @@ const storedCredentials = isClient ? localStorage.getItem('customerCredentials')
 
 const initialState: WalletState = {
     customerDid: storedDid ? JSON.parse(storedDid) : null,
-    did: null,
+    did: '',
     isCreating: false,
     walletCreated: false,
     error: null,
     customerCredentials: storedCredentials ? JSON.parse(storedCredentials) : '[]',
+    encryptedMasterPassword: null,
+    iv: null,
+    isLocked: true,
     tokenBalances: [
         { token: 'USDC', amount: 100.50, usdRate: 1, image: `/images/currencies/usdc.png` },
         { token: 'USDT', amount: 75.25, usdRate: 1, image: `/images/currencies/usdt.png` },
@@ -86,6 +103,26 @@ const initialState: WalletState = {
         { token: 'GBP', amount: 300.00, usdRate: 1.315, image: `/images/currencies/gbp.png` },
         { token: 'EUR', amount: 350.00, usdRate: 1.110, image: `/images/currencies/eur.png` }
     ],
+    paymentMethods: [
+        {
+            type: 'bank_account',
+            details: { accountNumber: '1234567890', bankName: 'Simulated Bank' }
+        },
+        {
+            type: 'evm_address',
+            details: { address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e' }
+        },
+        {
+            type: 'card',
+            details: {
+                cardNumber: '**** **** **** 1234',
+                expiryDate: '12/25',
+                cardType: 'Visa',
+                cardHolderName: 'Alice Doe',
+                cvv: '**3'
+            }
+        }
+    ]
 };
 
 // Add this function to initialize the state
@@ -114,11 +151,12 @@ const walletSlice = createSlice({
     reducers: {
         clearWalletState: (state) => {
             state.customerDid = null;
-            state.did = null;
+            state.did = '';
             state.isCreating = false;
             state.walletCreated = false;
             state.error = null;
             state.tokenBalances = []; // Clear token balances
+            state.paymentMethods = [];
             Cookies.remove('customerDid');
         },
         clearUserCredentials: (state) => {
@@ -135,6 +173,23 @@ const walletSlice = createSlice({
         },
         removeTokenBalance: (state, action: PayloadAction<string>) => {
             state.tokenBalances = state.tokenBalances.filter(tb => tb.token !== action.payload);
+        },
+        addPaymentMethod: (state, action: PayloadAction<PaymentMethods>) => {
+            state.paymentMethods.push(action.payload);
+        },
+        removePaymentMethod: (state, action: PayloadAction<number>) => {
+            state.paymentMethods.splice(action.payload, 1);
+        },
+        setMasterPassword: (state, action: PayloadAction<{ encryptedPassword: string, iv: string }>) => {
+            state.encryptedMasterPassword = action.payload.encryptedPassword;
+            state.iv = action.payload.iv;
+            state.isLocked = false;
+        },
+        lockWallet: (state) => {
+            state.isLocked = true;
+        },
+        unlockWallet: (state) => {
+            state.isLocked = false;
         },
     },
     extraReducers: (builder) => {
@@ -169,6 +224,9 @@ const walletSlice = createSlice({
 });
 
 export const {
+    setMasterPassword,
+    lockWallet,
+    unlockWallet,
     clearWalletState,
     clearUserCredentials,
     updateTokenBalance,

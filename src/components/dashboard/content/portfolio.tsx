@@ -59,44 +59,6 @@ const tabsData: TabItem[] = [
         label: 'Verifiable Credentials',
         content: (
             <div className="p-4">
-                <div className="my-4">
-                    <h4 className="text-lg font-semibold mb-2">Create Customer Token</h4>
-                    <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        const form = e.target as HTMLFormElement;
-                        const customerName = (form.elements.namedItem('customerName') as HTMLInputElement).value;
-                        const countryCode = (form.elements.namedItem('countryCode') as HTMLInputElement).value;
-                        const customerDID = JSON.parse(localStorage.getItem('customerDid') || '{}').uri;
-
-                        if (customerName && countryCode && customerDID) {
-                            try {
-                                const response = await fetch(`https://mock-idv.tbddev.org/kcc?name=${encodeURIComponent(customerName)}&country=${encodeURIComponent(countryCode)}&did=${encodeURIComponent(customerDID)}`);
-                                if (response.ok) {
-                                    const newCredential = {
-                                        name: 'Customer Token',
-                                        issuer: 'Ultimate Identity',
-                                        date: new Date().toISOString().split('T')[0],
-                                        icon: '🪙'
-                                    };
-
-                                    // Here you would typically update your state or make an API call to save the new credential
-                                    alert('Customer token created successfully!');
-                                } else {
-                                    throw new Error('Failed to create customer token');
-                                }
-                            } catch (error) {
-                                console.error('Error creating customer token:', error);
-                                alert('Failed to create customer token. Please try again.');
-                            }
-                        } else {
-                            alert('Please fill in all fields and ensure you have a DID.');
-                        }
-                    }} className="space-y-4">
-                        <input type="text" name="customerName" placeholder="Customer Name" required className="w-full p-2 border rounded" />
-                        <input type="text" name="countryCode" placeholder="Country Code" required className="w-full p-2 border rounded" />
-                        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors duration-300">Create Token</button>
-                    </form>
-                </div>
                 <h3 className="text-lg font-semibold mb-4">Verified Credentials</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {verifiedCredentials && verifiedCredentials.map((credential, index) => (

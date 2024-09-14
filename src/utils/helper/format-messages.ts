@@ -1,6 +1,6 @@
 import { Exchange, Close } from "@tbdex/http-client"
 
-export const formatMessages = (exchanges) => {
+export const formatMessages = (exchanges: Exchange[][]) => {
     const formattedMessages = exchanges.map(exchange => {
         const latestMessage = exchange[exchange.length - 1]
         const rfqMessage = exchange.find(message => message.kind === 'rfq')
