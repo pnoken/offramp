@@ -14,6 +14,7 @@ import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 //import { Offering as Offering } from '@/types/offering';
 import { Offering } from '@tbdex/http-client';
+import ActiveExchanges from '@/components/exchanges/active';
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -163,6 +164,7 @@ const Exchange: React.FC = () => {
 
 
                 <div className="rounded-lg shadow-xl mb-8">
+                    {/* <ActiveExchanges /> */}
                     <SwapSection
                         selectedCurrencyPair={selectedCurrencyPair}
                         onCurrencyPairSelect={handleCurrencyPairSelect}

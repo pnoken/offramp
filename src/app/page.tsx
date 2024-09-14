@@ -32,7 +32,7 @@ const WebWallet: React.FC = () => {
   const handleCreateNewWallet = async () => {
     try {
       dispatch(createNewWallet());
-      router.push('/account/new-did');
+      router.push('/password/create');
     } catch (error) {
       console.error('Failed to create new wallet:', error);
     }

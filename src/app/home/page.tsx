@@ -6,6 +6,7 @@ import Portfolio from '@/components/dashboard/content/portfolio';
 import Earnings from '@/components/dashboard/content/earning';
 import Exchange from '@/components/dashboard/content/exchange';
 import MobileSidebar from '@/components/dashboard/mobile-sidebar';
+import { withWalletLock } from '@/hocs/wallet-lock';
 
 const Dashboard: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
@@ -70,4 +71,4 @@ const Dashboard: React.FC = () => {
     );
 };
 
-export default Dashboard;
+export default withWalletLock(Dashboard);

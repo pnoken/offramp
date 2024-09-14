@@ -10,7 +10,7 @@ const ImportPrivateKey: React.FC = () => {
     const router = useRouter();
     const [privateKey, setPrivateKey] = useState<string>('');
     const [isVisible, setIsVisible] = useState<boolean>(false);
-    const [password, setPassword] = useLocalStorage('fs-encryptedPassword', '');
+    const [password,] = useLocalStorage('fs-encryptedPassword', '');
 
 
     useEffect(() => {
