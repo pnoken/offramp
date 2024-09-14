@@ -8,18 +8,26 @@ import { createNewWallet } from '@/lib/wallet-slice';
 import { motion } from 'framer-motion';
 import { Drawer } from '@/components/ui/drawer/drawer';
 import DrawerContent from '@/components/drawer/content/import';
+import Spinner from '@/components/spinner';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 const WebWallet: React.FC = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { customerDid } = useAppSelector((state) => state.wallet);
+  //const { customerDid } = useAppSelector((state) => state.wallet);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [customerDid, setCustomerDid] = useLocalStorage('customerDid', null);
 
   useEffect(() => {
     if (customerDid) {
-      router.push('/home');
+      router.push("/home");
+    } else {
+      setIsLoading(false);
     }
-  }, [customerDid, router]);
+  }, [router, customerDid]);
+
+  if (isLoading) return <Spinner />;
 
   const handleCreateNewWallet = async () => {
     try {
@@ -86,7 +94,7 @@ const WebWallet: React.FC = () => {
         </div>
       </motion.div>
       <Drawer isOpen={isOpen} setIsOpen={setIsOpen}>
-        <DrawerContent setIsOpen={setIsOpen} />
+        <DrawerContent onClose={() => setIsOpen(false)} />
       </Drawer>
       <p className="absolute bottom-4 left-4 text-sm text-gray-500">Web Wallet v 1.00</p>
     </div>

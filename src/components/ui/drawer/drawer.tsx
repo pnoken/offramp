@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 interface DrawerProps {
@@ -11,7 +10,6 @@ interface DrawerProps {
 
 export const Drawer = ({ isOpen, setIsOpen, children }: DrawerProps) => {
     const [open, setOpen] = useState(false);
-    const router = useRouter();
 
     useEffect(() => {
         setOpen(isOpen);
@@ -24,7 +22,6 @@ export const Drawer = ({ isOpen, setIsOpen, children }: DrawerProps) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
                 className="fixed inset-0 bg-gray-500 bg-opacity-75"
             />
 
@@ -36,7 +33,6 @@ export const Drawer = ({ isOpen, setIsOpen, children }: DrawerProps) => {
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                             className="pointer-events-auto relative w-screen max-w-md"
                         >
                             {children}

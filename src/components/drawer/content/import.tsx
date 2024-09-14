@@ -3,13 +3,16 @@ import { DialogTitle } from '@headlessui/react'
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
+interface DrawerContentProps {
+    onClose: () => void;
+}
 
-const DrawerContent: React.FC = ({ setIsOpen }) => {
+const DrawerContent: React.FC<DrawerContentProps> = ({ onClose }) => {
     const router = useRouter();
     const handleImport = (type: 'privateKey' | 'json') => {
         localStorage.setItem('importType', type);
         router.push('/password/create');
-        setIsOpen(false);
+        onClose();
     };
     return (
         <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
@@ -20,7 +23,7 @@ const DrawerContent: React.FC = ({ setIsOpen }) => {
                     </DialogTitle>
                     <div className="ml-3 flex h-7 items-center">
                         <button
-                            onClick={() => setIsOpen(false)}
+                            onClick={() => onClose()}
                             className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             <span className="sr-only">Close panel</span>

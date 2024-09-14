@@ -4,19 +4,21 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { EyeIcon, EyeSlashIcon, KeyIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 const ImportPrivateKey: React.FC = () => {
     const router = useRouter();
     const [privateKey, setPrivateKey] = useState<string>('');
     const [isVisible, setIsVisible] = useState<boolean>(false);
+    const [password, setPassword] = useLocalStorage('fs-encryptedPassword', '');
+
 
     useEffect(() => {
-        const password = localStorage.getItem('fs-encryptedPassword');
         if (!password) {
             // If no password is set, redirect to password creation
             router.push('/password/create');
         }
-    }, [router]);
+    }, [router, password]);
 
     const handleToggleVisibility = () => {
         setIsVisible(!isVisible);

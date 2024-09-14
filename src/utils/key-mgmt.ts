@@ -1,4 +1,3 @@
-import { DidDht } from '@web5/dids';
 import { LocalKeyManager } from "@web5/crypto";
 import { PortableDid as Web5PortableDid } from '@web5/dids';
 let AwsKeyManager: any;
@@ -19,9 +18,11 @@ export async function initKeyManagement(env: Environment, portableDid: Web5Porta
         keyManager = new LocalKeyManager();
     }
 
+    const { DidDht } = await import('@web5/dids');
     // Initialize or load a DID
     if (portableDid == null) {
         // Create a new DID
+
         return await DidDht.create(keyManager);
     } else {
         // Load existing DID

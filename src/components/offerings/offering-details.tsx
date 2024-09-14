@@ -55,7 +55,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                 offering,
                 amount,
                 payoutPaymentDetails
-            })).unwrap();
+            }))
 
             console.log('Exchange created:', result);
             onStartExchange();

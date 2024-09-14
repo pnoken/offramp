@@ -5,6 +5,7 @@ import { encryptData } from "@/utils/password";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { EyeIcon, EyeSlashIcon, LockClosedIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { useLocalStorage } from "@/hooks/use-local-storage";
 
 const ConfirmPasswordForm: React.FC = () => {
     const [password, setPassword] = useState<string>("");
@@ -12,6 +13,8 @@ const ConfirmPasswordForm: React.FC = () => {
     const [passwordError, setPasswordError] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const router = useRouter();
+    const [, setStoredPassword] = useLocalStorage("fs-encryptedPassword", "");
+    const [, setStoredIv] = useLocalStorage("iv", "");
 
     const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPassword(e.target.value);
@@ -19,8 +22,8 @@ const ConfirmPasswordForm: React.FC = () => {
 
     const handleStorePassword = async () => {
         const { iv, encryptedData } = await encryptData(password, password);
-        localStorage.setItem("iv", JSON.stringify(Array.from(iv)));
-        localStorage.setItem("fs-encryptedPassword", JSON.stringify(Array.from(new Uint8Array(encryptedData))));
+        setStoredIv(JSON.stringify(Array.from(iv)));
+        setStoredPassword(JSON.stringify(Array.from(new Uint8Array(encryptedData))));
     };
 
     const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {

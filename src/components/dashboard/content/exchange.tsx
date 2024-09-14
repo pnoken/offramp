@@ -12,13 +12,12 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import OfferingDetails from '@/components/offerings/offering-details';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-//import { Offering as TbdexOffering } from '@/types/offering';
-import { Offering as TbdexOffering } from '@tbdex/http-client';
+//import { Offering as Offering } from '@/types/offering';
+import { Offering } from '@tbdex/http-client';
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
-    const customerDid = useAppSelector((state) => state.wallet.portableDid);
-    const customerCredentials = useAppSelector((state) => state.wallet.did);
+    const { customerDid, customerCredentials } = useAppSelector((state) => state.wallet);
     const { isCreating, exchange, error } = useAppSelector((state) => state.exchange);
 
     const [selectedCurrencyPair, setSelectedCurrencyPair] = useState({ from: '', to: '' });
@@ -27,7 +26,7 @@ const Exchange: React.FC = () => {
 
     const [selectedOfferingId, setSelectedOfferingId] = useState<string | null>(null);
     const [showOfferingDetails, setShowOfferingDetails] = useState(false);
-    const [selectedOffering, setSelectedOffering] = useState<TbdexOffering | null>(null);
+    const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
     const [timeLeft, setTimeLeft] = useState(42000);
 
     useEffect(() => {
@@ -61,18 +60,22 @@ const Exchange: React.FC = () => {
         setSelectedCurrencyPair({ from, to });
     };
 
+    const deserializeOffering = (serializedOffering: any): Offering => {
+        return new Offering(serializedOffering.metadata, serializedOffering.data);
+    };
+
     const handleAmountChange = (value: string) => {
         setAmount(value);
     };
 
-    const handleOfferingSelect = (offering: TbdexOffering) => {
+    const handleOfferingSelect = (offering: Offering) => {
         setSelectedOffering(offering);
         setSelectedOfferingId(offering.metadata.id);
     };
 
     const handleReviewExchange = () => {
         if (!selectedOffering) {
-            setSelectedOffering(matchedOfferings[0]);
+            setSelectedOffering(deserializeOffering(matchedOfferings[0]));
         }
         setShowOfferingDetails(true);
     };
@@ -82,9 +85,9 @@ const Exchange: React.FC = () => {
             dispatch(createExchange({
                 offering: selectedOffering,
                 amount,
-                payoutPaymentDetails: {}, // Add necessary details
-                customerDid,
-                customerCredentials
+                payoutPaymentDetails: {
+                    address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0"
+                }, // Add necessary details
             }));
         }
     };
@@ -139,7 +142,7 @@ const Exchange: React.FC = () => {
     if (showOfferingDetails) {
         return (
             <OfferingDetails
-                offering={selectedOffering as TbdexOffering}
+                offering={selectedOffering as Offering}
                 fromCurrency={selectedCurrencyPair.from}
                 toCurrency={selectedCurrencyPair.to}
                 amount={amount}

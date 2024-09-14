@@ -1,10 +1,9 @@
 // src/store/walletSlice.js
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { DidDht } from '@web5/dids';
 import Cookies from 'js-cookie';
-import { encodeJWT, decodeJWT } from '@/utils/jwt';
 import { VerifiableCredential } from '@web5/credentials';
 import { RootState } from './store';
+import { isClient } from '@/utils/isClient';
 
 // Define the structure for a token balance
 interface TokenBalance {
@@ -21,6 +20,7 @@ export const createNewWallet = createAsyncThunk<
     { rejectValue: string }
 >('wallet/createNewWallet', async (_, thunkAPI) => {
     try {
+        const { DidDht } = await import('@web5/dids');
         const didDht = await DidDht.create({ options: { publish: true } }); // Create new DID
 
         const did = didDht.uri;
@@ -66,8 +66,8 @@ interface WalletState {
     tokenBalances: TokenBalance[]; // New property for token balances
 }
 
-const storedDid = localStorage.getItem('customerDid');
-const storedCredentials = localStorage.getItem('customerCredentials');
+const storedDid = isClient ? localStorage.getItem('customerDid') : null;
+const storedCredentials = isClient ? localStorage.getItem('customerCredentials') : null;
 
 const initialState: WalletState = {
     customerDid: storedDid ? JSON.parse(storedDid) : null,
@@ -94,6 +94,7 @@ export const initializeWallet = createAsyncThunk(
     async (_, thunkAPI) => {
         const storedDid = localStorage.getItem('customerDid');
         if (storedDid) {
+            const { DidDht } = await import('@web5/dids');
             try {
                 const customerDid = await DidDht.import({ portableDid: JSON.parse(storedDid) });
                 if (customerDid) {
@@ -143,10 +144,7 @@ const walletSlice = createSlice({
                 state.walletCreated = true;
                 state.customerDid = action.payload.customerDid;
                 state.did = action.payload.did;
-                // Encode and store the DID
-                encodeJWT(action.payload.customerDid).then(encodedDid => {
-                    Cookies.set('customerDid', encodedDid, { expires: 10 }); // Expires in 10 days
-                });
+                state.customerCredentials = [];
             })
             .addCase(createNewWallet.rejected, (state, action) => {
                 state.isCreating = false;
