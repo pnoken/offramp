@@ -20,7 +20,7 @@ export const withWalletLock = (WrappedComponent: React.ComponentType) => {
                 if (lastActivity && Date.now() - parseInt(lastActivity) > LOCK_TIMEOUT) {
                     dispatch(lockWallet());
                     localStorage.setItem('walletLocked', 'true');
-                    router.push('/home');
+                    router.push('/unlock');
                 }
             };
 

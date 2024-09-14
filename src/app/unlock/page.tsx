@@ -22,7 +22,7 @@ const UnlockPage: React.FC = () => {
                 dispatch(unlockWallet());
                 localStorage.setItem('walletLocked', 'false');
                 localStorage.setItem('lastActivity', Date.now().toString());
-                router.push('/wallet');
+                router.push('/home');
             } else {
                 setError('Incorrect password');
             }
