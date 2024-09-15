@@ -1,26 +1,42 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ConfirmationModal from '@/components/modals/confirm-modal';
-import { useAppSelector } from '@/hooks/use-app-dispatch';
 import { useRouter } from 'next/navigation';
 import CodeBlock from '@/components/ui/pre/markdown';
 import DownloadData from '@/components/ui/download/data-download';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
+import { createNewWallet } from '@/lib/wallet-slice';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 const NewSeedPhrase: React.FC = () => {
     const { customerDid } = useAppSelector((state) => state.wallet);
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const dispatch = useAppDispatch();
+    const [, setCustomerDid] = useLocalStorage('customerDid', null);
 
     const handleIsSaved = () => {
         router.push("/create-done");
     };
 
+    const recreateDidAfterRefresh = useCallback(async () => {
+        try {
+            dispatch(createNewWallet()).then(() => setCustomerDid(customerDid));
+        } catch (error) {
+            console.error('Failed to create new wallet:', error);
+        }
+    }, [dispatch, setCustomerDid, customerDid]);
+
     useEffect(() => {
         setIsModalOpen(true);
     }, []);
+
+    useEffect(() => {
+        recreateDidAfterRefresh()
+    }, [])
 
     const createDownloadLink = () => {
         if (!customerDid) return null;

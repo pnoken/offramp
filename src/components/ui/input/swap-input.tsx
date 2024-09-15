@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useAppSelector } from '@/hooks/use-app-dispatch';
 import { RootState } from '@/lib/store';
-import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 interface SwapInputProps {
     label: string;

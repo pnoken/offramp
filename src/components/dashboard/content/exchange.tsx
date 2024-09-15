@@ -8,13 +8,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
 import { fetchOfferings } from '@/lib/offering-slice';
 import { createExchange } from '@/lib/exchange-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
-import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import OfferingDetails from '@/components/offerings/offering-details';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 //import { Offering as Offering } from '@/types/offering';
 import { Offering } from '@tbdex/http-client';
-import ActiveExchanges from '@/components/exchanges/active';
+import { withCredentials } from '@/hocs/with-credentials';
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -69,6 +68,10 @@ const Exchange: React.FC = () => {
         setAmount(value);
     };
 
+    const handleOfferingClick = React.useCallback((id: string) => {
+        setSelectedOfferingId(id);
+    }, []);
+
     const handleOfferingSelect = (offering: Offering) => {
         setSelectedOffering(offering);
         setSelectedOfferingId(offering.metadata.id);
@@ -79,18 +82,6 @@ const Exchange: React.FC = () => {
             setSelectedOffering(deserializeOffering(matchedOfferings[0]));
         }
         setShowOfferingDetails(true);
-    };
-
-    const handleStartExchange = () => {
-        if (selectedOffering) {
-            dispatch(createExchange({
-                offering: selectedOffering,
-                amount,
-                payoutPaymentDetails: {
-                    address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0"
-                }, // Add necessary details
-            }));
-        }
     };
 
     const renderOfferings = () => {
@@ -132,7 +123,7 @@ const Exchange: React.FC = () => {
                                 offering={offering as any}
                                 amount={amount}
                                 isSelected={index === 0 || offering.metadata.id === selectedOfferingId}
-                                onClick={() => setSelectedOfferingId(offering.metadata.id)}
+                                onClick={() => handleOfferingClick(offering.metadata.id)}
                             />
                         ))}
                     </motion.div>
@@ -140,18 +131,24 @@ const Exchange: React.FC = () => {
             );
     };
 
-    if (showOfferingDetails) {
-        return (
-            <OfferingDetails
-                offering={selectedOffering as Offering}
-                fromCurrency={selectedCurrencyPair.from}
-                toCurrency={selectedCurrencyPair.to}
-                amount={amount}
-                onStartExchange={handleStartExchange}
-                onBack={() => setShowOfferingDetails(false)}
-            />
-        );
-    }
+    useEffect(() => {
+        if (matchedOfferings.length > 0 && !selectedOffering) {
+            setSelectedOffering(deserializeOffering(matchedOfferings[0]));
+        }
+    }, [matchedOfferings, selectedOffering]);
+
+    // if (showOfferingDetails) {
+    //     return (
+    //         <OfferingDetails
+    //             offering={selectedOffering as Offering}
+    //             fromCurrency={selectedCurrencyPair.from}
+    //             toCurrency={selectedCurrencyPair.to}
+    //             amount={amount}
+    //             onStartExchange={handleStartExchange}
+    //             onBack={() => setShowOfferingDetails(false)}
+    //         />
+    //     );
+    // }
 
     return (
         <motion.div
@@ -169,6 +166,7 @@ const Exchange: React.FC = () => {
                         selectedCurrencyPair={selectedCurrencyPair}
                         onCurrencyPairSelect={handleCurrencyPairSelect}
                         amount={amount}
+                        offering={selectedOffering as Offering}
                         onAmountChange={handleAmountChange}
                         onReviewExchange={handleReviewExchange}
                     />
@@ -180,4 +178,4 @@ const Exchange: React.FC = () => {
     );
 };
 
-export default Exchange;
+export default withCredentials(Exchange);

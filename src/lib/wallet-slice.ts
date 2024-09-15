@@ -1,9 +1,12 @@
-// src/store/walletSlice.js
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 import { VerifiableCredential } from '@web5/credentials';
 import { RootState } from './store';
 import { isClient } from '@/utils/isClient';
+import { storeCredential, getStoredCredential } from '@/utils/secure-storage';
+import { verifyVC } from '@/utils/credentials-verifier';
+import { AppDispatch } from './store';
+
 
 // Define the structure for a token balance
 interface TokenBalance {
@@ -19,47 +22,6 @@ interface PaymentMethods {
     details: {}
 }
 
-// Async thunk to create a new wallet
-export const createNewWallet = createAsyncThunk<
-    { customerDid: any; did: string },
-    void,
-    { rejectValue: string }
->('wallet/createNewWallet', async (_, thunkAPI) => {
-    try {
-        const { DidDht } = await import('@web5/dids');
-        const didDht = await DidDht.create({ options: { publish: true } }); // Create new DID
-
-        const did = didDht.uri;
-        const customerDid = await didDht.export(); // Export portable DID
-
-        //Temporarily set customer Did (whilst finding a sln to decode Did)
-        localStorage.setItem("customerDid", JSON.stringify(customerDid));
-
-        // const encodedDid = await encodeJWT(customerDid);
-        // Cookies.set('customerDid', encodedDid, { expires: 10 });
-
-        return { customerDid, did }; // Return DID for further state management
-    } catch (error) {
-        console.error('Error creating wallet:', error);
-        return thunkAPI.rejectWithValue('Failed to create a new wallet'); // Handle errors
-    }
-});
-
-// Add this new async thunk
-export const setUserCredentials = createAsyncThunk<
-    VerifiableCredential[],
-    VerifiableCredential,
-    { state: RootState, rejectValue: string }
->('wallet/setUserCredentials', async (credential, thunkAPI) => {
-    try {
-        const state = thunkAPI.getState().wallet;
-        const updatedCredentials = [...state.customerCredentials, credential];
-        localStorage.setItem('customerCredentials', JSON.stringify(updatedCredentials));
-        return updatedCredentials;
-    } catch (error) {
-        return thunkAPI.rejectWithValue('Failed to set user credentials');
-    }
-});
 
 // Extend the WalletState interface
 interface WalletState {
@@ -81,7 +43,7 @@ interface WalletState {
 }
 
 const storedDid = isClient ? localStorage.getItem('customerDid') : null;
-const storedCredentials = isClient ? localStorage.getItem('customerCredentials') : null;
+const storedCredentials = getStoredCredential();
 
 const initialState: WalletState = {
     customerDid: storedDid ? JSON.parse(storedDid) : null,
@@ -89,7 +51,7 @@ const initialState: WalletState = {
     isCreating: false,
     walletCreated: false,
     error: null,
-    customerCredentials: storedCredentials ? JSON.parse(storedCredentials) : '[]',
+    customerCredentials: [],
     encryptedMasterPassword: null,
     iv: null,
     isLocked: true,
@@ -125,6 +87,56 @@ const initialState: WalletState = {
     ]
 };
 
+
+// Async thunk to create a new wallet
+export const createNewWallet = createAsyncThunk<
+    { customerDid: any; did: string },
+    void,
+    { rejectValue: string }
+>('wallet/createNewWallet', async (_, thunkAPI) => {
+    try {
+        const { DidDht } = await import('@web5/dids');
+        const didDht = await DidDht.create({ options: { publish: true } }); // Create new DID
+
+        const did = didDht.uri;
+        const customerDid = await didDht.export(); // Export portable DID
+
+        //Temporarily set customer Did (whilst finding a sln to decode Did)
+        localStorage.setItem("customerDid", JSON.stringify(customerDid));
+
+        // const encodedDid = await encodeJWT(customerDid);
+        // Cookies.set('customerDid', encodedDid, { expires: 10 });
+
+        return { customerDid, did }; // Return DID for further state management
+    } catch (error) {
+        console.error('Error creating wallet:', error);
+        return thunkAPI.rejectWithValue('Failed to create a new wallet'); // Handle errors
+    }
+});
+
+export const loadStoredCredentials = createAsyncThunk(
+    'wallet/loadStoredCredentials',
+    async () => {
+        return await getStoredCredential();
+    }
+);
+
+// Add this new async thunk
+export const setUserCredentials = createAsyncThunk<
+    VerifiableCredential[],
+    VerifiableCredential,
+    { state: RootState, rejectValue: string }
+>('wallet/setUserCredentials', async (credential, thunkAPI) => {
+    try {
+        const state = thunkAPI.getState().wallet;
+        const updatedCredentials = [...state.customerCredentials, credential];
+        await storeCredential(updatedCredentials);
+        return updatedCredentials;
+    } catch (error) {
+        return thunkAPI.rejectWithValue('Failed to set user credentials');
+    }
+});
+
 // Add this function to initialize the state
 export const initializeWallet = createAsyncThunk(
     'wallet/initializeWallet',
@@ -145,6 +157,13 @@ export const initializeWallet = createAsyncThunk(
     }
 );
 
+// export const initializeCredentials = () => async (dispatch: AppDispatch) => {
+//     const storedCredential = await getStoredCredential();
+//     if (storedCredential && await verifyVC(storedCredential.token)) {
+//         dispatch(setUserCredentials(storedCredential));
+//     }
+// };
+
 const walletSlice = createSlice({
     name: 'wallet',
     initialState,
@@ -159,9 +178,20 @@ const walletSlice = createSlice({
             state.paymentMethods = [];
             Cookies.remove('customerDid');
         },
-        clearUserCredentials: (state) => {
+        clearCredentials: (state) => {
             state.customerCredentials = [];
-            localStorage.removeItem('customerCredentials');
+            storeCredential(null);
+        },
+        setCredentials: (state, action: PayloadAction<VerifiableCredential>) => {
+            state.customerCredentials = [action.payload];
+            storeCredential(action.payload);
+        },
+        verifyCredential: (state, action: PayloadAction<{ issuer: string }>) => {
+            const credential = state.customerCredentials.find(vc => vc.issuer === action.payload.issuer);
+            if (credential) {
+                //   credential.verified = true;
+                credential.issuer = action.payload.issuer;
+            }
         },
         updateTokenBalance: (state, action: PayloadAction<TokenBalance>) => {
             const index = state.tokenBalances.findIndex(tb => tb.token === action.payload.token);
@@ -219,16 +249,20 @@ const walletSlice = createSlice({
                         state.walletCreated = true;
                 }
             })
+            .addCase(loadStoredCredentials.fulfilled, (state, action) => {
+                state.customerCredentials = action.payload || [];
+            })
 
     },
 });
 
 export const {
     setMasterPassword,
+    setCredentials,
     lockWallet,
     unlockWallet,
     clearWalletState,
-    clearUserCredentials,
+    clearCredentials,
     updateTokenBalance,
     removeTokenBalance
 } = walletSlice.actions; // Export clear actions
