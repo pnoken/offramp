@@ -43,7 +43,7 @@ interface WalletState {
 }
 
 const storedDid = isClient ? localStorage.getItem('customerDid') : null;
-const storedCredentials = isClient ? localStorage.getItem('customerCredentials') : null;
+const storedCredentials = getStoredCredential();
 
 const initialState: WalletState = {
     customerDid: storedDid ? JSON.parse(storedDid) : null,
@@ -51,7 +51,7 @@ const initialState: WalletState = {
     isCreating: false,
     walletCreated: false,
     error: null,
-    customerCredentials: storedCredentials ? JSON.parse(storedCredentials) : '[]',
+    customerCredentials: [],
     encryptedMasterPassword: null,
     iv: null,
     isLocked: true,
@@ -113,6 +113,13 @@ export const createNewWallet = createAsyncThunk<
         return thunkAPI.rejectWithValue('Failed to create a new wallet'); // Handle errors
     }
 });
+
+export const loadStoredCredentials = createAsyncThunk(
+    'wallet/loadStoredCredentials',
+    async () => {
+        return await getStoredCredential();
+    }
+);
 
 // Add this new async thunk
 export const setUserCredentials = createAsyncThunk<
@@ -241,6 +248,9 @@ const walletSlice = createSlice({
                         state.did = action.payload.uri,
                         state.walletCreated = true;
                 }
+            })
+            .addCase(loadStoredCredentials.fulfilled, (state, action) => {
+                state.customerCredentials = action.payload || [];
             })
 
     },

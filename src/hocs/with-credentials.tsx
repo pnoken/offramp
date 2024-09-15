@@ -1,32 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/lib/store';
-import { getStoredCredential } from '@/utils/secure-storage';
+import { loadStoredCredentials } from '@/lib/wallet-slice';
 import VerifiableCredentialsForm from '@/components/credentials/verifiable-credentials-form';
+import { useAppDispatch } from '@/hooks/use-app-dispatch';
 
 export const withCredentials = <P extends object>(
     WrappedComponent: React.ComponentType<P>
 ) => {
     const WithCredentials = (props: P) => {
-        const [hasCredentials, setHasCredentials] = useState(false);
         const [isChecking, setIsChecking] = useState(true);
+        const dispatch = useAppDispatch();
         const customerCredentials = useSelector((state: RootState) => state.wallet.customerCredentials);
 
         useEffect(() => {
-            const checkCredentials = async () => {
-                const storedCredentials = await getStoredCredential();
-                setHasCredentials(storedCredentials !== null && storedCredentials.length > 0);
-                setIsChecking(false);
+            const loadCredentials = async () => {
+                await dispatch(loadStoredCredentials());
             };
-            checkCredentials();
+            loadCredentials();
+        }, [dispatch]);
+
+        useEffect(() => {
+            if (customerCredentials !== undefined) {
+                setIsChecking(false);
+            }
         }, [customerCredentials]);
 
         if (isChecking) {
             return <div>Checking credentials...</div>;
         }
 
-        if (!hasCredentials) {
-            return <VerifiableCredentialsForm onComplete={() => setHasCredentials(true)} />;
+        if (customerCredentials.length === 0) {
+            return <VerifiableCredentialsForm onComplete={() => dispatch(loadStoredCredentials())} />;
         }
 
         return <WrappedComponent {...props} />;

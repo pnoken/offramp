@@ -83,12 +83,12 @@ export const createExchange = createAsyncThunk<any, {
             // Sign RFQ message
             await rfq.sign(signedCustomerDid);
 
-            console.log("rfq", rfq);
-
             // Create exchange using TbdexHttpClient
             const exchangeResponse = await TbdexHttpClient.createExchange(rfq);
 
             return exchangeResponse;
+
+
 
         } catch (error) {
             console.error('Failed to create exchange', error);

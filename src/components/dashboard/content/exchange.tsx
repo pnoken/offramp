@@ -131,6 +131,12 @@ const Exchange: React.FC = () => {
             );
     };
 
+    useEffect(() => {
+        if (matchedOfferings.length > 0 && !selectedOffering) {
+            setSelectedOffering(deserializeOffering(matchedOfferings[0]));
+        }
+    }, [matchedOfferings, selectedOffering]);
+
     // if (showOfferingDetails) {
     //     return (
     //         <OfferingDetails
