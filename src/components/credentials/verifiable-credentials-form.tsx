@@ -12,9 +12,8 @@ const VerifiableCredentialsForm: React.FC<VerifiableCredentialsFormProps> = ({ o
     const [name, setName] = useState('');
     const [countryCode, setCountryCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
-    // Get customerDID from localStorage or state
     const { did } = useAppSelector((state) => state.wallet);
+
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);

@@ -71,4 +71,4 @@ const Dashboard: React.FC = () => {
     );
 };
 
-export default withWalletLock(Dashboard);
+export default Dashboard;

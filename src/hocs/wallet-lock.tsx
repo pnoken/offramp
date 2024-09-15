@@ -5,7 +5,7 @@ import { lockWallet } from '@/lib/wallet-slice';
 import { RootState } from '@/lib/store';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 
-const LOCK_TIMEOUT = 1 * 60 * 1000; // 15 minutes
+const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes
 
 export const withWalletLock = (WrappedComponent: React.ComponentType) => {
     const WithWalletLock = (props: any) => {

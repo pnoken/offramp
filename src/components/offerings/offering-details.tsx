@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Offering } from '@tbdex/http-client';
@@ -25,62 +25,32 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     onStartExchange,
     onBack
 }) => {
-    const dispatch = useAppDispatch();
+
     const [showCredentialsForm, setShowCredentialsForm] = useState(false);
-    const [error, setError] = useState('');
+
     const { customerCredentials, tokenBalances } = useAppSelector(state => state.wallet);
 
-    const selectedBalance = useMemo(() =>
-        tokenBalances.find(token => token.token === fromCurrency)?.amount || 0,
-        [tokenBalances, fromCurrency]);
 
-    const isBalanceInsufficient = useMemo(() => {
-        const numericAmount = parseFloat(amount);
-        if (numericAmount > selectedBalance) setError("You don't have enough funds to complete the transaction.")
-        return (numericAmount > selectedBalance)
-    }, [amount, selectedBalance]);
 
-    const performExchange = useCallback(async () => {
-        if (customerCredentials.length === 0) {
-            setError('Customer DID or credentials not available');
-            return;
-        }
+    console.log("customer credentials length", customerCredentials.length);
 
-        try {
-            const payoutPaymentDetails = {
-                address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0"
-            };
 
-            const result = await dispatch(createExchange({
-                offering,
-                amount,
-                payoutPaymentDetails
-            }))
 
-            console.log('Exchange created:', result);
-            onStartExchange();
-        } catch (error) {
-            console.error('Failed to create exchange:', error);
-            setError('Failed to create exchange. Please try again.');
-        }
-    }, [dispatch, offering, amount, customerCredentials, onStartExchange]);
 
-    const handleExchange = useCallback(() => {
-        if (customerCredentials.length === 0) {
-            setShowCredentialsForm(true);
-        } else {
-            performExchange();
-        }
-    }, [customerCredentials, performExchange]);
+
+
+
 
     const handleCredentialsComplete = useCallback(() => {
         setShowCredentialsForm(false);
+        setHasCredentials(true);
+        setError(''); // Clear the error after credentials are created
         performExchange();
     }, [performExchange]);
 
-
-
     const providerName = Object.values(mockProviderDids).find(p => p.uri === offering.metadata.from)?.name || offering.metadata.from;
+
+
 
     return (
         <motion.div
@@ -157,10 +127,9 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleExchange}
-                                disabled={isBalanceInsufficient}
                                 className="bg-emerald-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Start Exchange
+                                {hasCredentials ? 'Start Exchange' : 'Create Credentials'}
                             </motion.button>
                         </>
                     )}

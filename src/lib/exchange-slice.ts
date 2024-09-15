@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { TbdexHttpClient, Rfq, Exchange } from '@tbdex/http-client';
+import { TbdexHttpClient, Rfq, Exchange, Close, Order } from '@tbdex/http-client';
 import { PresentationExchange } from '@web5/credentials';
 import { RootState } from './store';
 import { formatMessages } from '@/utils/helper/format-messages';
@@ -110,8 +110,72 @@ export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }
         });
         // Serialize exchanges before returning
         const serializedExchanges = exchanges.map(serializeExchange);
-        console.log("exchanges", formatMessages(serializedExchanges));
-        return serializedExchanges;
+        //console.log("exchanges", formatMessages(serializedExchanges));
+        return formatMessages(serializedExchanges);
+    }
+);
+
+// New async thunk to close an exchange
+export const closeExchange = createAsyncThunk<any, {
+    exchangeId: string;
+    pfiUri: string;
+    reason: string;
+}, { state: RootState }>(
+    'exchange/close',
+    async ({ exchangeId, pfiUri, reason }, { getState }) => {
+        const state = getState();
+        const { DidDht } = await import('@web5/dids');
+        const signedCustomerDid = await DidDht.import({ portableDid: state.wallet.customerDid });
+
+        try {
+            const close = Close.create({
+                metadata: {
+                    from: signedCustomerDid.uri,
+                    to: pfiUri,
+                    exchangeId: exchangeId,
+                    protocol: '1.0'
+                },
+                data: { reason }
+            });
+
+            await close.sign(signedCustomerDid);
+            const response = await TbdexHttpClient.submitClose(close);
+            return response;
+        } catch (error) {
+            console.error('Failed to close exchange', error);
+            throw error;
+        }
+    }
+);
+
+// New async thunk to place an order
+export const placeOrder = createAsyncThunk<any, {
+    exchangeId: string;
+    pfiUri: string;
+}, { state: RootState }>(
+    'exchange/placeOrder',
+    async ({ exchangeId, pfiUri }, { getState }) => {
+        const state = getState();
+        const { DidDht } = await import('@web5/dids');
+        const signedCustomerDid = await DidDht.import({ portableDid: state.wallet.customerDid });
+
+        try {
+            const order = Order.create({
+                metadata: {
+                    from: signedCustomerDid.uri,
+                    to: pfiUri,
+                    exchangeId: exchangeId,
+                    protocol: '1.0'
+                }
+            });
+
+            await order.sign(signedCustomerDid);
+            const response = await TbdexHttpClient.submitOrder(order);
+            return response;
+        } catch (error) {
+            console.error('Failed to place order', error);
+            throw error;
+        }
     }
 );
 
@@ -157,6 +221,40 @@ const exchangeSlice = createSlice({
             .addCase(fetchExchanges.rejected, (state, action) => {
                 state.isFetching = false;
                 state.error = action.payload as string;
+            })
+            .addCase(closeExchange.pending, (state) => {
+                state.isCreating = true;
+                state.error = null;
+            })
+            .addCase(closeExchange.fulfilled, (state, action) => {
+                state.isCreating = false;
+                // Update the specific exchange in the exchanges array
+                const index = state.exchanges.findIndex(e => e.id === action.payload.id);
+                if (index !== -1) {
+                    state.exchanges[index] = action.payload;
+                }
+                state.error = null;
+            })
+            .addCase(closeExchange.rejected, (state, action) => {
+                state.isCreating = false;
+                state.error = action.error.message ?? 'Failed to close exchange';
+            })
+            .addCase(placeOrder.pending, (state) => {
+                state.isCreating = true;
+                state.error = null;
+            })
+            .addCase(placeOrder.fulfilled, (state, action) => {
+                state.isCreating = false;
+                // Update the specific exchange in the exchanges array
+                const index = state.exchanges.findIndex(e => e.exchangeId === action.payload.id);
+                if (index !== -1) {
+                    state.exchanges[index] = action.payload;
+                }
+                state.error = null;
+            })
+            .addCase(placeOrder.rejected, (state, action) => {
+                state.isCreating = false;
+                state.error = action.error.message ?? 'Failed to place order';
             });
     },
 });

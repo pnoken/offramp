@@ -22,14 +22,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-xl font-bold mb-4">Keep Your Seed Phrase Safe</h2>
+                <h2 className="text-xl font-bold mb-4">Keep Your Did Safe</h2>
                 <p className="mb-4">Tap on all checkboxes to confirm you understand the importance of your seed phrase:</p>
                 <div className="space-y-2 mb-6">
                     {[
-                        "Fiatsend doesn't keep any copy of your seed phrase and other backup methods such as JSON file or private key.",
-                        "Fiatsend can't help you recover your account once your seed phrase, JSON file, or private key is lost.",
-                        "You must write down your seed phrase in the correct order. It is recommended that you store it in a secure offline location.",
-                        "You are NOT recommended to download and store your seed phrase in a digital device."
+                        "Fiatsend doesn't keep any copy of your DID and other backup methods such as JSON file or private key.",
+                        "Fiatsend can't help you recover your account once your DID JSON file, or private key is lost.",
+                        "It is recommended that you store your DID in a secure offline location.",
+                        "You are NOT recommended to expose it on a public digital device."
                     ].map((text, index) => (
                         <label key={index} className="flex items-center space-x-2">
                             <input

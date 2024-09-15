@@ -1,38 +1,26 @@
 'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useAppSelector, useAppDispatch } from '@/hooks/use-app-dispatch';
+import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import { createNewWallet } from '@/lib/wallet-slice';
 import { motion } from 'framer-motion';
 import { Drawer } from '@/components/ui/drawer/drawer';
 import DrawerContent from '@/components/drawer/content/import';
-import Spinner from '@/components/spinner';
+import { withCustomerDid } from '@/hocs/customer-did';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 
 const WebWallet: React.FC = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  //const { customerDid } = useAppSelector((state) => state.wallet);
+  const [, setCustomerDid] = useLocalStorage('customerDid', null);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [customerDid, setCustomerDid] = useLocalStorage('customerDid', null);
-
-  useEffect(() => {
-    if (customerDid) {
-      router.push("/home");
-    } else {
-      setIsLoading(false);
-    }
-  }, [router, customerDid]);
-
-  if (isLoading) return <Spinner />;
+  const { customerDid } = useAppSelector((state) => state.wallet);
 
   const handleCreateNewWallet = async () => {
     try {
-      dispatch(createNewWallet());
-      router.push('/password/create');
+      dispatch(createNewWallet()).then(() => setCustomerDid(customerDid)).then(() => router.push('/password/create'));
     } catch (error) {
       console.error('Failed to create new wallet:', error);
     }
@@ -101,4 +89,4 @@ const WebWallet: React.FC = () => {
   );
 };
 
-export default WebWallet;
+export default withCustomerDid(WebWallet);

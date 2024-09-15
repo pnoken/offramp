@@ -4,7 +4,7 @@ import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { encryptData } from "@/utils/encryption/encrypt-data";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { EyeIcon, EyeSlashIcon, LockClosedIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon, InformationCircleIcon, LockClosedIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { setMasterPassword } from '@/lib/wallet-slice'; // We'll create this action
 import { useAppDispatch } from "@/hooks/use-app-dispatch";
 import TermsConditionsModal from "@/components/modals/terms-and-conditons";
@@ -20,6 +20,9 @@ const ConfirmPasswordForm: React.FC = () => {
     const dispatch = useAppDispatch()
     const [, setWalletLock] = useLocalStorage("walletLocked", 'false');
     const [, setLastActivity] = useLocalStorage('lastActivity', Date.now().toString());
+    const [, setEncryptedPassword] = useLocalStorage("encryptedPassword", '');
+    const [, setIv] = useLocalStorage("iv", '');
+    const [understoodPassword, setUnderstoodPassword] = useState(false);
 
     const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPassword(e.target.value);
@@ -34,10 +37,13 @@ const ConfirmPasswordForm: React.FC = () => {
 
     const handleStorePassword = async () => {
         try {
+            localStorage.clear();
             const { encryptedPassword, iv } = await encryptData(password);
             dispatch(setMasterPassword({ encryptedPassword, iv }));
             // localStorage.setItem('walletLocked', 'false');
             setWalletLock
+            setEncryptedPassword(encryptedPassword);
+            setIv(iv);
             //localStorage.setItem('lastActivity', Date.now().toString());
             setLastActivity
         } catch (error) {
@@ -89,6 +95,15 @@ const ConfirmPasswordForm: React.FC = () => {
         setShowPassword(!showPassword);
     };
 
+    const isFormValid = () => {
+        return (
+            password.length >= 8 &&
+            password === confirmPassword &&
+            understoodPassword &&
+            !passwordError
+        );
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -129,6 +144,7 @@ const ConfirmPasswordForm: React.FC = () => {
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                     Password
                                 </label>
+                                <p>Passwords should be at least 8 characters in length, including letters and numbers</p>
                                 <div className="mt-1 relative rounded-md shadow-sm">
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -175,12 +191,33 @@ const ConfirmPasswordForm: React.FC = () => {
                                 )}
                             </div>
 
+                            <div className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id="understoodPassword"
+                                    checked={understoodPassword}
+                                    onChange={(e) => setUnderstoodPassword(e.target.checked)}
+                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                />
+                                <label htmlFor="understoodPassword" className="ml-2 block text-sm text-gray-900">
+                                    I understand that Fiatsend can't recover the password.{' '}
+                                    <a href="#" className="text-indigo-600 hover:text-indigo-500 inline-flex items-center">
+                                        Learn more
+                                        <InformationCircleIcon className="h-4 w-4 ml-1" />
+                                    </a>
+                                </label>
+                            </div>
+
                             <div>
                                 <button
                                     type="submit"
-                                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isFormValid()
+                                        ? 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        }`}
+                                    disabled={!isFormValid()}
                                 >
-                                    Create Password
+                                    Continue
                                 </button>
                             </div>
                         </motion.form>

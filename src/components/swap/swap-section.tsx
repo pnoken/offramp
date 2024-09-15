@@ -1,10 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowsUpDownIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { SwapInput } from "../ui/input/swap-input";
 import { Drawer } from "../ui/drawer/drawer";
-import { DialogTitle } from "@headlessui/react";
+import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
+import ActiveExchanges from "../exchanges/active";
+import { ActiveExchangesList } from "../drawer/content/list-exchanges";
+import { RootState } from "@/lib/store";
+import { getStoredCredential, storeCredential } from '@/utils/secure-storage';
+import { createExchange } from "@/lib/exchange-slice";
+import { Offering } from "@tbdex/http-client";
+
 
 export const SwapSection: React.FC<{
     selectedCurrencyPair: { from: string; to: string };
@@ -12,8 +19,11 @@ export const SwapSection: React.FC<{
     amount: string;
     onAmountChange: (value: string) => void;
     onReviewExchange: () => void;
-}> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange, onReviewExchange }) => {
+    offering: Offering;
+}> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange, onReviewExchange, offering }) => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [hasCredentials, setHasCredentials] = useState(false);
+    const [error, setError] = useState('');
 
     const handleReset = () => {
         onAmountChange('');
@@ -21,12 +31,35 @@ export const SwapSection: React.FC<{
     };
 
     const currencies = ["GHS", "USDC", "KES", "USD", "NGN", "GBP", "EUR"];
+    const { status } = useAppSelector((state: RootState) => state.offering);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (!selectedCurrencyPair.from && !selectedCurrencyPair.to) {
             onCurrencyPairSelect('GHS', 'USDC');
         }
     }, [selectedCurrencyPair.from, selectedCurrencyPair.to, onCurrencyPairSelect]);
+
+
+    const performExchange = useCallback(async () => {
+        try {
+            const payoutPaymentDetails = {
+                address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0"
+            };
+
+            const result = await dispatch(createExchange({
+                offering,
+                amount,
+                payoutPaymentDetails
+            }))
+
+            console.log('Exchange created:', result);
+        } catch (error) {
+            console.error('Failed to create exchange:', error);
+            setError('Failed to create exchange. Please try again.');
+        }
+    }, [dispatch, offering, amount]);
+
 
     const handleFromCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onCurrencyPairSelect(e.target.value, selectedCurrencyPair.to);
@@ -38,6 +71,12 @@ export const SwapSection: React.FC<{
 
     const handleAmountChange = (value: string) => {
         onAmountChange(value);
+    };
+
+    const isExchangeValid = () => {
+        return (
+            status === "succeeded" && Number(amount) > 0
+        );
     };
 
     const CurrencySelect: React.FC<{
@@ -84,6 +123,18 @@ export const SwapSection: React.FC<{
             transition={{ duration: 0.5 }}
             className="flex flex-col p-4 sm:p-8 my-4 sm:my-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl shadow-2xl"
         >
+            <div className="bg-white/10 p-4 sm:p-6 rounded-xl mb-6">
+                <div className="flex justify-between items-center mb-2">
+                    <label className="text-white/80">Active Transactions</label>
+                    <button
+                        className="text-white/80 hover:text-white"
+                        onClick={() => setIsDrawerOpen(true)}
+                    >
+                        View All
+                    </button>
+                </div>
+                <ActiveExchanges />
+            </div>
             <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
                 <CurrencySelect
                     value={selectedCurrencyPair.from || 'GHS'}
@@ -126,13 +177,19 @@ export const SwapSection: React.FC<{
             <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="mt-4 bg-emerald-400 text-white py-3 sm:py-4 px-6 sm:px-8 rounded-full font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-                onClick={onReviewExchange}
+                className={`mt-4 py-3 sm:py-4 px-6 sm:px-8 rounded-full font-bold text-base sm:text-lg shadow-lg  ${isExchangeValid() ? 'bg-emerald-400 text-white hover:shadow-xl transition-all duration-300' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                onClick={performExchange}
+                disabled={!isExchangeValid()}
             >
-                {Number(amount) > 0 ? "Review Exchange" : "Exchange"}
+                {"Exchange"}
             </motion.button>
 
-            <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} ><div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+            <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen}>
+                <ActiveExchangesList onClose={() => setIsDrawerOpen(false)} />
+            </Drawer>
+
+            {/* <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} >
+                <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
                 <div className="flex flex-col p-4">
                     <DialogTitle as="h3" className="text-lg font-medium leading-6 text-gray-900 mb-4">
                         Exchange Settings
@@ -162,7 +219,7 @@ export const SwapSection: React.FC<{
                         Apply Settings
                     </button>
                 </div>
-            </div></Drawer>
+            </div></Drawer> */}
         </motion.div>
     );
 };
