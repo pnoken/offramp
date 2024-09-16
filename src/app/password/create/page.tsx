@@ -58,7 +58,7 @@ const ConfirmPasswordForm: React.FC = () => {
         }
     };
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLInputElement>) => {
         e.preventDefault();
         if (password.length < 8) {
             setPasswordError('Password must be at least 8 characters long');
@@ -67,17 +67,18 @@ const ConfirmPasswordForm: React.FC = () => {
         if (password === confirmPassword) {
             await handleStorePassword();
             const importType = localStorage.getItem('importType');
+            console.log('Import type:', importType); // Debug log
 
             if (importType === 'privateKey') {
+                console.log('Redirecting to privatekey import'); // Debug log
                 router.push('/account/privatekey/import');
             } else if (importType === 'json') {
+                console.log('Redirecting to restore-json'); // Debug log
                 router.push('/account/restore-json');
             } else {
+                console.log('Redirecting to new-did'); // Debug log
                 router.push('/account/new-did');
             }
-
-            // Optionally, clear the importType from localStorage
-            // localStorage.removeItem("importType");
         } else {
             setPasswordError("Passwords do not match");
         }

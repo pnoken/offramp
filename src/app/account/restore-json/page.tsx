@@ -9,15 +9,6 @@ import { useRouter } from 'next/navigation';
 const ImportPrivateKey: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const router = useRouter();
-
-    useEffect(() => {
-        const password = localStorage.getItem('fs-encryptedPassword');
-        if (!password) {
-            // If no password is set, redirect to password creation
-            router.push('/password/create');
-        }
-    }, [router]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
