@@ -1,6 +1,6 @@
 # fsWallet: Web5 Wallet for Cross-Border Transfers in Africa
 
-![fsWallet Logo](./src/app/favicon.ico)
+![fsWallet Logo](./public//favicon.ico)
 
 ## Overview
 

@@ -11,6 +11,7 @@ import { RootState } from '@/lib/store';
 import Spinner from '../spinner';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import RatingPopup from '../popup/rating';
 
 interface OfferingDetailsProps {
     onBack: () => void;
@@ -25,6 +26,8 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     const { customerDid } = useAppSelector((state: RootState) => state.wallet);
     const [hasFetched, setHasFetched] = useState(false);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [showRatingPopup, setShowRatingPopup] = useState(false);
+
 
     const mostRecentExchange = exchanges[exchanges.length - 1];
 
@@ -60,20 +63,24 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
 
             if (order.meta.requestStatus = "fulfilled") {
                 toast.success('Order placed successfully!');
+                setShowRatingPopup(true);
             }
 
-
-
-            // Redirect to a success page or dashboard
-            setTimeout(() => {
-                router.push('/');
-            }, 2000); // Redirect after 2 seconds
         } catch (error) {
             console.error('Failed to place order:', error);
             toast.error('Failed to place order. Please try again.');
         } finally {
             setIsPlacingOrder(false);
         }
+    };
+
+    const handleRatingSubmit = (rating: number, feedback: string) => {
+        setShowRatingPopup(false);
+        // Redirect to a success page or dashboard
+        setTimeout(() => {
+            router.push('/');
+        }, 2000); // Redirect after 2 seconds
+
     };
 
     const handleCancel = async () => {
@@ -87,14 +94,8 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
 
             if (order.meta.requestStatus = "fulfilled") {
                 toast.success('Order cancelled successfully!');
+                setShowRatingPopup(true);
             }
-
-
-
-            // Redirect to a success page or dashboard
-            setTimeout(() => {
-                router.push('/');
-            }, 2000); // Redirect after 2 seconds
         } catch (error) {
             console.error('Failed to place order:', error);
             toast.error('Failed to place order. Please try again.');
@@ -194,6 +195,14 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                         </motion.button>
                     </div>
                 </motion.div>
+                {
+                    showRatingPopup && (
+                        <RatingPopup
+                            isOpen={showRatingPopup}
+                            onSubmit={handleRatingSubmit}
+                            onClose={() => setShowRatingPopup(false)}
+                        />)
+                }
             </div>
         </motion.div>
     );
