@@ -171,6 +171,7 @@ export const placeOrder = createAsyncThunk<any, {
 
             await order.sign(signedCustomerDid);
             const response = await TbdexHttpClient.submitOrder(order);
+            console.log("response", response);
             return response;
         } catch (error) {
             console.error('Failed to place order', error);
@@ -229,10 +230,10 @@ const exchangeSlice = createSlice({
             .addCase(closeExchange.fulfilled, (state, action) => {
                 state.isCreating = false;
                 // Update the specific exchange in the exchanges array
-                const index = state.exchanges.findIndex(e => e.id === action.payload.id);
-                if (index !== -1) {
-                    state.exchanges[index] = action.payload;
-                }
+                // const index = state.exchanges.findIndex(e => e.exchangeId === action.payload.exchangeId);
+                // if (index !== -1) {
+                //     state.exchanges[index] = action.payload;
+                // }
                 state.error = null;
             })
             .addCase(closeExchange.rejected, (state, action) => {
@@ -246,10 +247,10 @@ const exchangeSlice = createSlice({
             .addCase(placeOrder.fulfilled, (state, action) => {
                 state.isCreating = false;
                 // Update the specific exchange in the exchanges array
-                const index = state.exchanges.findIndex(e => e.exchangeId === action.payload.id);
-                if (index !== -1) {
-                    state.exchanges[index] = action.payload;
-                }
+                // const index = state.exchanges.findIndex(e => e.exchangeId === action.payload.exchangeId);
+                // if (index !== -1) {
+                //     state.exchanges[index] = action.payload;
+                // }
                 state.error = null;
             })
             .addCase(placeOrder.rejected, (state, action) => {

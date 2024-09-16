@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import VerifiableCredentialsForm from '@/components/credentials/verifiable-credentials-form';
 import { closeExchange, createExchange, fetchExchanges, placeOrder } from '@/lib/exchange-slice';
-import { mockProviderDids } from '@/constants/mockDids';
+import { mockProviderDids, pfiAllowList } from '@/constants/mockDids';
 import { RootState } from '@/lib/store';
 import Spinner from '../spinner';
 import { useRouter } from 'next/navigation';
@@ -26,7 +26,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     const [hasFetched, setHasFetched] = useState(false);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-    const mostRecentExchange = exchanges[0];
+    const mostRecentExchange = exchanges[exchanges.length - 1];
 
     const fetchActiveExchanges = useCallback(async () => {
 
@@ -45,7 +45,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     }
 
     if (!mostRecentExchange) {
-        return <div>No active exchanges found.</div>;
+        return <Spinner />
     }
 
     const handlePlaceOrder = async () => {
@@ -53,16 +53,20 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
 
         setIsPlacingOrder(true);
         try {
-            await dispatch(placeOrder({
+            const order = await dispatch(placeOrder({
                 exchangeId: mostRecentExchange.id,
                 pfiUri: mostRecentExchange.pfiDid
-            })).unwrap();
+            }));
 
-            toast.success('Order placed successfully!');
+            if (order.meta.requestStatus = "fulfilled") {
+                toast.success('Order placed successfully!');
+            }
+
+
 
             // Redirect to a success page or dashboard
             setTimeout(() => {
-                router.push('/dashboard');
+                router.push('/');
             }, 2000); // Redirect after 2 seconds
         } catch (error) {
             console.error('Failed to place order:', error);
@@ -72,16 +76,37 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
         }
     };
 
-    const handleCancel = () => {
-        dispatch(closeExchange({
-            exchangeId: mostRecentExchange.id,
-            pfiUri: mostRecentExchange.pfiDid,
-            reason: "User cancelled the exchange"
-        }));
+    const handleCancel = async () => {
+        setIsPlacingOrder(true);
+        try {
+            const order = await dispatch(closeExchange({
+                exchangeId: mostRecentExchange.id,
+                pfiUri: mostRecentExchange.pfiDid,
+                reason: "User cancelled the exchange"
+            }));
+
+            if (order.meta.requestStatus = "fulfilled") {
+                toast.success('Order cancelled successfully!');
+            }
+
+
+
+            // Redirect to a success page or dashboard
+            setTimeout(() => {
+                router.push('/');
+            }, 2000); // Redirect after 2 seconds
+        } catch (error) {
+            console.error('Failed to place order:', error);
+            toast.error('Failed to place order. Please try again.');
+        } finally {
+            setIsPlacingOrder(false);
+        }
     };
 
 
     const { id, payinAmount, payoutAmount, payinCurrency, payoutCurrency, pfiDid } = mostRecentExchange;
+    const pfiInfo = pfiAllowList.find(pfi => pfi.uri === pfiDid);
+    const pfiName = pfiInfo ? pfiInfo.name : 'Unknown Provider';
 
     return (
         <motion.div
@@ -96,7 +121,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                     Back to Swap
                 </button>
                 <h2 className="text-3xl font-bold mb-6">Exchange Details</h2>
-                <h3>id: {id}</h3>
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -146,7 +171,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                     </div>
                     <div className="bg-white/10 p-4 rounded-xl mb-8">
                         <p className="text-sm text-white/80 mb-2">Provider</p>
-                        <p className="text-lg font-semibold text-white">{pfiDid}</p>
+                        <p className="text-lg font-semibold text-white">{pfiName}</p>
                     </div>
                     <div className="flex space-x-4">
                         <motion.button
@@ -162,6 +187,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handleCancel}
+                            disabled={isPlacingOrder}
                             className="flex-1 bg-red-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                         >
                             Cancel
