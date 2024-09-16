@@ -19,18 +19,20 @@ const VerifiableCredentialsForm: React.FC<VerifiableCredentialsFormProps> = ({ o
         event.preventDefault();
         setIsLoading(true);
 
+
         const credentials = { customerName: name, countryCode, customerDID: customerDid.uri };
 
         try {
             const token = await fetchCredentialToken(credentials);
             dispatch(setUserCredentials(token));
-            onComplete();
             toast.success('Credentials set successfully!');
+            onComplete();
         } catch (error) {
             console.error('Failed to set credentials:', error);
             toast.error('Failed to set credentials. Please try again.');
         } finally {
             setIsLoading(false);
+            onComplete()
         }
     };
 
