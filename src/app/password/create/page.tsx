@@ -72,7 +72,7 @@ const ConfirmPasswordForm: React.FC = () => {
             if (importType === 'privateKey') {
                 console.log('Redirecting to privatekey import'); // Debug log
                 router.push('/account/privatekey/import');
-            } else if (importType === 'json') {
+            } if (importType === 'json') {
                 console.log('Redirecting to restore-json'); // Debug log
                 router.push('/account/restore-json');
             } else {
