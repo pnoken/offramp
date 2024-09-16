@@ -13,6 +13,8 @@ import { createExchange } from "@/lib/exchange-slice";
 import { Offering } from "@tbdex/http-client";
 import { Modal } from "../ui/modal/popup";
 import OfferingDetails from '../offerings/offering-details';
+import SettingsDrawer from "../ui/drawer/settings";
+import { SettingContent } from "../drawer/content/settings";
 
 export const SwapSection: React.FC<{
     selectedCurrencyPair: { from: string; to: string };
@@ -234,7 +236,14 @@ export const SwapSection: React.FC<{
                         >
                             {"Exchange"}
                         </motion.button>
-
+                        {
+                            isDrawerOpen && <SettingsDrawer
+                                isOpen={isDrawerOpen}
+                                onClose={() => setIsDrawerOpen(false)}
+                            >
+                                <SettingContent />
+                            </SettingsDrawer>
+                        }
 
                     </motion.div>
                 )}
