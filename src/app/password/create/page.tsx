@@ -39,11 +39,9 @@ const ConfirmPasswordForm: React.FC = () => {
         try {
             const { encryptedPassword, iv } = await encryptData(password);
             dispatch(setMasterPassword({ encryptedPassword, iv }));
-            // localStorage.setItem('walletLocked', 'false');
             setWalletLock
             setEncryptedPassword(encryptedPassword);
             setIv(iv);
-            //localStorage.setItem('lastActivity', Date.now().toString());
             setLastActivity
         } catch (error) {
             console.error('Error encrypting password:', error);
@@ -60,32 +58,26 @@ const ConfirmPasswordForm: React.FC = () => {
         }
     };
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (password.length < 8) {
             setPasswordError('Password must be at least 8 characters long');
             return;
         }
         if (password === confirmPassword) {
-            handleStorePassword().then(() => {
-                const importType = localStorage.getItem('importType');
-                console.log("import type", importType);
-                if (importType === 'privateKey') {
-                    router.push('/account/privatekey/import');
-                }
-                else if (importType === 'json') {
-                    router.push('/account/restore-json');
-                }
-                else {
-                    // Default route if importType is not set or is an unexpected value
-                    router.push('/account/new-did');
-                }
-                // Clear the importType from localStorage
+            await handleStorePassword();
+            const importType = localStorage.getItem('importType');
 
-            }).catch((error) => {
-                console.error('Error storing password:', error);
-                // Handle the error appropriately, maybe show an error message to the user
-            });
+            if (importType === 'privateKey') {
+                router.push('/account/privatekey/import');
+            } else if (importType === 'json') {
+                router.push('/account/restore-json');
+            } else {
+                router.push('/account/new-did');
+            }
+
+            // Optionally, clear the importType from localStorage
+            // localStorage.removeItem("importType");
         } else {
             setPasswordError("Passwords do not match");
         }
