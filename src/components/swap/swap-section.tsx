@@ -38,7 +38,7 @@ export const SwapSection: React.FC<{
 
     const currencies = ["GHS", "USDC", "KES", "USD", "NGN", "GBP", "EUR"];
     const { status } = useAppSelector((state: RootState) => state.offering);
-    const { exchange } = useAppSelector((state: RootState) => state.exchange);
+    const { exchange, isCreating } = useAppSelector((state: RootState) => state.exchange);
     const dispatch = useAppDispatch();
     const { exchanges } = useAppSelector((state: RootState) => state.exchange);
 
@@ -232,7 +232,7 @@ export const SwapSection: React.FC<{
                             whileTap={{ scale: 0.95 }}
                             className={`mt-4 py-3 sm:py-4 px-6 sm:px-8 rounded-full font-bold text-base sm:text-lg shadow-lg  ${isExchangeValid() ? 'bg-emerald-400 text-white hover:shadow-xl transition-all duration-300' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                             onClick={performExchange}
-                            disabled={!isExchangeValid()}
+                            disabled={!isExchangeValid() || isCreating}
                         >
                             {"Exchange"}
                         </motion.button>

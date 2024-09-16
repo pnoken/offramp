@@ -76,12 +76,13 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
 
     const handleRatingSubmit = (rating: number, feedback: string) => {
         setShowRatingPopup(false);
-        // Redirect to a success page or dashboard
-        setTimeout(() => {
-            router.push('/');
-        }, 2000); // Redirect after 2 seconds
-
+        router.push('/');
     };
+
+    const handleRatingsClose = () => {
+        setShowRatingPopup(false)
+        router.push('/');
+    }
 
     const handleCancel = async () => {
         setIsPlacingOrder(true);
@@ -200,7 +201,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                         <RatingPopup
                             isOpen={showRatingPopup}
                             onSubmit={handleRatingSubmit}
-                            onClose={() => setShowRatingPopup(false)}
+                            onClose={handleRatingsClose}
                         />)
                 }
             </div>
