@@ -16,7 +16,6 @@ const NewSeedPhrase: React.FC = () => {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const dispatch = useAppDispatch();
-    const [, setCustomerDid] = useLocalStorage('customerDid', null);
 
     const handleIsSaved = () => {
         router.push("/create-done");
@@ -24,11 +23,11 @@ const NewSeedPhrase: React.FC = () => {
 
     const recreateDidAfterRefresh = useCallback(async () => {
         try {
-            dispatch(createNewWallet()).then(() => setCustomerDid(customerDid));
+            dispatch(createNewWallet());
         } catch (error) {
             console.error('Failed to create new wallet:', error);
         }
-    }, [dispatch, setCustomerDid, customerDid]);
+    }, [dispatch]);
 
     useEffect(() => {
         setIsModalOpen(true);

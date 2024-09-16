@@ -14,13 +14,12 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 const WebWallet: React.FC = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [, setCustomerDid] = useLocalStorage('customerDid', null);
   const [isOpen, setIsOpen] = useState(false);
   const { customerDid } = useAppSelector((state) => state.wallet);
 
   const handleCreateNewWallet = async () => {
     try {
-      dispatch(createNewWallet()).then(() => setCustomerDid(customerDid)).then(() => router.push('/password/create'));
+      dispatch(createNewWallet()).then(() => router.push('/password/create'));
     } catch (error) {
       console.error('Failed to create new wallet:', error);
     }
