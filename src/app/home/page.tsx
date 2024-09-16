@@ -7,6 +7,7 @@ import Earnings from '@/components/dashboard/content/earning';
 import Exchange from '@/components/dashboard/content/exchange';
 import MobileSidebar from '@/components/dashboard/mobile-sidebar';
 import { withWalletLock } from '@/hocs/wallet-lock';
+import { TransactionHistory } from '@/components/dashboard/content/transactions';
 
 const Dashboard: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
@@ -34,8 +35,8 @@ const Dashboard: React.FC = () => {
         switch (activeComponent) {
             case 'Portfolio':
                 return <Portfolio />;
-            case 'Earnings':
-                return <Earnings />;
+            case 'Transactions':
+                return <TransactionHistory />;
             case 'Exchange':
                 return <Exchange />;
             default:
@@ -53,10 +54,7 @@ const Dashboard: React.FC = () => {
             {/* Sidebar for desktop */}
             {!isMobile && (
                 <Sidebar
-                    isOpen={isSidebarOpen}
-                    toggleSidebar={toggleSidebar}
                     setActiveComponent={setActiveComponent}
-                    isMobile={isMobile}
                 />
             )}
 

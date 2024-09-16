@@ -6,7 +6,7 @@ import { SwapInput } from "../ui/input/swap-input";
 import { Drawer } from "../ui/drawer/drawer";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
 import ActiveExchanges from "../exchanges/active";
-import { ActiveExchangesList } from "../drawer/content/list-exchanges";
+// import { ActiveExchangesList } from "../drawer/content/list-exchanges";
 import { RootState } from "@/lib/store";
 import { getStoredCredential, storeCredential } from '@/utils/secure-storage';
 import { createExchange } from "@/lib/exchange-slice";
@@ -38,6 +38,7 @@ export const SwapSection: React.FC<{
     const { status } = useAppSelector((state: RootState) => state.offering);
     const { exchange } = useAppSelector((state: RootState) => state.exchange);
     const dispatch = useAppDispatch();
+    const { exchanges } = useAppSelector((state: RootState) => state.exchange);
 
     useEffect(() => {
         if (!selectedCurrencyPair.from && !selectedCurrencyPair.to) {
@@ -145,7 +146,7 @@ export const SwapSection: React.FC<{
                         transition={{ duration: 0.5 }}
                         className="flex flex-col p-4 sm:p-8 my-4 sm:my-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl shadow-2xl"
                     >
-                        <div className="bg-white/10 p-4 sm:p-6 rounded-xl mb-6">
+                        {/* {exchanges.length > 0 && <div className="bg-white/10 p-4 sm:p-6 rounded-xl mb-6">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-white/80">Active Transactions</label>
                                 <button
@@ -156,7 +157,7 @@ export const SwapSection: React.FC<{
                                 </button>
                             </div>
                             <ActiveExchanges />
-                        </div>
+                        </div>} */}
                         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
                             <CurrencySelect
                                 value={selectedCurrencyPair.from || 'GHS'}
@@ -206,9 +207,7 @@ export const SwapSection: React.FC<{
                             {"Exchange"}
                         </motion.button>
 
-                        <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen}>
-                            <ActiveExchangesList onClose={() => setIsDrawerOpen(false)} />
-                        </Drawer>
+
                     </motion.div>
                 )}
         </>

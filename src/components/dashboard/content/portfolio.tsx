@@ -173,7 +173,7 @@ const Portfolio: React.FC = () => {
     ];
 
     return (
-        <div className="p-4 sm:p-6 flex flex-col justify-center bg-white shadow-md rounded-lg md:ml-64">
+        <div className="p-4 sm:p-6 flex flex-col justify-center bg-white shadow-md rounded-lg md:ml-16">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-100 p-4 rounded-lg">
                 <div className="mb-4 sm:mb-0 bg-white p-3 rounded-md shadow-sm">
                     <p className="text-sm text-gray-600">GHS Bank Account</p>

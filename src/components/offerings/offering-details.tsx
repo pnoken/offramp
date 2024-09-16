@@ -5,9 +5,12 @@ import { Offering } from '@tbdex/http-client';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import VerifiableCredentialsForm from '@/components/credentials/verifiable-credentials-form';
-import { createExchange } from '@/lib/exchange-slice';
+import { closeExchange, createExchange, fetchExchanges, placeOrder } from '@/lib/exchange-slice';
 import { mockProviderDids } from '@/constants/mockDids';
 import { RootState } from '@/lib/store';
+import Spinner from '../spinner';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 interface OfferingDetailsProps {
     onBack: () => void;
@@ -16,21 +19,69 @@ interface OfferingDetailsProps {
 const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     onBack
 }) => {
+    const dispatch = useAppDispatch();
+    const router = useRouter();
     const { exchanges, isFetching, error } = useAppSelector((state: RootState) => state.exchange);
+    const { customerDid } = useAppSelector((state: RootState) => state.wallet);
+    const [hasFetched, setHasFetched] = useState(false);
+    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-    const handlePlaceOrder = () => {
-        // Implement place order logic here
-        console.log('Placing order...');
+    const mostRecentExchange = exchanges[0];
+
+    const fetchActiveExchanges = useCallback(async () => {
+
+        const pfiUris = Object.values(mockProviderDids).map(pfi => pfi.uri);
+        await Promise.all(pfiUris.map(uri => dispatch(fetchExchanges(uri))));
+        setHasFetched(true);
+
+    }, []);
+
+    useEffect(() => {
+        fetchActiveExchanges();
+    }, []);
+
+    if (isFetching) {
+        return <Spinner />;
+    }
+
+    if (!mostRecentExchange) {
+        return <div>No active exchanges found.</div>;
+    }
+
+    const handlePlaceOrder = async () => {
+        if (!mostRecentExchange) return;
+
+        setIsPlacingOrder(true);
+        try {
+            await dispatch(placeOrder({
+                exchangeId: mostRecentExchange.id,
+                pfiUri: mostRecentExchange.pfiDid
+            })).unwrap();
+
+            toast.success('Order placed successfully!');
+
+            // Redirect to a success page or dashboard
+            setTimeout(() => {
+                router.push('/dashboard');
+            }, 2000); // Redirect after 2 seconds
+        } catch (error) {
+            console.error('Failed to place order:', error);
+            toast.error('Failed to place order. Please try again.');
+        } finally {
+            setIsPlacingOrder(false);
+        }
     };
 
     const handleCancel = () => {
-        // Implement cancel logic here
-        console.log('Cancelling order...');
-        onBack();
+        dispatch(closeExchange({
+            exchangeId: mostRecentExchange.id,
+            pfiUri: mostRecentExchange.pfiDid,
+            reason: "User cancelled the exchange"
+        }));
     };
 
-    const mostRecentExchange = exchanges[0];
-    const { id, payinAmount, payoutAmount, payinCurrency, payoutCurrency } = mostRecentExchange;
+
+    const { id, payinAmount, payoutAmount, payinCurrency, payoutCurrency, pfiDid } = mostRecentExchange;
 
     return (
         <motion.div
@@ -95,16 +146,17 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                     </div>
                     <div className="bg-white/10 p-4 rounded-xl mb-8">
                         <p className="text-sm text-white/80 mb-2">Provider</p>
-                        <p className="text-lg font-semibold text-white">{id}</p>
+                        <p className="text-lg font-semibold text-white">{pfiDid}</p>
                     </div>
                     <div className="flex space-x-4">
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handlePlaceOrder}
-                            className="flex-1 bg-emerald-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                            disabled={isPlacingOrder}
+                            className="flex-1 bg-emerald-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Place Order
+                            {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
                         </motion.button>
                         <motion.button
                             whileHover={{ scale: 1.05 }}

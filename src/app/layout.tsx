@@ -4,6 +4,7 @@ import "./globals.css";
 import { ReduxProvider } from "@/redux/provider";
 import { Suspense } from "react";
 import Spinner from "@/components/spinner";
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
 
       <body className={inter.className}>
         <Suspense fallback={<Spinner />}>
+          <Toaster />
           <ReduxProvider>{children}</ReduxProvider>
         </Suspense>
       </body>

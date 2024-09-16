@@ -6,9 +6,7 @@ import SwapSection from '@/components/swap/swap-section';
 import { OfferingSection } from '@/components/offerings/offering-section';
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
 import { fetchOfferings } from '@/lib/offering-slice';
-import { createExchange } from '@/lib/exchange-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
-import OfferingDetails from '@/components/offerings/offering-details';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 //import { Offering as Offering } from '@/types/offering';
@@ -137,18 +135,6 @@ const Exchange: React.FC = () => {
         }
     }, [matchedOfferings, selectedOffering]);
 
-    // if (showOfferingDetails) {
-    //     return (
-    //         <OfferingDetails
-    //             offering={selectedOffering as Offering}
-    //             fromCurrency={selectedCurrencyPair.from}
-    //             toCurrency={selectedCurrencyPair.to}
-    //             amount={amount}
-    //             onStartExchange={handleStartExchange}
-    //             onBack={() => setShowOfferingDetails(false)}
-    //         />
-    //     );
-    // }
 
     return (
         <motion.div

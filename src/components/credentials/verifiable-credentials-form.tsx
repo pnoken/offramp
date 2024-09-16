@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/use-app-dispatch';
 import { setUserCredentials } from '@/lib/wallet-slice';
 import { fetchCredentialToken } from '@/utils/request/fetch-credential-token';
+import { toast } from 'react-hot-toast';
 
 interface VerifiableCredentialsFormProps {
     onComplete: () => void;
@@ -12,62 +13,64 @@ const VerifiableCredentialsForm: React.FC<VerifiableCredentialsFormProps> = ({ o
     const [name, setName] = useState('');
     const [countryCode, setCountryCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { did } = useAppSelector((state) => state.wallet);
+    const { customerDid } = useAppSelector((state) => state.wallet);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
 
-        const credentials = {
-            customerName: name,
-            countryCode: countryCode,
-            customerDID: did
+        const credentials = { customerName: name, countryCode, customerDID: customerDid.uri };
+
+        try {
+            const token = await fetchCredentialToken(credentials);
+            dispatch(setUserCredentials(token));
+            onComplete();
+            toast.success('Credentials set successfully!');
+        } catch (error) {
+            console.error('Failed to set credentials:', error);
+            toast.error('Failed to set credentials. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
-
-        fetchCredentialToken(credentials)
-            .then((token) => dispatch(setUserCredentials(token)))
-            .then(() => onComplete())
-            .catch((error) => {
-                console.error('Failed to set credentials:', error)
-                // Handle error (e.g., show error message to user)
-                setIsLoading(false)
-            }
-            )
-    }
-
+    };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label htmlFor="name" className="block text-sm font-medium text-white">Name</label>
-                <input
-                    type="text"
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-            </div>
-            <div>
-                <label htmlFor="countryCode" className="block text-sm font-medium text-white">Country Code</label>
-                <input
-                    type="text"
-                    id="countryCode"
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                />
-            </div>
-            <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-                {isLoading ? 'Loading...' : 'Get Credentials'}
-            </button>
-        </form>
+        <div className="max-w-md mx-auto"> {/* Add this wrapper div */}
+            <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800 p-6 rounded-lg shadow-md">
+                <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-300">Full Name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                        placeholder="John Doe"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="countryCode" className="block text-sm font-medium text-gray-300">Country Code</label>
+                    <input
+                        type="text"
+                        id="countryCode"
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value.toUpperCase())}
+                        required
+                        maxLength={2}
+                        className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                        placeholder="US"
+                    />
+                </div>
+                <button
+                    type="submit"
+                    disabled={isLoading || !name || !countryCode}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isLoading ? 'Setting Credentials...' : 'Get Credentials'}
+                </button>
+            </form>
+        </div>
     );
 };
 

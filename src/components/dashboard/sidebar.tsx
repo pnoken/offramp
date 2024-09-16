@@ -1,19 +1,31 @@
-import React from 'react';
-import { HomeIcon, ChartBarIcon, CurrencyDollarIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { HomeIcon, ClockIcon, CurrencyDollarIcon, XMarkIcon, Bars3Icon } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
-    isOpen: boolean;
-    toggleSidebar: () => void;
     setActiveComponent: (component: string) => void;
-    isMobile: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, setActiveComponent, isMobile }) => {
+const Sidebar: React.FC<SidebarProps> = ({ setActiveComponent }) => {
+    const [isMobile, setIsMobile] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const menuItems = [
         { name: 'Portfolio', icon: HomeIcon },
-        { name: 'Earnings', icon: ChartBarIcon },
+        { name: 'Transactions', icon: ClockIcon },
         { name: 'Exchange', icon: CurrencyDollarIcon },
     ];
+
+    const toggleSidebar = () => setIsOpen(!isOpen);
 
     return (
         <>
@@ -22,40 +34,37 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, setActiveCompo
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={toggleSidebar} />
             )}
 
+            {/* Mobile toggle button */}
+            {isMobile && (
+                <button
+                    onClick={toggleSidebar}
+                    className="fixed top-4 left-4 z-50 p-2 bg-gray-800 text-white rounded-md"
+                >
+                    {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+                </button>
+            )}
+
             {/* Sidebar */}
             <aside
                 className={`
-                    fixed top-0 left-0 h-full bg-gray-800 text-white transition-all duration-300 ease-in-out z-50
-                    ${isOpen ? (isMobile ? 'w-64' : 'w-64') : (isMobile ? '-translate-x-full' : 'w-20')}
-                    ${isMobile ? '' : 'hidden md:block'}
+                    fixed top-0 left-0 h-full bg-gray-800 text-white z-50 transition-all duration-300 ease-in-out
+                    ${isMobile ? (isOpen ? 'w-64' : '-translate-x-full') : 'w-20'}
                 `}
             >
                 <div className="flex flex-col h-full p-4">
-                    {/* Toggle Button */}
-                    <button
-                        onClick={toggleSidebar}
-                        className="self-end p-2 mb-8 focus:outline-none"
-                    >
-                        {isOpen ? (
-                            <XMarkIcon className="h-6 w-6" />
-                        ) : (
-                            <Bars3Icon className="h-6 w-6" />
-                        )}
-                    </button>
-
-                    {/* Menu Items */}
-                    <nav className="flex flex-col space-y-4">
+                    <nav className="flex flex-col space-y-4 mt-8">
                         {menuItems.map((item) => (
                             <button
                                 key={item.name}
                                 onClick={() => {
                                     setActiveComponent(item.name);
-                                    if (isMobile) toggleSidebar();
+                                    if (isMobile) setIsOpen(false);
                                 }}
-                                className="flex items-center space-x-2 text-left hover:bg-gray-700 p-2 rounded transition-colors duration-200"
+                                className="flex items-center justify-center hover:bg-gray-700 p-2 rounded transition-colors duration-200"
+                                title={item.name}
                             >
                                 <item.icon className="h-6 w-6" />
-                                {isOpen && <span>{item.name}</span>}
+                                {isMobile && isOpen && <span className="ml-2">{item.name}</span>}
                             </button>
                         ))}
                     </nav>
