@@ -13,13 +13,6 @@ const ImportPrivateKey: React.FC = () => {
     const [password,] = useLocalStorage('fs-encryptedPassword', '');
 
 
-    useEffect(() => {
-        if (!password) {
-            // If no password is set, redirect to password creation
-            router.push('/password/create');
-        }
-    }, [router, password]);
-
     const handleToggleVisibility = () => {
         setIsVisible(!isVisible);
     };
@@ -70,6 +63,7 @@ const ImportPrivateKey: React.FC = () => {
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            disabled
                             className="w-full flex items-center justify-center px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none transition duration-300 ease-in-out"
                         >
                             <KeyIcon className="w-5 h-5 mr-2" />
