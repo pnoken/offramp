@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 const ImportPrivateKey: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const router = useRouter();
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files ? event.target.files[0] : null;
@@ -34,19 +35,39 @@ const ImportPrivateKey: React.FC = () => {
         console.log("file", file);
     };
 
-    const handleSubmit = () => {
-        if (selectedFile) {
-            loadDID(selectedFile.name);
-            console.log('Selected file:', selectedFile);
+
+    const readFileContent = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result;
-                console.log('File content:', content);
-            };
-            reader.readAsText(selectedFile);
+            reader.onload = (event) => resolve(event.target?.result as string);
+            reader.onerror = (error) => reject(error);
+            reader.readAsText(file);
+        });
+    };
+
+
+    const handleSubmit = async () => {
+        if (selectedFile) {
+            try {
+                const content = await readFileContent(selectedFile);
+                localStorage.setItem('customerDid', content);
+                console.log('DID content set in localStorage:', content);
+                loadDID(selectedFile.name);
+                console.log('Selected file:', selectedFile);
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target?.result;
+                    console.log('File content:', content);
+                };
+                reader.readAsText(selectedFile);
+                router.push("/home");
+            } catch (error) {
+                console.error('Error reading file:', error);
+            }
         } else {
             console.error('No file selected');
         }
+
     };
 
     return (
