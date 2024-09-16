@@ -11,7 +11,9 @@ const DrawerContent: React.FC<DrawerContentProps> = ({ onClose }) => {
     const router = useRouter();
     const handleImport = (type: 'privateKey' | 'json') => {
         localStorage.setItem('importType', type);
-        router.push('/password/create');
+        setTimeout(() => {
+            router.push('/password/create');
+        }, 2000);
         onClose();
     };
     return (

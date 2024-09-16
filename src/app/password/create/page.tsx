@@ -37,7 +37,6 @@ const ConfirmPasswordForm: React.FC = () => {
 
     const handleStorePassword = async () => {
         try {
-            localStorage.clear();
             const { encryptedPassword, iv } = await encryptData(password);
             dispatch(setMasterPassword({ encryptedPassword, iv }));
             // localStorage.setItem('walletLocked', 'false');
@@ -70,16 +69,22 @@ const ConfirmPasswordForm: React.FC = () => {
         if (password === confirmPassword) {
             handleStorePassword().then(() => {
                 const importType = localStorage.getItem('importType');
+                console.log("import type", importType);
                 if (importType === 'privateKey') {
                     router.push('/account/privatekey/import');
-                } else if (importType === 'json') {
+                }
+                else if (importType === 'json') {
                     router.push('/account/restore-json');
-                } else {
-                    // Default fallback, you can change this as needed
+                }
+                else {
+                    // Default route if importType is not set or is an unexpected value
                     router.push('/account/new-did');
                 }
                 // Clear the importType from localStorage
-                localStorage.removeItem('importType');
+
+            }).catch((error) => {
+                console.error('Error storing password:', error);
+                // Handle the error appropriately, maybe show an error message to the user
             });
         } else {
             setPasswordError("Passwords do not match");
