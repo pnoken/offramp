@@ -156,7 +156,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                         <div className="flex justify-between items-center bg-white/10 p-4 rounded-xl">
                             <div className="flex items-center space-x-4">
                                 <Image
-                                    src={`/images/currencies/${payinCurrency.toLowerCase()}.png`}
+                                    src={`/images/currencies/${payoutCurrency.toLowerCase()}.png`}
                                     alt={payoutCurrency}
                                     width={40}
                                     height={40}

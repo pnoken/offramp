@@ -43,11 +43,10 @@ export const SwapSection: React.FC<{
     const { exchanges } = useAppSelector((state: RootState) => state.exchange);
 
     useEffect(() => {
-        if (!selectedCurrencyPair.from && !selectedCurrencyPair.to) {
+        if (!selectedCurrencyPair.from || !selectedCurrencyPair.to) {
             onCurrencyPairSelect('GHS', 'USDC');
         }
     }, [selectedCurrencyPair.from, selectedCurrencyPair.to, onCurrencyPairSelect]);
-
 
     const performExchange = useCallback(async () => {
         if (!offering) {
@@ -103,7 +102,7 @@ export const SwapSection: React.FC<{
             console.error('Failed to create exchange:', error);
             setError('Failed to create exchange. Please try again.');
         }
-    }, [dispatch, offering, amount, onAmountChange]);
+    }, [dispatch, offering, amount, onAmountChange, selectedCurrencyPair.to]);
 
     const handleFromCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onCurrencyPairSelect(e.target.value, selectedCurrencyPair.to);
@@ -162,8 +161,6 @@ export const SwapSection: React.FC<{
 
     return (
         <>
-
-
             {
                 showOfferingDetails ? (
                     <OfferingDetails
@@ -176,21 +173,9 @@ export const SwapSection: React.FC<{
                         transition={{ duration: 0.5 }}
                         className="flex flex-col p-4 sm:p-8 my-4 sm:my-8 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl shadow-2xl"
                     >
-                        {/* {exchanges.length > 0 && <div className="bg-white/10 p-4 sm:p-6 rounded-xl mb-6">
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="text-white/80">Active Transactions</label>
-                                <button
-                                    className="text-white/80 hover:text-white"
-                                    onClick={() => setIsDrawerOpen(true)}
-                                >
-                                    View All
-                                </button>
-                            </div>
-                            <ActiveExchanges />
-                        </div>} */}
                         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
                             <CurrencySelect
-                                value={selectedCurrencyPair.from || 'GHS'}
+                                value={selectedCurrencyPair.from}
                                 onChange={handleFromCurrencyChange}
                                 label="From"
                             />
@@ -203,7 +188,7 @@ export const SwapSection: React.FC<{
                                 <ArrowsUpDownIcon className="h-6 w-6" />
                             </motion.button>
                             <CurrencySelect
-                                value={selectedCurrencyPair.to || 'USDC'}
+                                value={selectedCurrencyPair.to}
                                 onChange={handleToCurrencyChange}
                                 label="To"
                             />
@@ -223,7 +208,7 @@ export const SwapSection: React.FC<{
                                 placeholder="0.00"
                                 value={amount}
                                 onChange={handleAmountChange}
-                                selectValue={selectedCurrencyPair.from || 'GHS'}
+                                selectValue={selectedCurrencyPair.from}
                                 onReset={handleReset}
                             />
                         </div>
@@ -244,12 +229,9 @@ export const SwapSection: React.FC<{
                                 <SettingContent />
                             </SettingsDrawer>
                         }
-
                     </motion.div>
                 )}
         </>
-
-
     );
 };
 

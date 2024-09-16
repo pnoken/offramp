@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { loadDID } from '@/utils/load-write-did';
 import { DocumentArrowUpIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { initializeWallet } from '@/lib/wallet-slice';
 
 const ImportPrivateKey: React.FC = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -51,7 +52,7 @@ const ImportPrivateKey: React.FC = () => {
             try {
                 const content = await readFileContent(selectedFile);
                 localStorage.setItem('customerDid', content);
-                console.log('DID content set in localStorage:', content);
+
                 loadDID(selectedFile.name);
                 console.log('Selected file:', selectedFile);
                 const reader = new FileReader();
@@ -60,6 +61,7 @@ const ImportPrivateKey: React.FC = () => {
                     console.log('File content:', content);
                 };
                 reader.readAsText(selectedFile);
+                initializeWallet();
                 router.push("/home");
             } catch (error) {
                 console.error('Error reading file:', error);

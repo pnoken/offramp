@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, ChartBarIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, ArrowsRightLeftIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 interface MobileSidebarProps {
     setActiveComponent: (component: string) => void;
@@ -9,7 +9,7 @@ interface MobileSidebarProps {
 const MobileSidebar: React.FC<MobileSidebarProps> = ({ setActiveComponent, activeComponent }) => {
     const menuItems = [
         { name: 'Portfolio', icon: HomeIcon },
-        { name: 'Earnings', icon: ChartBarIcon },
+        { name: 'Transactions', icon: ClockIcon },
         { name: 'Exchange', icon: ArrowsRightLeftIcon },
     ];
 
