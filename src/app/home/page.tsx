@@ -7,7 +7,7 @@ import Earnings from '@/components/dashboard/content/earning';
 import Exchange from '@/components/dashboard/content/exchange';
 import MobileSidebar from '@/components/dashboard/mobile-sidebar';
 import { withWalletLock } from '@/hocs/wallet-lock';
-import { TransactionHistory } from '@/components/dashboard/content/transactions';
+import { TransactionList } from '@/components/dashboard/content/transactions';
 
 const Dashboard: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
             case 'Portfolio':
                 return <Portfolio />;
             case 'Transactions':
-                return <TransactionHistory />;
+                return <TransactionList />;
             case 'Exchange':
                 return <Exchange />;
             default:
