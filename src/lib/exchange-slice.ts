@@ -41,7 +41,6 @@ export const createExchange = createAsyncThunk<any, {
     async ({ offering, amount, payoutPaymentDetails }, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
         const { customerCredentials, customerDid } = state.wallet;
-        console.log("customer credentials.", customerCredentials);
         try {
             // Select credentials required for the exchange
             const selectedCredentials = PresentationExchange.selectCredentials({
