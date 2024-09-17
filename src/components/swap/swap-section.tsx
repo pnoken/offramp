@@ -27,6 +27,8 @@ export const SwapSection: React.FC<{
     const [error, setError] = useState('');
     const [exchangeInfo, setExchangeInfo] = useState(null);
     const [showOfferingDetails, setShowOfferingDetails] = useState(false);
+    const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
+    const selectedBalance = tokenBalances.find(token => token.token === selectedCurrencyPair.from)?.amount || 0;
 
     const handleReset = () => {
         onAmountChange('');
@@ -149,12 +151,11 @@ export const SwapSection: React.FC<{
         onAmountChange(value);
     };
 
-    const isExchangeValid = () => {
-        const balance = parseFloat(amount);
-        return (
-            status === "succeeded" && balance > 0 && Number(amount) > 0
-        );
-    };
+    const isExchangeValid = useCallback(() => {
+
+        const enteredAmount = parseFloat(amount);
+        return selectedBalance > 0 && enteredAmount > 0 && !isCreating;
+    }, [amount, selectedBalance, isCreating]);
 
     const CurrencySelect: React.FC<{
         value: string;
@@ -251,7 +252,7 @@ export const SwapSection: React.FC<{
                             whileTap={{ scale: 0.95 }}
                             className={`mt-4 py-3 sm:py-4 px-6 sm:px-8 rounded-full font-bold text-base sm:text-lg shadow-lg  ${isExchangeValid() ? 'bg-emerald-400 text-white hover:shadow-xl transition-all duration-300' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                             onClick={performExchange}
-                            disabled={!isExchangeValid() || isCreating}
+                            disabled={!isExchangeValid()}
                         >
                             {"Exchange"}
                         </motion.button>
