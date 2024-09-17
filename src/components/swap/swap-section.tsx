@@ -150,8 +150,9 @@ export const SwapSection: React.FC<{
     };
 
     const isExchangeValid = () => {
+        const balance = parseFloat(amount);
         return (
-            status === "succeeded" && Number(amount) > 0
+            status === "succeeded" && balance > 0 && Number(amount) > 0
         );
     };
 
