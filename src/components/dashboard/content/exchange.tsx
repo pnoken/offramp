@@ -30,6 +30,9 @@ const Exchange: React.FC = () => {
     useEffect(() => {
         if (Number(amount) > 0) {
             dispatch(fetchOfferings({ from: selectedCurrencyPair.from, to: selectedCurrencyPair.to }));
+            // Reset selected offering when currency pair changes
+            setSelectedOffering(null);
+            setSelectedOfferingId(null);
         }
     }, [amount, selectedCurrencyPair, dispatch]);
 
@@ -131,7 +134,9 @@ const Exchange: React.FC = () => {
 
     useEffect(() => {
         if (matchedOfferings.length > 0 && !selectedOffering) {
-            setSelectedOffering(deserializeOffering(matchedOfferings[0]));
+            const newSelectedOffering = deserializeOffering(matchedOfferings[0]);
+            setSelectedOffering(newSelectedOffering);
+            setSelectedOfferingId(newSelectedOffering.metadata.id);
         }
     }, [matchedOfferings, selectedOffering]);
 

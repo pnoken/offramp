@@ -57,6 +57,7 @@ export const SwapSection: React.FC<{
         try {
 
             const payinPaymentDetails = (() => {
+                console.log("offering", offering);
                 switch (selectedCurrencyPair.from) {
                     case 'USD':
                         return {
