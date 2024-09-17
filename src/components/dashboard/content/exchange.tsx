@@ -15,24 +15,15 @@ import { withCredentials } from '@/hocs/with-credentials';
 
 const Exchange: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { customerDid, customerCredentials } = useAppSelector((state) => state.wallet);
-    const { isCreating, exchange, error } = useAppSelector((state) => state.exchange);
 
     const [selectedCurrencyPair, setSelectedCurrencyPair] = useState({ from: '', to: '' });
     const [amount, setAmount] = useState('');
     const { matchedOfferings = [], status = 'idle', error: offeringsError = null } = useAppSelector((state) => state.offering) || {};
-
-    const [selectedOfferingId, setSelectedOfferingId] = useState<string | null>(null);
-    const [showOfferingDetails, setShowOfferingDetails] = useState(false);
-    const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
     const [timeLeft, setTimeLeft] = useState(42000);
 
     useEffect(() => {
         if (Number(amount) > 0) {
             dispatch(fetchOfferings({ from: selectedCurrencyPair.from, to: selectedCurrencyPair.to }));
-            // Reset selected offering when currency pair changes
-            setSelectedOffering(null);
-            setSelectedOfferingId(null);
         }
     }, [amount, selectedCurrencyPair, dispatch]);
 
@@ -61,28 +52,8 @@ const Exchange: React.FC = () => {
         setSelectedCurrencyPair({ from, to });
     };
 
-    const deserializeOffering = (serializedOffering: any): Offering => {
-        return new Offering(serializedOffering.metadata, serializedOffering.data);
-    };
-
     const handleAmountChange = (value: string) => {
         setAmount(value);
-    };
-
-    const handleOfferingClick = React.useCallback((id: string) => {
-        setSelectedOfferingId(id);
-    }, []);
-
-    const handleOfferingSelect = (offering: Offering) => {
-        setSelectedOffering(offering);
-        setSelectedOfferingId(offering.metadata.id);
-    };
-
-    const handleReviewExchange = () => {
-        if (!selectedOffering) {
-            setSelectedOffering(deserializeOffering(matchedOfferings[0]));
-        }
-        setShowOfferingDetails(true);
     };
 
     const renderOfferings = () => {
@@ -123,22 +94,12 @@ const Exchange: React.FC = () => {
                                 key={offering.metadata.id}
                                 offering={offering as any}
                                 amount={amount}
-                                isSelected={index === 0 || offering.metadata.id === selectedOfferingId}
-                                onClick={() => handleOfferingClick(offering.metadata.id)}
                             />
                         ))}
                     </motion.div>
                 </motion.div>
             );
     };
-
-    useEffect(() => {
-        if (matchedOfferings.length > 0 && !selectedOffering) {
-            const newSelectedOffering = deserializeOffering(matchedOfferings[0]);
-            setSelectedOffering(newSelectedOffering);
-            setSelectedOfferingId(newSelectedOffering.metadata.id);
-        }
-    }, [matchedOfferings, selectedOffering]);
 
 
     return (
@@ -157,9 +118,8 @@ const Exchange: React.FC = () => {
                         selectedCurrencyPair={selectedCurrencyPair}
                         onCurrencyPairSelect={handleCurrencyPairSelect}
                         amount={amount}
-                        offering={selectedOffering as Offering}
+                        offering={matchedOfferings[0] as Offering}
                         onAmountChange={handleAmountChange}
-                        onReviewExchange={handleReviewExchange}
                     />
                 </div>
 

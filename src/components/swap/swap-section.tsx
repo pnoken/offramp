@@ -21,13 +21,10 @@ export const SwapSection: React.FC<{
     onCurrencyPairSelect: (from: string, to: string) => void;
     amount: string;
     onAmountChange: (value: string) => void;
-    onReviewExchange: () => void;
     offering: Offering;
-}> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange, onReviewExchange, offering }) => {
+}> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange, offering }) => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [hasCredentials, setHasCredentials] = useState(false);
     const [error, setError] = useState('');
-    const [showModal, setShowModal] = useState(false);
     const [exchangeInfo, setExchangeInfo] = useState(null);
     const [showOfferingDetails, setShowOfferingDetails] = useState(false);
 

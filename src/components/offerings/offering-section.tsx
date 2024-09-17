@@ -6,9 +6,7 @@ import { motion } from "framer-motion";
 export const OfferingSection: React.FC<{
     offering: Offering;
     amount: string;
-    isSelected?: boolean;
-    onClick?: () => void;
-}> = ({ offering, amount, isSelected = false, onClick }) => {
+}> = ({ offering, amount }) => {
     if (!offering) {
         return (
             <motion.div
@@ -25,15 +23,11 @@ export const OfferingSection: React.FC<{
     const fees = (Number(receivedAmount) * 0.003).toFixed(2);
 
     return (
-        <motion.div
-            className={`${isSelected ? 'bg-gradient-to-r from-green-400 to-emerald-500 p-1 rounded-2xl' : ''}`}
-            onClick={onClick}
-        >
+        <motion.div>
             <OfferingCard
                 currency={offering.data.payout.currencyCode}
                 returnAmount={`${receivedAmount} ${offering.data.payout.currencyCode}`}
                 provider={offering.metadata.from}
-                bestReturn={isSelected}
                 fees={`${fees} ${offering.data.payout.currencyCode}`}
                 slippage={`${offering.data.payoutUnitsPerPayinUnit || "N/A"}`}
             />
