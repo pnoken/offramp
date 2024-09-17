@@ -35,10 +35,11 @@ const serializeExchange = (exchange: Exchange[]) => {
 export const createExchange = createAsyncThunk<any, {
     offering: any;
     amount: string;
+    payinPaymentDetails: any;
     payoutPaymentDetails: any;
 }, { rejectValue: string }>(
     'exchange/create',
-    async ({ offering, amount, payoutPaymentDetails }, thunkAPI) => {
+    async ({ offering, amount, payinPaymentDetails, payoutPaymentDetails }, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
         const { customerCredentials, customerDid } = state.wallet;
         try {
@@ -62,7 +63,9 @@ export const createExchange = createAsyncThunk<any, {
                     payin: {
                         amount: amount,
                         kind: offering.data.payin.methods[0].kind,
-                        paymentDetails: {}, // Ensure this is an empty object, not null
+                        paymentDetails: {
+
+                        }, // Ensure this is an empty object, not null
                     },
                     payout: {
                         kind: offering.data.payout.methods[0].kind,
