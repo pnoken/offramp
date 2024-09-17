@@ -7,7 +7,6 @@ import { storeCredential, getStoredCredential } from '@/utils/secure-storage';
 import { verifyVC } from '@/utils/credentials-verifier';
 import { AppDispatch } from './store';
 
-
 // Define the structure for a token balance
 interface TokenBalance {
     token: string;
@@ -21,7 +20,6 @@ interface PaymentMethods {
     type: string;
     details: {}
 }
-
 
 // Extend the WalletState interface
 interface WalletState {
@@ -44,6 +42,35 @@ interface WalletState {
 
 const storedDid = isClient ? localStorage.getItem('customerDid') : null;
 const storedCredentials = getStoredCredential();
+const STORAGE_KEY = 'wallet_balances';
+
+const initialTokenBalances: TokenBalance[] = [
+    { token: 'USDC', amount: 100.50, usdRate: 1, image: `/images/currencies/usdc.png` },
+    { token: 'USDT', amount: 75.25, usdRate: 1, image: `/images/currencies/usdt.png` },
+    { token: 'GHS', amount: 500.00, usdRate: 0.0833, image: `/images/currencies/ghs.png` },
+    { token: 'KES', amount: 10000.00, usdRate: 0.00694, image: `/images/currencies/kes.png` },
+    { token: 'USD', amount: 500.00, usdRate: 1, image: `/images/currencies/usd.png` },
+    { token: 'NGN', amount: 10000.00, usdRate: 0.00060, image: `/images/currencies/ngn.png` },
+    { token: 'GBP', amount: 300.00, usdRate: 1.315, image: `/images/currencies/gbp.png` },
+    { token: 'EUR', amount: 350.00, usdRate: 1.110, image: `/images/currencies/eur.png` }
+];
+
+// Function to load balances from localStorage
+const loadBalancesFromStorage = (): TokenBalance[] => {
+    if (typeof window !== 'undefined') {
+        const storedBalances = localStorage.getItem(STORAGE_KEY);
+        return storedBalances ? JSON.parse(storedBalances) : initialTokenBalances;
+    }
+    return initialTokenBalances;
+};
+
+
+// Function to save balances to localStorage
+const saveBalancesToStorage = (balances: TokenBalance[]) => {
+    if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(balances));
+    }
+};
 
 const initialState: WalletState = {
     customerDid: storedDid ? JSON.parse(storedDid) : null,
@@ -55,16 +82,7 @@ const initialState: WalletState = {
     encryptedMasterPassword: null,
     iv: null,
     isLocked: true,
-    tokenBalances: [
-        { token: 'USDC', amount: 100.50, usdRate: 1, image: `/images/currencies/usdc.png` },
-        { token: 'USDT', amount: 75.25, usdRate: 1, image: `/images/currencies/usdt.png` },
-        { token: 'GHS', amount: 500.00, usdRate: 0.0833, image: `/images/currencies/ghs.png` },
-        { token: 'KES', amount: 10000.00, usdRate: 0.00694, image: `/images/currencies/kes.png` },
-        { token: 'USD', amount: 500.00, usdRate: 1, image: `/images/currencies/usd.png` },
-        { token: 'NGN', amount: 10000.00, usdRate: 0.00060, image: `/images/currencies/ngn.png` },
-        { token: 'GBP', amount: 300.00, usdRate: 1.315, image: `/images/currencies/gbp.png` },
-        { token: 'EUR', amount: 350.00, usdRate: 1.110, image: `/images/currencies/eur.png` }
-    ],
+    tokenBalances: loadBalancesFromStorage(),
     paymentMethods: [
         {
             type: 'bank_account',
@@ -87,6 +105,13 @@ const initialState: WalletState = {
     ]
 };
 
+// Add this new interface for the balance update payload
+interface BalanceUpdatePayload {
+    fromCurrency: string;
+    toCurrency: string;
+    fromAmount: number;
+    toAmount: number;
+}
 
 // Async thunk to create a new wallet
 export const createNewWallet = createAsyncThunk<
@@ -157,13 +182,6 @@ export const initializeWallet = createAsyncThunk(
     }
 );
 
-// export const initializeCredentials = () => async (dispatch: AppDispatch) => {
-//     const storedCredential = await getStoredCredential();
-//     if (storedCredential && await verifyVC(storedCredential.token)) {
-//         dispatch(setUserCredentials(storedCredential));
-//     }
-// };
-
 const walletSlice = createSlice({
     name: 'wallet',
     initialState,
@@ -221,6 +239,35 @@ const walletSlice = createSlice({
         unlockWallet: (state) => {
             state.isLocked = false;
         },
+        updateBalanceAfterExchange: (state, action: PayloadAction<BalanceUpdatePayload>) => {
+            const { fromCurrency, toCurrency, fromAmount, toAmount } = action.payload;
+
+            // Find and update the 'from' currency balance
+            const fromBalanceIndex = state.tokenBalances.findIndex(tb => tb.token === fromCurrency);
+            if (fromBalanceIndex !== -1) {
+                state.tokenBalances[fromBalanceIndex].amount -= fromAmount;
+            }
+
+            // Find and update the 'to' currency balance
+            const toBalanceIndex = state.tokenBalances.findIndex(tb => tb.token === toCurrency);
+            if (toBalanceIndex !== -1) {
+                state.tokenBalances[toBalanceIndex].amount += toAmount;
+            } else {
+                // If the 'to' currency doesn't exist in the balances, add it
+                state.tokenBalances.push({
+                    token: toCurrency,
+                    amount: toAmount,
+                    usdRate: 1, // You might want to fetch the actual rate
+                    image: `/images/currencies/${toCurrency.toLowerCase()}.png`
+                });
+            }
+            // Save updated balances to localStorage
+            saveBalancesToStorage(state.tokenBalances);
+        },
+        resetBalances: (state) => {
+            state.tokenBalances = initialTokenBalances;
+            saveBalancesToStorage(state.tokenBalances);
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -264,7 +311,9 @@ export const {
     clearWalletState,
     clearCredentials,
     updateTokenBalance,
-    removeTokenBalance
+    removeTokenBalance,
+    updateBalanceAfterExchange,
+    resetBalances
 } = walletSlice.actions; // Export clear actions
 
 export default walletSlice.reducer;

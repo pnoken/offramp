@@ -12,6 +12,7 @@ import Spinner from '../spinner';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import RatingPopup from '../popup/rating';
+import { updateBalanceAfterExchange } from '@/lib/wallet-slice';
 
 interface OfferingDetailsProps {
     onBack: () => void;
@@ -56,12 +57,20 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
 
         setIsPlacingOrder(true);
         try {
-            const order = await dispatch(placeOrder({
+            const result = await dispatch(placeOrder({
                 exchangeId: mostRecentExchange.id,
                 pfiUri: mostRecentExchange.pfiDid
             }));
 
-            if (order.meta.requestStatus = "fulfilled") {
+            if (result.meta.requestStatus === "fulfilled") {
+                // Update balance after successful order placement
+                dispatch(updateBalanceAfterExchange({
+                    fromCurrency: mostRecentExchange.payinCurrency,
+                    toCurrency: mostRecentExchange.payoutCurrency,
+                    fromAmount: parseFloat(mostRecentExchange.payinAmount),
+                    toAmount: parseFloat(mostRecentExchange.payoutAmount)
+                }));
+
                 toast.success('Order placed successfully!');
                 setShowRatingPopup(true);
             }

@@ -94,9 +94,9 @@ export const SwapSection: React.FC<{
             }));
 
             if (result.type === "exchange/create/fulfilled") {
+                setShowOfferingDetails(true);
                 setExchangeInfo(result.payload);
                 onAmountChange(''); // Clear input
-                setShowOfferingDetails(true);
             }
         } catch (error) {
             console.error('Failed to create exchange:', error);
