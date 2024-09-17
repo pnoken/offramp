@@ -36,7 +36,7 @@ export const SwapSection: React.FC<{
         onCurrencyPairSelect('GHS', 'USDC');
     };
 
-    const currencies = ["GHS", "USDC", "KES", "USD", "NGN", "GBP", "EUR"];
+    const currencies = ["GHS", "USDC", "KES", "NGN"];
     const { status } = useAppSelector((state: RootState) => state.offering);
     const { exchange, isCreating } = useAppSelector((state: RootState) => state.exchange);
     const dispatch = useAppDispatch();
@@ -55,6 +55,39 @@ export const SwapSection: React.FC<{
         }
 
         try {
+
+            const payinPaymentDetails = (() => {
+                switch (selectedCurrencyPair.from) {
+                    case 'USD':
+                        return {
+                            accountNumber: "1234567890",
+                            routingNumber: "123456"
+                        };
+                    case 'USDC':
+                        return {
+                            address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0"
+                        };
+                    case 'GHS':
+                    case 'KES':
+                    case 'NGN':
+                        return {
+                            accountNumber: "1234567890",
+                        };
+                    case 'GBP':
+                        return {
+                            accountNumber: "1234567890",
+                            sortCode: "GB231926819"
+                        };
+                    case 'EUR':
+                        return {
+                            accountNumber: "1234567890",
+                            IBAN: "BE29NWBK60161331926819"
+                        };
+                    default:
+                        throw new Error(`Unsupported payout currency: ${selectedCurrencyPair.to}`);
+                }
+            })();
+
             const payoutPaymentDetails = (() => {
                 switch (selectedCurrencyPair.to) {
                     case 'USD':
@@ -80,7 +113,7 @@ export const SwapSection: React.FC<{
                     case 'EUR':
                         return {
                             accountNumber: "1234567890",
-                            IBAN: "GB29NWBK60161331926819"
+                            IBAN: "BE29NWBK60161331926819"
                         };
                     default:
                         throw new Error(`Unsupported payout currency: ${selectedCurrencyPair.to}`);
@@ -90,13 +123,15 @@ export const SwapSection: React.FC<{
             const result = await dispatch(createExchange({
                 offering,
                 amount,
+                payinPaymentDetails,
                 payoutPaymentDetails
             }));
 
             if (result.type === "exchange/create/fulfilled") {
+                onAmountChange('');
                 setShowOfferingDetails(true);
                 setExchangeInfo(result.payload);
-                onAmountChange(''); // Clear input
+                // Clear input
             }
         } catch (error) {
             console.error('Failed to create exchange:', error);
