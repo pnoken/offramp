@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq, Exchange, Close, Order } from '@tbdex/http-client';
 import { PresentationExchange } from '@web5/credentials';
 import { RootState } from './store';
-import { formatMessages } from '@/utils/helper/format-messages';
 
 interface ExchangeState {
     isCreating: boolean;
@@ -21,13 +20,14 @@ const initialState: ExchangeState = {
 };
 
 // Helper function to serialize Exchange objects
-const serializeExchange = (exchange: Exchange[]) => {
-    return exchange.map(message => ({
-        ...message,
-        kind: message.kind,
-        data: JSON.parse(JSON.stringify(message.data)),
-        privateData: message.privateData ? JSON.parse(JSON.stringify(message.privateData)) : null,
-        validNext: message.validNext ? Array.from(message.validNext) : null, // Convert Set to Array
+const serializeExchange = (exchanges: any[]): any[] => {
+    return exchanges.map((exchange) => ({
+        ...exchange,
+        rfq: exchange.rfq ? JSON.parse(JSON.stringify(exchange.rfq)) : undefined,
+        quote: exchange.quote ? JSON.parse(JSON.stringify(exchange.quote)) : undefined,
+        order: exchange.order ? JSON.parse(JSON.stringify(exchange.order)) : undefined,
+        orderstatus: exchange.orderstatus.map((status: any) => JSON.parse(JSON.stringify(status))),
+        close: exchange.close ? JSON.parse(JSON.stringify(exchange.close)) : undefined
     }));
 };
 
@@ -50,6 +50,7 @@ export const createExchange = createAsyncThunk<any, {
             });
             const { DidDht } = await import('@web5/dids');
             const signedCustomerDid = await DidDht.import({ portableDid: customerDid });
+            console.log("signed did", signedCustomerDid);
 
             // Create RFQ (Request for Quote)
             const rfq = Rfq.create({
@@ -100,7 +101,7 @@ export const createExchange = createAsyncThunk<any, {
 );
 
 // Updated async thunk for fetching exchanges
-export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }>(
+export const fetchExchanges = createAsyncThunk<Exchange[], string, { state: RootState }>(
     'exchange/fetchExchanges',
     async (pfiUri, { getState }) => {
         const state = getState();
@@ -110,10 +111,8 @@ export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }
             pfiDid: pfiUri,
             did: signedCustomerDid
         });
-        // Serialize exchanges before returning
-        const serializedExchanges = exchanges.map(serializeExchange);
-        //console.log("exchanges", formatMessages(serializedExchanges));
-        return formatMessages(serializedExchanges);
+        console.log("exchanges", serializeExchange(exchanges));
+        return serializeExchange(exchanges);
     }
 );
 

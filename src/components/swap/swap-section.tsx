@@ -3,15 +3,10 @@ import { motion } from "framer-motion";
 import { ArrowsUpDownIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { SwapInput } from "../ui/input/swap-input";
-import { Drawer } from "../ui/drawer/drawer";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
-import ActiveExchanges from "../exchanges/active";
-// import { ActiveExchangesList } from "../drawer/content/list-exchanges";
 import { RootState } from "@/lib/store";
-import { getStoredCredential, storeCredential } from '@/utils/secure-storage';
 import { createExchange } from "@/lib/exchange-slice";
 import { Offering } from "@tbdex/http-client";
-import { Modal } from "../ui/modal/popup";
 import OfferingDetails from '../offerings/offering-details';
 import SettingsDrawer from "../ui/drawer/settings";
 import { SettingContent } from "../drawer/content/settings";
@@ -36,10 +31,8 @@ export const SwapSection: React.FC<{
     };
 
     const currencies = ["GHS", "USDC", "KES", "NGN"];
-    const { status } = useAppSelector((state: RootState) => state.offering);
-    const { exchange, isCreating } = useAppSelector((state: RootState) => state.exchange);
     const dispatch = useAppDispatch();
-    const { exchanges } = useAppSelector((state: RootState) => state.exchange);
+    const { isCreating } = useAppSelector((state: RootState) => state.exchange);
 
     useEffect(() => {
         if (!selectedCurrencyPair.from || !selectedCurrencyPair.to) {
@@ -137,7 +130,7 @@ export const SwapSection: React.FC<{
             console.error('Failed to create exchange:', error);
             setError('Failed to create exchange. Please try again.');
         }
-    }, [dispatch, offering, amount, onAmountChange, selectedCurrencyPair.to]);
+    }, [dispatch, offering, amount, onAmountChange, selectedCurrencyPair.to, selectedCurrencyPair.from]);
 
     const handleFromCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onCurrencyPairSelect(e.target.value, selectedCurrencyPair.to);
@@ -245,6 +238,7 @@ export const SwapSection: React.FC<{
                                 onChange={handleAmountChange}
                                 selectValue={selectedCurrencyPair.from}
                                 onReset={handleReset}
+                                selectedBalance={selectedBalance}
                             />
                         </div>
                         <motion.button

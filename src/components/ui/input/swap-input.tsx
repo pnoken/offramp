@@ -12,6 +12,7 @@ interface SwapInputProps {
     onReset: () => void;
     onChange: (value: string) => void;
     isReadOnly?: boolean;
+    selectedBalance: number;
 }
 
 export const SwapInput: React.FC<SwapInputProps> = ({
@@ -21,6 +22,7 @@ export const SwapInput: React.FC<SwapInputProps> = ({
     onChange,
     value,
     onReset,
+    selectedBalance,
     isReadOnly = false,
 }) => {
     const [displayValue, setDisplayValue] = useState(value);
@@ -28,9 +30,6 @@ export const SwapInput: React.FC<SwapInputProps> = ({
 
     // Get token balances from Redux store
     const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
-
-    // Get the balance of the selected currency
-    const selectedBalance = tokenBalances.find(token => token.token === selectValue)?.amount || 0;
 
     useEffect(() => {
         setDisplayValue(formatNumber(value));
