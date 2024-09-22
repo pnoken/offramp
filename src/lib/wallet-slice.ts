@@ -41,7 +41,6 @@ interface WalletState {
 }
 
 const storedDid = isClient ? localStorage.getItem('customerDid') : null;
-const storedCredentials = getStoredCredential();
 const STORAGE_KEY = 'wallet_balances';
 
 const initialTokenBalances: TokenBalance[] = [

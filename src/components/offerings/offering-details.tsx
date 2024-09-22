@@ -37,7 +37,6 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
 
 
     const mostRecentExchange = exchanges.length > 0 ? exchanges[exchanges.length - 1] : null;
-    const mostRecentQuote = mostRecentExchange && mostRecentExchange.length > 1 ? mostRecentExchange[1] : null;
 
     console.log("most recent quote", exchanges);
 

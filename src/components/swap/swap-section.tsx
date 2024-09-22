@@ -10,6 +10,7 @@ import { Offering } from "@tbdex/http-client";
 import OfferingDetails from '../offerings/offering-details';
 import SettingsDrawer from "../ui/drawer/settings";
 import { SettingContent } from "../drawer/content/settings";
+import { useOfferings } from "@/hooks/use-offerings";
 
 export const SwapSection: React.FC<{
     selectedCurrencyPair: { from: string; to: string };
@@ -19,11 +20,11 @@ export const SwapSection: React.FC<{
     offering: Offering;
 }> = ({ selectedCurrencyPair, onCurrencyPairSelect, amount, onAmountChange, offering }) => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [error, setError] = useState('');
     const [exchangeInfo, setExchangeInfo] = useState(null);
     const [showOfferingDetails, setShowOfferingDetails] = useState(false);
     const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
     const selectedBalance = tokenBalances.find(token => token.token === selectedCurrencyPair.from)?.amount || 0;
+    const { matchedOfferings, status, error: offeringError } = useOfferings(selectedCurrencyPair.from, selectedCurrencyPair.to);
 
     const handleReset = () => {
         onAmountChange('');
@@ -41,9 +42,8 @@ export const SwapSection: React.FC<{
     }, [selectedCurrencyPair.from, selectedCurrencyPair.to, onCurrencyPairSelect]);
 
     const performExchange = useCallback(async () => {
-        if (!offering) {
-            setError('No offering available. Please try again later.');
-            return;
+        if (offeringError) {
+            return <div>Error loading offering: {offeringError}</div>;
         }
 
         try {
@@ -128,9 +128,8 @@ export const SwapSection: React.FC<{
             }
         } catch (error) {
             console.error('Failed to create exchange:', error);
-            setError('Failed to create exchange. Please try again.');
         }
-    }, [dispatch, offering, amount, onAmountChange, selectedCurrencyPair.to, selectedCurrencyPair.from]);
+    }, [dispatch, offering, amount, onAmountChange, selectedCurrencyPair.to, selectedCurrencyPair.from, offeringError]);
 
     const handleFromCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         onCurrencyPairSelect(e.target.value, selectedCurrencyPair.to);
@@ -147,8 +146,8 @@ export const SwapSection: React.FC<{
     const isExchangeValid = useCallback(() => {
 
         const enteredAmount = parseFloat(amount);
-        return selectedBalance > 0 && enteredAmount > 0 && !isCreating;
-    }, [amount, selectedBalance, isCreating]);
+        return selectedBalance > 0 && enteredAmount > 0 || !isCreating || status !== "loading"
+    }, [amount, selectedBalance, isCreating, status]);
 
     const CurrencySelect: React.FC<{
         value: string;
