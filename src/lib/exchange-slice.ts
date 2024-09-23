@@ -64,9 +64,7 @@ export const createExchange = createAsyncThunk<any, {
                     payin: {
                         amount: amount,
                         kind: offering.data.payin.methods[0].kind,
-                        paymentDetails: {
-
-                        }, // Ensure this is an empty object, not null
+                        paymentDetails: payinPaymentDetails,
                     },
                     payout: {
                         kind: offering.data.payout.methods[0].kind,
