@@ -10,7 +10,6 @@ import { Offering } from "@tbdex/http-client";
 import OfferingDetails from '../offerings/offering-details';
 import SettingsDrawer from "../ui/drawer/settings";
 import { SettingContent } from "../drawer/content/settings";
-import { useOfferings } from "@/hooks/use-offerings";
 
 export const SwapSection: React.FC<{
     selectedCurrencyPair: { from: string; to: string };
@@ -23,8 +22,9 @@ export const SwapSection: React.FC<{
     const [exchangeInfo, setExchangeInfo] = useState(null);
     const [showOfferingDetails, setShowOfferingDetails] = useState(false);
     const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
+    const { status, error: offeringError } = useAppSelector((state: RootState) => state.offering);
     const selectedBalance = tokenBalances.find(token => token.token === selectedCurrencyPair.from)?.amount || 0;
-    const { matchedOfferings, status, error: offeringError } = useOfferings(selectedCurrencyPair.from, selectedCurrencyPair.to);
+    //const { matchedOfferings, status, error: offeringError } = useOfferings(selectedCurrencyPair.from, selectedCurrencyPair.to);
 
     const handleReset = () => {
         onAmountChange('');
@@ -147,7 +147,7 @@ export const SwapSection: React.FC<{
     const isExchangeValid = useCallback(() => {
 
         const enteredAmount = parseFloat(amount);
-        return selectedBalance > 0 && enteredAmount > 0 || !isCreating || status !== "loading"
+        return selectedBalance > 0 && enteredAmount > 0 && !isCreating && status === 'succeeded';
     }, [amount, selectedBalance, isCreating, status]);
 
     const CurrencySelect: React.FC<{
