@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq, Exchange, Close, Order } from '@tbdex/http-client';
 import { PresentationExchange } from '@web5/credentials';
 import { RootState } from './store';
-import { formatMessages } from '@/utils/helper/format-messages';
+import { formatMessages } from '@/utils/helpers/format-msg';
 
 interface ExchangeState {
     isCreating: boolean;
@@ -18,17 +18,6 @@ const initialState: ExchangeState = {
     exchange: null,
     error: null,
     exchanges: [],
-};
-
-// Helper function to serialize Exchange objects
-const serializeExchange = (exchange: Exchange[]) => {
-    return exchange.map(message => ({
-        ...message,
-        kind: message.kind,
-        data: JSON.parse(JSON.stringify(message.data)),
-        privateData: message.privateData ? JSON.parse(JSON.stringify(message.privateData)) : null,
-        validNext: message.validNext ? Array.from(message.validNext) : null, // Convert Set to Array
-    }));
 };
 
 // Async thunk to create an exchange
@@ -63,9 +52,7 @@ export const createExchange = createAsyncThunk<any, {
                     payin: {
                         amount: amount,
                         kind: offering.data.payin.methods[0].kind,
-                        paymentDetails: {
-
-                        }, // Ensure this is an empty object, not null
+                        paymentDetails: payinPaymentDetails,
                     },
                     payout: {
                         kind: offering.data.payout.methods[0].kind,
@@ -100,7 +87,7 @@ export const createExchange = createAsyncThunk<any, {
 );
 
 // Updated async thunk for fetching exchanges
-export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }>(
+export const fetchExchanges = createAsyncThunk<Exchange[], string, { state: RootState }>(
     'exchange/fetchExchanges',
     async (pfiUri, { getState }) => {
         const state = getState();
@@ -110,10 +97,7 @@ export const fetchExchanges = createAsyncThunk<any, string, { state: RootState }
             pfiDid: pfiUri,
             did: signedCustomerDid
         });
-        // Serialize exchanges before returning
-        const serializedExchanges = exchanges.map(serializeExchange);
-        //console.log("exchanges", formatMessages(serializedExchanges));
-        return formatMessages(serializedExchanges);
+        return formatMessages(exchanges);
     }
 );
 

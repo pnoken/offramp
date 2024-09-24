@@ -41,7 +41,6 @@ interface WalletState {
 }
 
 const storedDid = isClient ? localStorage.getItem('customerDid') : null;
-const storedCredentials = getStoredCredential();
 const STORAGE_KEY = 'wallet_balances';
 
 const initialTokenBalances: TokenBalance[] = [
@@ -198,11 +197,11 @@ const walletSlice = createSlice({
         },
         clearCredentials: (state) => {
             state.customerCredentials = [];
-            storeCredential(null);
+            storeCredential([]);
         },
         setCredentials: (state, action: PayloadAction<VerifiableCredential>) => {
             state.customerCredentials = [action.payload];
-            storeCredential(action.payload);
+            storeCredential([action.payload]);
         },
         verifyCredential: (state, action: PayloadAction<{ issuer: string }>) => {
             const credential = state.customerCredentials.find(vc => vc.issuer === action.payload.issuer);
