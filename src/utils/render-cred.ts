@@ -2,7 +2,6 @@ import { Jwt, VerifiableCredential } from "@web5/credentials"
 
 export const renderCredential = (credentialJwt: string) => {
     const vc = Jwt.parse({ jwt: credentialJwt }).decoded.payload['vc'] as VerifiableCredential;
-    console.log("subject", vc);
     return {
         title: vc.type[vc.type.length - 1].replace(/(?<!^)(?<![A-Z])[A-Z](?=[a-z])/g, ' $&'), // get the last credential type in the array and format it with spaces
         name: vc.credentialSubject['name'],

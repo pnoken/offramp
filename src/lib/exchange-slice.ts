@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TbdexHttpClient, Rfq, Exchange, Close, Order } from '@tbdex/http-client';
 import { PresentationExchange } from '@web5/credentials';
 import { RootState } from './store';
+import { formatMessages } from '@/utils/helpers/format-msg';
 
 interface ExchangeState {
     isCreating: boolean;
@@ -17,18 +18,6 @@ const initialState: ExchangeState = {
     exchange: null,
     error: null,
     exchanges: [],
-};
-
-// Helper function to serialize Exchange objects
-const serializeExchange = (exchanges: any[]): any[] => {
-    return exchanges.map((exchange) => ({
-        ...exchange,
-        rfq: exchange.rfq ? JSON.parse(JSON.stringify(exchange.rfq)) : undefined,
-        quote: exchange.quote ? JSON.parse(JSON.stringify(exchange.quote)) : undefined,
-        order: exchange.order ? JSON.parse(JSON.stringify(exchange.order)) : undefined,
-        orderstatus: exchange.orderstatus.map((status: any) => JSON.parse(JSON.stringify(status))),
-        close: exchange.close ? JSON.parse(JSON.stringify(exchange.close)) : undefined
-    }));
 };
 
 // Async thunk to create an exchange
@@ -50,7 +39,6 @@ export const createExchange = createAsyncThunk<any, {
             });
             const { DidDht } = await import('@web5/dids');
             const signedCustomerDid = await DidDht.import({ portableDid: customerDid });
-            console.log("signed did", signedCustomerDid);
 
             // Create RFQ (Request for Quote)
             const rfq = Rfq.create({
@@ -109,8 +97,7 @@ export const fetchExchanges = createAsyncThunk<Exchange[], string, { state: Root
             pfiDid: pfiUri,
             did: signedCustomerDid
         });
-        console.log("exchanges", serializeExchange(exchanges));
-        return serializeExchange(exchanges);
+        return formatMessages(exchanges);
     }
 );
 

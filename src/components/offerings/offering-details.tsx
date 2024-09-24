@@ -24,6 +24,7 @@ interface ExchangeWithPfiDid extends Exchange {
     payoutCurrency: string;
     payinAmount: string;
     payoutAmount: string;
+    to: string;
 }
 
 const OfferingDetails: React.FC<OfferingDetailsProps> = ({
@@ -36,9 +37,9 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     const [showRatingPopup, setShowRatingPopup] = useState(false);
 
 
-    const mostRecentExchange = exchanges.length > 0 ? exchanges[exchanges.length - 1] : null;
+    const mostRecentExchange = exchanges[exchanges.length - 1] as ExchangeWithPfiDid;
 
-    console.log("most recent quote", exchanges);
+    console.log("most recent quote", mostRecentExchange);
 
     const fetchActiveExchanges = useCallback(async () => {
 
@@ -121,7 +122,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     };
 
 
-    const { payinAmount, payoutAmount, payinCurrency, payoutCurrency, pfiDid } = mostRecentQuote;
+    const { to, payinAmount, payoutAmount, payinCurrency, payoutCurrency, pfiDid } = mostRecentExchange;
     const pfiInfo = pfiAllowList.find(pfi => pfi.uri === pfiDid);
     const pfiName = pfiInfo ? pfiInfo.name : 'Unknown Provider';
 
@@ -183,7 +184,22 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                                         {payoutAmount} {payoutCurrency}
                                     </p>
                                 </div>
+
                             </div>
+
+                        </div>
+                        <div className="md:block hidden justify-between items-center bg-white/10 p-4 rounded-xl">
+
+
+                            <div >
+                                <p className="text-sm text-white/80">Payment Details</p>
+                                <p className="text-2xl font-bold text-white">
+                                    {to}
+                                </p>
+                            </div>
+
+
+
                         </div>
                     </div>
                     <div className="bg-white/10 p-4 rounded-xl mb-8">
