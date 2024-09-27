@@ -44,7 +44,7 @@ export const createExchange = createAsyncThunk<any, {
             // Create RFQ (Request for Quote)
             const rfq = Rfq.create({
                 metadata: {
-                    from: customerDid.uri,
+                    from: signedCustomerDid.uri,
                     to: offering.metadata.from,
                     protocol: '1.0',
                 },

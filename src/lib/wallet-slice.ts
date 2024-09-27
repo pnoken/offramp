@@ -165,11 +165,9 @@ export const initializeWallet = createAsyncThunk(
     async (_, thunkAPI) => {
         const storedDid = localStorage.getItem('customerDid');
         if (storedDid) {
-            const { DidDht } = await import('@web5/dids');
             try {
-                const customerDid = await DidDht.import({ portableDid: JSON.parse(storedDid) });
-                if (customerDid) {
-                    return customerDid
+                if (storedDid) {
+                    return storedDid
                 }
             } catch (error) {
                 console.error('Failed to find stored DID:', error);
@@ -289,7 +287,6 @@ const walletSlice = createSlice({
             .addCase(initializeWallet.fulfilled, (state, action) => {
                 if (action.payload) {
                     state.customerDid = action.payload,
-                        state.did = action.payload.uri,
                         state.walletCreated = true;
                 }
             })
