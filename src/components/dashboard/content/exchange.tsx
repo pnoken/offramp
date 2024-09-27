@@ -9,7 +9,6 @@ import { fetchOfferings } from '@/lib/offering-slice';
 import LoadingPulse from '@/components/animate/loading-pulse';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-//import { Offering as Offering } from '@/types/offering';
 import { Offering } from '@tbdex/http-client';
 import { withCredentials } from '@/hocs/with-credentials';
 import { RootState } from '@/lib/store';

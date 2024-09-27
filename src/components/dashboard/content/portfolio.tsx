@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ArrowUpIcon, PlusIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
 import { Tabs } from '@/components/ui/tabs';
 import Image from 'next/image';
@@ -6,6 +6,7 @@ import { useAppSelector } from '@/hooks/use-app-dispatch';
 import { RootState } from '@/lib/store';
 import { renderCredential } from '@/utils/render-cred';
 import { withCredentials } from '@/hocs/with-credentials';
+import { VerifiableCredential } from '@web5/credentials';
 
 interface TabItem {
     label: string;
@@ -150,8 +151,8 @@ const Portfolio: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-4">Verified Credentials</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                        {customerCredentials.length > 0 && customerCredentials.map((credential, index) => {
-                            const { title, name, countryCode, issuanceDate } = renderCredential(credential);
+                        {customerCredentials.length > 0 && customerCredentials.map(async (credential, index) => {
+                            const { title, name, countryCode, issuanceDate } = await renderCredential(credential as VerifiableCredential);
                             return (
                                 <div key={index} className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-lg shadow-lg text-white hover:shadow-xl transition-shadow duration-300">
                                     <div className="text-4xl mb-2">{'🪙'}</div>

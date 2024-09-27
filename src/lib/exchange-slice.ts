@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { TbdexHttpClient, Rfq, Exchange, Close, Order } from '@tbdex/http-client';
-import { PresentationExchange } from '@web5/credentials';
+import { Exchange } from '@tbdex/http-client';
 import { RootState } from './store';
 import { formatMessages } from '@/utils/helpers/format-msg';
 
@@ -31,6 +30,8 @@ export const createExchange = createAsyncThunk<any, {
     async ({ offering, amount, payinPaymentDetails, payoutPaymentDetails }, thunkAPI) => {
         const state = thunkAPI.getState() as RootState;
         const { customerCredentials, customerDid } = state.wallet;
+        const { PresentationExchange } = await import('@web5/credentials');
+        const { TbdexHttpClient, Rfq } = await import('@tbdex/http-client');
         try {
             // Select credentials required for the exchange
             const selectedCredentials = PresentationExchange.selectCredentials({
@@ -90,6 +91,7 @@ export const createExchange = createAsyncThunk<any, {
 export const fetchExchanges = createAsyncThunk<Exchange[], string, { state: RootState }>(
     'exchange/fetchExchanges',
     async (pfiUri, { getState }) => {
+        const { TbdexHttpClient } = await import('@tbdex/http-client');
         const state = getState();
         const { DidDht } = await import('@web5/dids');
         const signedCustomerDid = await DidDht.import({ portableDid: state.wallet.customerDid });
@@ -109,6 +111,7 @@ export const closeExchange = createAsyncThunk<any, {
 }, { state: RootState }>(
     'exchange/close',
     async ({ exchangeId, pfiUri, reason }, { getState }) => {
+        const { TbdexHttpClient, Close } = await import('@tbdex/http-client');
         const state = getState();
         const { DidDht } = await import('@web5/dids');
         const signedCustomerDid = await DidDht.import({ portableDid: state.wallet.customerDid });
@@ -141,6 +144,7 @@ export const placeOrder = createAsyncThunk<any, {
 }, { state: RootState }>(
     'exchange/placeOrder',
     async ({ exchangeId, pfiUri }, { getState }) => {
+        const { TbdexHttpClient, Order } = await import('@tbdex/http-client');
         const state = getState();
         const { DidDht } = await import('@web5/dids');
         const signedCustomerDid = await DidDht.import({ portableDid: state.wallet.customerDid });

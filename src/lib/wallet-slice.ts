@@ -4,8 +4,6 @@ import { VerifiableCredential } from '@web5/credentials';
 import { RootState } from './store';
 import { isClient } from '@/utils/isClient';
 import { storeCredential, getStoredCredential } from '@/utils/secure-storage';
-import { verifyVC } from '@/utils/credentials-verifier';
-import { AppDispatch } from './store';
 
 // Define the structure for a token balance
 interface TokenBalance {
