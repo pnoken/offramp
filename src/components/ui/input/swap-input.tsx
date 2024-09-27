@@ -57,9 +57,6 @@ export const SwapInput: React.FC<SwapInputProps> = ({
         if (numericValue > selectedBalance) {
             setError("You don't have enough funds to complete the transaction.");
         }
-        if (numericValue === 0) {
-            setError("");
-        }
         else {
             setError('');
         }

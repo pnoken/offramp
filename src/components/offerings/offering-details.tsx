@@ -34,6 +34,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     const router = useRouter();
     const { exchanges, isFetching, error } = useAppSelector((state: RootState) => state.exchange);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [isCancellingOrder, setIsCancellingOrder] = useState(false);
     const [showRatingPopup, setShowRatingPopup] = useState(false);
 
 
@@ -101,7 +102,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
     }
 
     const handleCancel = async () => {
-        setIsPlacingOrder(true);
+        setIsCancellingOrder(true);
         try {
             const order = await dispatch(closeExchange({
                 exchangeId: mostRecentExchange.id,
@@ -117,7 +118,7 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
             console.error('Failed to place order:', error);
             toast.error('Failed to place order. Please try again.');
         } finally {
-            setIsPlacingOrder(false);
+            setIsCancellingOrder(false);
         }
     };
 
@@ -220,10 +221,10 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handleCancel}
-                            disabled={isPlacingOrder}
+                            disabled={isCancellingOrder}
                             className="flex-1 bg-red-400 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                         >
-                            Cancel
+                            {isCancellingOrder ? 'Cancelling...' : 'Cancel'}
                         </motion.button>
                     </div>
                 </motion.div>

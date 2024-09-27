@@ -26,7 +26,7 @@ const WebWallet: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4 relative">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -83,7 +83,7 @@ const WebWallet: React.FC = () => {
       <Drawer isOpen={isOpen} setIsOpen={setIsOpen}>
         <DrawerContent onClose={() => setIsOpen(false)} />
       </Drawer>
-      <p className="absolute bottom-4 left-4 text-sm text-gray-500">Web Wallet v 1.00</p>
+      <p className="absolute bottom-4 left-4 text-sm text-gray-500">Web Wallet v 0.1.1</p>
     </div>
   );
 };
