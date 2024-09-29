@@ -18,7 +18,7 @@ export const formatMessages = (exchanges: any) => {
             createdTime: rfqMessage.createdAt,
             ...latestMessage.kind === 'quote' && { expirationTime: quoteMessage.data['expiresAt'] ?? null },
             from: 'You',
-            to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber + ', ' + payoutPaymentDetails?.bankName || payoutPaymentDetails?.phoneNumber + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
+            to: payoutPaymentDetails?.address || payoutPaymentDetails?.accountNumber || payoutPaymentDetails?.phoneNumber + ', ' + payoutPaymentDetails?.networkProvider || 'Unknown',
             pfiDid: rfqMessage.metadata.to
         }
     })
