@@ -18,7 +18,7 @@ export const TransactionList: React.FC = () => {
     const { exchanges } = useAppSelector((state: RootState) => state.exchange);
 
     return (
-        <div className="h-full bg-white shadow-xl rounded-lg overflow-hidden md:ml-24">
+        <div className="h-full bg-white shadow-xl rounded-lg overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b bg-gray-50">
                 <h2 className="text-2xl font-bold text-gray-800">Transactions</h2>
                 <FaExchangeAlt className="text-gray-600 text-xl" />

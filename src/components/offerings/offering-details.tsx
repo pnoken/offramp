@@ -132,14 +132,14 @@ const OfferingDetails: React.FC<OfferingDetailsProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8"
+            className="min-h-screen py-12 px-4 sm:px-6 lg:px-8"
         >
             <div className="max-w-4xl mx-auto">
                 <button onClick={onBack} className="mb-6 flex items-center text-blue-400 hover:text-blue-300">
                     <ArrowLeftIcon className="h-5 w-5 mr-2" />
                     Back to Swap
                 </button>
-                <h2 className="text-3xl font-bold mb-6">Exchange Details</h2>
+
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

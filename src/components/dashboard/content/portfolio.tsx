@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { ArrowUpIcon, PlusIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
 import { Tabs } from '@/components/ui/tabs';
 import Image from 'next/image';
@@ -100,8 +100,6 @@ const tabsData: TabItem[] = [
 ];
 
 const Portfolio: React.FC = () => {
-    const did = JSON.parse(localStorage.getItem('customerDid') || '{}').uri || 'Not available';
-    const shortenedDid = did.length > 10 ? `${did.substring(0, 5)}...${did.substring(did.length - 5)}` : did;
 
     // Use useSelector to get token balances from Redux state
     const { tokenBalances, customerCredentials } = useAppSelector((state: RootState) => state.wallet);
@@ -192,20 +190,7 @@ const Portfolio: React.FC = () => {
     ];
 
     return (
-        <div className="p-4 sm:p-6 flex flex-col justify-center bg-white shadow-md rounded-lg md:ml-16">
-            <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-100 p-4 rounded-lg">
-                <div className="mb-4 sm:mb-0 bg-white p-3 rounded-md shadow-sm">
-                    <p className="text-sm text-gray-600">GHS Bank Account</p>
-                    <p className="text-lg font-semibold">GH-1234567890</p>
-                    <p className="text-xs text-gray-500 mt-1">Use this account to add GHS to your balance</p>
-                </div>
-                <div className="bg-white p-3 rounded-md shadow-sm">
-                    <p className="text-sm text-gray-600">Your DID</p>
-                    <p className="text-lg font-semibold break-all">{shortenedDid}</p>
-                    <p className="text-xs text-gray-500 mt-1">Your decentralized identifier</p>
-                </div>
-            </div>
-
+        <Fragment>
             {/* Balance Information */}
             <div className="flex flex-col gap-4 sm:gap-8 bg-gray-100 p-4 sm:p-8 rounded-xl shadow-lg">
                 <div className="flex-1 space-y-4 sm:space-y-8">
@@ -270,7 +255,7 @@ const Portfolio: React.FC = () => {
             <div className="mt-8">
                 <Tabs tabsData={tabsData} />
             </div>
-        </div>
+        </Fragment>
     );
 };
 

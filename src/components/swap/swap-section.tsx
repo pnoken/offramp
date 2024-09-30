@@ -22,13 +22,12 @@ export const SwapSection: React.FC<{
     const [exchangeInfo, setExchangeInfo] = useState(null);
     const [showOfferingDetails, setShowOfferingDetails] = useState(false);
     const tokenBalances = useAppSelector((state: RootState) => state.wallet.tokenBalances);
-    const { status, error: offeringError } = useAppSelector((state: RootState) => state.offering);
+    const { status, error: offeringError, matchedOfferings } = useAppSelector((state: RootState) => state.offering);
     const selectedBalance = tokenBalances.find(token => token.token === selectedCurrencyPair.from)?.amount || 0;
     //const { matchedOfferings, status, error: offeringError } = useOfferings(selectedCurrencyPair.from, selectedCurrencyPair.to);
 
     const handleReset = () => {
         onAmountChange('');
-        onCurrencyPairSelect('GHS', 'USDC');
     };
 
     const currencies = ["GHS", "USDC", "KES", "NGN", "USD", "EUR", "GBP"];
@@ -145,10 +144,9 @@ export const SwapSection: React.FC<{
     };
 
     const isExchangeValid = useCallback(() => {
-
         const enteredAmount = parseFloat(amount);
-        return selectedBalance > 0 && enteredAmount > 0 && !isCreating && status === 'succeeded';
-    }, [amount, selectedBalance, isCreating, status]);
+        return selectedBalance > 0 && enteredAmount > 0 && !isCreating && (status === 'succeeded' && matchedOfferings.length > 0);
+    }, [amount, selectedBalance, isCreating, status, matchedOfferings]);
 
     const CurrencySelect: React.FC<{
         value: string;
