@@ -106,11 +106,9 @@ const Portfolio: React.FC = () => {
     // Use useSelector to get token balances from Redux state
     const { tokenBalances, customerCredentials } = useAppSelector((state: RootState) => state.wallet);
 
-    // for (let i = 0; i < customerCredentials.length; i++) {
-    //     console.log(cred[i]);
-    //     console.log(renderCredential(cred[i]));
-    //     return renderCredential(cred[i]);
-    // }
+    const totalBalance = tokenBalances.reduce((acc, item) => {
+        return acc + item.amount * item.usdRate;
+    }, 0);
 
 
 
@@ -214,17 +212,10 @@ const Portfolio: React.FC = () => {
                     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
                         <span className="text-base sm:text-lg font-medium text-gray-600">Total Balance</span>
                         <div className="flex items-baseline mt-2">
-                            {(() => {
-                                const totalBalance = tokenBalances.reduce((acc, item) => {
-                                    return acc + item.amount * item.usdRate;
-                                }, 0);
-                                return (
-                                    <>
-                                        <span className="text-3xl sm:text-5xl font-bold text-blue-600">${totalBalance.toFixed(2)}</span>
-                                        <span className="ml-2 text-xs sm:text-sm text-gray-500">USD</span>
-                                    </>
-                                );
-                            })()}
+                            <>
+                                <span className="text-3xl sm:text-5xl font-bold text-blue-600">${totalBalance.toFixed(2)}</span>
+                                <span className="ml-2 text-xs sm:text-sm text-gray-500">USD</span>
+                            </>
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -238,7 +229,7 @@ const Portfolio: React.FC = () => {
                         <div className="flex-1 bg-white p-4 sm:p-6 rounded-lg shadow-md">
                             <span className="text-sm sm:text-md font-medium text-gray-600">Locked</span>
                             <div className="flex items-baseline mt-2">
-                                <span className="text-2xl sm:text-3xl font-semibold text-orange-600">$0</span>
+                                <span className="text-2xl sm:text-3xl font-semibold text-orange-600">${totalBalance.toFixed(2)}</span>
                                 <span className="ml-2 text-xs text-gray-500">USD</span>
                             </div>
                         </div>
