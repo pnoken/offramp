@@ -10,8 +10,8 @@ import { Offering } from "@tbdex/http-client";
 import OfferingDetails from "../offerings/offering-details";
 import SettingsDrawer from "../ui/drawer/settings";
 import { SettingContent } from "../drawer/content/settings";
-import { PencilIcon } from "@heroicons/react/24/outline";
-import { Tooltip } from "react-tooltip";
+import { WalletIcon } from "@heroicons/react/24/outline";
+import { WalletInput } from "../ui/input/wallet-address";
 
 export const SwapSection: React.FC<{
   selectedCurrencyPair: { from: string; to: string };
@@ -42,13 +42,15 @@ export const SwapSection: React.FC<{
       ?.amount || 0;
   const [customPaymentDetails, setCustomPaymentDetails] = useState(""); // State for custom payment details
   const [isEditing, setIsEditing] = useState(false); // State to toggle edit mode
+  const [label, setLabel] = useState("");
+  const [placeHolder, setPlaceHolder] = useState("");
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCustomPaymentDetails(e.target.value);
+  const handleWalletInputChange = (value: string) => {
+    setCustomPaymentDetails(value);
   };
 
   const handleReset = () => {
@@ -66,82 +68,21 @@ export const SwapSection: React.FC<{
   const { isCreating } = useAppSelector((state: RootState) => state.exchange);
 
   useEffect(() => {
+    console.log("selected to", selectedCurrencyPair.to);
     if (!selectedCurrencyPair.from || !selectedCurrencyPair.to) {
       onCurrencyPairSelect("GHS", "USDC");
     }
-  }, [
-    selectedCurrencyPair.from,
-    selectedCurrencyPair.to,
-    onCurrencyPairSelect,
-  ]);
-
-  const payinPaymentDetails = (() => {
-    switch (selectedCurrencyPair.from) {
-      case "USD":
-        return {
-          accountNumber: "1234567890",
-          routingNumber: "123456",
-        };
-      case "USDC":
-        return {
-          address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0",
-        };
-      case "GHS":
-      case "KES":
-      case "NGN":
-        return {
-          accountNumber: "1234567890",
-        };
-      case "GBP":
-        return {
-          accountNumber: "1234567890",
-          sortCode: "GB231926819",
-        };
-      case "EUR":
-        return {
-          accountNumber: "1234567890",
-          IBAN: "BE29NWBK60161331926819",
-        };
-      default:
-        throw new Error(
-          `Unsupported payout currency: ${selectedCurrencyPair.to}`
-        );
+    if (
+      selectedCurrencyPair.to === "USDC" ||
+      selectedCurrencyPair.to === "USDT"
+    ) {
+      setLabel("Send to address");
+      setPlaceHolder("Enter wallet address");
+    } else {
+      setLabel("Send to bank");
+      setPlaceHolder("Enter bank account");
     }
-  })();
-
-  const payoutPaymentDetails = (() => {
-    switch (selectedCurrencyPair.to) {
-      case "USD":
-        return {
-          accountNumber: "1234567890",
-          routingNumber: "123456",
-        };
-      case "USDC":
-        return {
-          address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0",
-        };
-      case "GHS":
-      case "KES":
-      case "NGN":
-        return {
-          accountNumber: "1234567890",
-        };
-      case "GBP":
-        return {
-          accountNumber: "1234567890",
-          sortCode: "GB231926819",
-        };
-      case "EUR":
-        return {
-          accountNumber: "1234567890",
-          IBAN: "BE29NWBK60161331926819",
-        };
-      default:
-        throw new Error(
-          `Unsupported payout currency: ${selectedCurrencyPair.to}`
-        );
-    }
-  })();
+  }, [selectedCurrencyPair, onCurrencyPairSelect]);
 
   const performExchange = useCallback(async () => {
     if (offeringError) {
@@ -149,6 +90,76 @@ export const SwapSection: React.FC<{
     }
 
     try {
+      const payinPaymentDetails = (() => {
+        switch (selectedCurrencyPair.from) {
+          case "USD":
+            return {
+              accountNumber: "1234567890",
+              routingNumber: "123456",
+            };
+          case "USDC":
+            return {
+              address: "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0",
+            };
+          case "GHS":
+          case "KES":
+          case "NGN":
+            return {
+              accountNumber: "1234567890",
+            };
+          case "GBP":
+            return {
+              accountNumber: "1234567890",
+              sortCode: "GB231926819",
+            };
+          case "EUR":
+            return {
+              accountNumber: "1234567890",
+              IBAN: "BE29NWBK60161331926819",
+            };
+          default:
+            throw new Error(
+              `Unsupported payin currency: ${selectedCurrencyPair.to}`
+            );
+        }
+      })();
+
+      const payoutPaymentDetails = (() => {
+        switch (selectedCurrencyPair.to) {
+          case "USD":
+            return {
+              accountNumber: customPaymentDetails || "1234567890",
+              routingNumber: "123456",
+            };
+          case "USDC":
+            return {
+              address:
+                customPaymentDetails ||
+                "0x1731d34b07ca2235e668c7b0941d4bfab370a2d0",
+            };
+          case "GHS":
+          case "KES":
+          case "NGN":
+            return {
+              accountNumber: customPaymentDetails || "1234567890",
+            };
+          case "GBP":
+            return {
+              accountNumber: customPaymentDetails || "1234567890",
+              sortCode: "GB231926819",
+            };
+          case "EUR":
+            return {
+              accountNumber: customPaymentDetails || "1234567890",
+              IBAN: "BE29NWBK60161331926819",
+            };
+          default:
+            throw new Error(
+              `Unsupported payout currency: ${selectedCurrencyPair.to}`
+            );
+        }
+      })();
+
       const result = await dispatch(
         createExchange({
           offering,
@@ -173,8 +184,8 @@ export const SwapSection: React.FC<{
     amount,
     onAmountChange,
     offeringError,
-    payinPaymentDetails,
-    payoutPaymentDetails,
+    customPaymentDetails,
+    selectedCurrencyPair,
   ]);
 
   const handleFromCurrencyChange = (
@@ -195,29 +206,13 @@ export const SwapSection: React.FC<{
     const enteredAmount = parseFloat(amount);
     return (
       selectedBalance > 0 &&
+      selectedBalance > enteredAmount &&
       enteredAmount > 0 &&
       !isCreating &&
       status === "succeeded" &&
       matchedOfferings.length > 0
     );
   }, [amount, selectedBalance, isCreating, status, matchedOfferings]);
-
-  const getFormattedPaymentDetails = () => {
-    const details =
-      selectedCurrencyPair.to === "USD"
-        ? payoutPaymentDetails.accountNumber
-        : selectedCurrencyPair.to === "USDC"
-        ? payoutPaymentDetails.address
-        : payoutPaymentDetails.accountNumber;
-
-    // Shorten the address if it's too long
-    if (typeof details === "string" && details.length > 15) {
-      return `${details.substring(0, 10)}...${details.substring(
-        details.length - 5
-      )}`;
-    }
-    return details;
-  };
 
   const CurrencySelect: React.FC<{
     value: string;
@@ -313,40 +308,6 @@ export const SwapSection: React.FC<{
           <div className="bg-white/10 p-4 sm:p-6 rounded-xl mb-6">
             <div className="flex justify-between items-center mb-2">
               <label className="text-white/80">You send</label>
-              <div className="md:block hidden justify-between items-center bg-white/10 p-4 rounded-xl">
-                <div className="flex items-center justify-between w-full">
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={customPaymentDetails}
-                      onChange={handleInputChange}
-                      className="bg-transparent text-white border-b border-white focus:outline-none mt-2"
-                    />
-                  ) : (
-                    <Tooltip
-                      content={
-                        selectedCurrencyPair.to === "USDC"
-                          ? payoutPaymentDetails.address
-                          : payoutPaymentDetails.accountNumber
-                      }
-                    >
-                      <p
-                        className="text-2xl font-bold text-white cursor-pointer"
-                        onClick={() => setIsEditing(false)}
-                      >
-                        {getFormattedPaymentDetails()}
-                      </p>
-                    </Tooltip>
-                  )}
-
-                  <div className="flex items-center">
-                    <PencilIcon
-                      className="h-5 w-5 text-white cursor-pointer mr-2"
-                      onClick={handleEditToggle} // Toggle edit mode on click
-                    />
-                  </div>
-                </div>
-              </div>
               <button
                 className="text-white/80 hover:text-white"
                 onClick={() => setIsDrawerOpen(true)}
@@ -364,19 +325,39 @@ export const SwapSection: React.FC<{
               selectedBalance={selectedBalance}
             />
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={`mt-4 py-3 sm:py-4 px-6 sm:px-8 rounded-full font-bold text-base sm:text-lg shadow-lg  ${
-              isExchangeValid()
-                ? "bg-emerald-400 text-white hover:shadow-xl transition-all duration-300"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
-            onClick={performExchange}
-            disabled={!isExchangeValid()}
-          >
-            {"Exchange"}
-          </motion.button>
+
+          {isEditing && (
+            <WalletInput
+              value={customPaymentDetails}
+              label={label}
+              placeholder={placeHolder}
+              selectValue={selectedCurrencyPair.to}
+              onChange={(value: string) => handleWalletInputChange(value)}
+            />
+          )}
+
+          <div className="flex items-center justify-between">
+            <motion.button
+              className={`mt-4 py-3 sm:py-4 px-6 sm:px-8 rounded-full font-bold text-base sm:text-lg shadow-lg ${
+                isExchangeValid()
+                  ? "bg-gradient-to-br from-indigo-700 to-purple-800 text-white hover:shadow-xl transition-all duration-300"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+              onClick={performExchange}
+              disabled={!isExchangeValid()}
+              style={{ width: "calc(100% - 2.5rem)" }} // Set button width to occupy the rest of the space
+            >
+              {isExchangeValid() ? "Review Exchange" : "Exchange"}
+            </motion.button>
+            <motion.button
+              onClick={handleEditToggle}
+              className="mt-4 bg-gradient-to-br from-indigo-700 to-purple-800 py-3 sm:py-4 px-3 sm:px-4 ml-3 rounded-full font-bold text-base sm:text-lg shadow-lg text-white"
+            >
+              <WalletIcon className="h-6 w-6" />{" "}
+              {/* Adjust icon size if needed */}
+            </motion.button>
+          </div>
+
           {isDrawerOpen && (
             <SettingsDrawer
               isOpen={isDrawerOpen}
