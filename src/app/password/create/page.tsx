@@ -257,7 +257,10 @@ const ConfirmPasswordForm: React.FC = () => {
       </div>
       <TermsConditionsModal
         isOpen={isModalOpen}
-        onClose={() => localStorage.clear()} // Navigate back if user doesn't accept
+        onClose={() => {
+          localStorage.clear();
+          router.push("/");
+        }}
         onAccept={handleAcceptTerms}
       />
     </motion.div>
