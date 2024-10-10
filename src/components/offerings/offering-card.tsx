@@ -1,10 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import {
-  CurrencyDollarIcon,
-  ScaleIcon,
-  UserIcon,
-} from "@heroicons/react/24/outline";
+import { CurrencyDollarIcon, UserIcon } from "@heroicons/react/24/outline";
 import { mockProviderDids } from "@/constants/mockDids";
 
 interface OfferingCardProps {
@@ -12,7 +8,6 @@ interface OfferingCardProps {
   returnAmount: string;
   provider: string;
   fees: string;
-  slippage: string;
 }
 
 export const OfferingCard: React.FC<OfferingCardProps> = ({
@@ -20,7 +15,6 @@ export const OfferingCard: React.FC<OfferingCardProps> = ({
   returnAmount,
   provider,
   fees,
-  slippage,
 }) => {
   const providerName =
     Object.values(mockProviderDids).find((p) => p.uri === provider)?.name ||
@@ -57,17 +51,15 @@ export const OfferingCard: React.FC<OfferingCardProps> = ({
             {fees !== "N/A" && (
               <div className="flex items-center">
                 <CurrencyDollarIcon className="h-5 w-5 mr-2 text-green-300" />
-                <span>
-                  Fees: {fees} {currency}
-                </span>
+                <span>Fees: {fees}</span>
               </div>
             )}
-            {slippage !== "N/A" && (
+            {/* {slippage !== "N/A" && (
               <div className="flex items-center">
                 <ScaleIcon className="h-5 w-5 mr-2 text-yellow-300" />
                 <span>Slippage: {slippage}</span>
               </div>
-            )}
+            )} */}
             <div className="flex items-center">
               <UserIcon className="h-5 w-5 mr-2 text-blue-300" />
               <span>Provider: {providerName}</span>

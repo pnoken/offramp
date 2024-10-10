@@ -25,13 +25,12 @@ export const OfferingSection: React.FC<{
   const fees = (Number(receivedAmount) * 0.003).toFixed(2);
 
   return (
-    <motion.div>
+    <motion.div className="mb-6">
       <OfferingCard
         currency={offering.data.payout.currencyCode}
         returnAmount={`${receivedAmount} ${offering.data.payout.currencyCode}`}
         provider={offering.metadata.from}
         fees={`${fees} ${offering.data.payout.currencyCode}`}
-        slippage={`${offering.data.payoutUnitsPerPayinUnit || "N/A"}`}
       />
     </motion.div>
   );
