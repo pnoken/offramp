@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
-import { createNewWallet } from "@/lib/wallet-slice";
+import { createNewWallet } from "@/redux/slices/wallet-slice";
 import { motion } from "framer-motion";
 import { Drawer } from "@/components/ui/drawer/drawer";
 import DrawerContent from "@/components/drawer/content/import";
-import { withCustomerDid } from "@/hocs/customer-did";
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { usePrivy } from "@privy-io/react-auth";
+import withAuth from "@/hocs/with-auth";
+import { LoginButton } from "@/components/ui/button/login";
 
 const WebWallet: React.FC = () => {
   const router = useRouter();
@@ -26,7 +27,7 @@ const WebWallet: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 to-yellow-100 flex items-center justify-center p-4 relative">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -43,41 +44,28 @@ const WebWallet: React.FC = () => {
               className="mx-auto mb-8"
             />
             <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
-              Welcome to fsWallet
+              Send Money Instantly
             </h1>
             <p className="text-gray-600 text-center mb-8">
-              Your gateway to decentralized identity and seamless transactions.
+              Transfer Stablecoins to fiatsend.eth and receive GHS directly in
+              your mobile wallet.
             </p>
             <div className="space-y-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleCreateNewWallet}
-                className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold shadow-md hover:from-blue-600 hover:to-purple-600 transition duration-300"
-              >
-                Create New Wallet
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsOpen(true)}
-                className="w-full py-3 bg-white text-gray-800 border border-gray-300 rounded-lg font-semibold shadow-md hover:bg-gray-50 transition duration-300"
-              >
-                Import Existing Account
-              </motion.button>
+              <LoginButton />
             </div>
           </div>
-          <div className="md:w-1/2 bg-gradient-to-br from-blue-500 to-purple-500 p-8 flex items-center justify-center">
+          <div className="md:w-1/2 bg-gradient-to-br from-green-500 to-yellow-500 p-8 flex items-center justify-center">
             <div className="text-white text-center">
-              <h2 className="text-3xl font-bold mb-4">Unlock the Future</h2>
+              <h2 className="text-3xl font-bold mb-4">
+                Unlock Instant Transactions
+              </h2>
               <p className="mb-6">
-                Experience the power of decentralized finance with our Web5
-                wallet.
+                Experience seamless transfers and full control over your funds.
               </p>
               <ul className="text-left list-disc list-inside">
-                <li>Secure and private transactions</li>
-                <li>Full control over your digital identity</li>
-                <li>Seamless integration with Web5 ecosystem</li>
+                <li>Fast and secure transactions</li>
+                <li>Manage your digital identity effortlessly</li>
+                <li>Join the future of finance with Fiatsend</li>
               </ul>
             </div>
           </div>
@@ -87,10 +75,10 @@ const WebWallet: React.FC = () => {
         <DrawerContent onClose={() => setIsOpen(false)} />
       </Drawer>
       <p className="absolute bottom-4 left-4 text-sm text-gray-500">
-        Web Wallet v 0.1.1
+        Web App v 0.1.1
       </p>
     </div>
   );
 };
 
-export default withCustomerDid(WebWallet);
+export default withAuth(WebWallet);

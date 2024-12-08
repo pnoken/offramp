@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
-import { setUserCredentials } from "@/lib/wallet-slice";
+import { setUserCredentials } from "@/redux/slices/wallet-slice";
 import { fetchCredentialToken } from "@/utils/request/fetch-credential-token";
 import { toast } from "react-hot-toast";
 import { useLocalStorage } from "@/hooks/use-local-storage";

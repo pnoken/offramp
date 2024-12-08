@@ -5,13 +5,13 @@ import { motion } from "framer-motion";
 import SwapSection from "@/components/swap/swap-section";
 import { OfferingSection } from "@/components/offerings/offering-section";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
-import { fetchOfferings } from "@/lib/offering-slice";
+import { fetchOfferings } from "@/redux/slices/offering-slice";
 import LoadingPulse from "@/components/animate/loading-pulse";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { Offering } from "@tbdex/http-client";
 import { withCredentials } from "@/hocs/with-credentials";
-import { RootState } from "@/lib/store";
+import { RootState } from "@/redux/slices/store";
 
 const Exchange: React.FC = () => {
   const dispatch = useAppDispatch();

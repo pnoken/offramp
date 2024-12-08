@@ -7,14 +7,14 @@ import {
   closeExchange,
   fetchExchanges,
   placeOrder,
-} from "@/lib/exchange-slice";
+} from "@/redux/slices/exchange-slice";
 import { mockProviderDids, pfiAllowList } from "@/constants/mockDids";
-import { RootState } from "@/lib/store";
+import { RootState } from "@/redux/slices/store";
 import Spinner from "../spinner";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import RatingPopup from "../popup/rating";
-import { updateBalanceAfterExchange } from "@/lib/wallet-slice";
+import { updateBalanceAfterExchange } from "@/redux/slices/wallet-slice";
 import { Exchange } from "@tbdex/http-client";
 
 interface OfferingDetailsProps {

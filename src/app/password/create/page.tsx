@@ -11,7 +11,7 @@ import {
   LockClosedIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
-import { setMasterPassword } from "@/lib/wallet-slice"; // We'll create this action
+import { setMasterPassword } from "@/redux/slices/wallet-slice"; // We'll create this action
 import { useAppDispatch } from "@/hooks/use-app-dispatch";
 import TermsConditionsModal from "@/components/modals/terms-and-conditons";
 import { useLocalStorage } from "@/hooks/use-local-storage";
