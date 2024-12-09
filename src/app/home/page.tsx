@@ -2,13 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Portfolio from "@/components/dashboard/content/portfolio";
-import Exchange from "@/components/dashboard/content/exchange";
-import { TransactionList } from "@/components/dashboard/content/transactions";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAccount } from "wagmi";
 import Settings from "@/components/dashboard/content/settings";
-import Image from "next/image";
-import Link from "next/link";
 
 const Home: React.FC = () => {
   const [activeComponent, setActiveComponent] = useState<string>("Portfolio");
@@ -28,10 +24,6 @@ const Home: React.FC = () => {
     switch (activeComponent) {
       case "Portfolio":
         return <Portfolio />;
-      case "Transactions":
-        return <TransactionList />;
-      case "Exchange":
-        return <Exchange />;
       case "Settings":
         return <Settings />;
       default:

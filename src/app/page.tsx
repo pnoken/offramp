@@ -2,29 +2,14 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/hooks/use-app-dispatch";
-import { createNewWallet } from "@/redux/slices/wallet-slice";
 import { motion } from "framer-motion";
 import { Drawer } from "@/components/ui/drawer/drawer";
 import DrawerContent from "@/components/drawer/content/import";
-import { usePrivy } from "@privy-io/react-auth";
 import withAuth from "@/hocs/with-auth";
 import { LoginButton } from "@/components/ui/button/login";
 
 const WebWallet: React.FC = () => {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
   const [isOpen, setIsOpen] = useState(false);
-  const { customerDid } = useAppSelector((state) => state.wallet);
-
-  const handleCreateNewWallet = async () => {
-    try {
-      dispatch(createNewWallet()).then(() => router.push("/password/create"));
-    } catch (error) {
-      console.error("Failed to create new wallet:", error);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 to-yellow-100 flex items-center justify-center p-4 relative">

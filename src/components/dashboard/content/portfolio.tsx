@@ -7,11 +7,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { Tabs } from "@/components/ui/tabs";
 import Image from "next/image";
-import { useAppSelector } from "@/hooks/use-app-dispatch";
-import { RootState } from "@/redux/slices/store";
-import { renderCredential } from "@/utils/render-cred";
-import { VerifiableCredential } from "@web5/credentials";
 import VerifyNoticeCard from "@/components/alert/verify-notice";
+import { useReadContracts } from "wagmi";
+import { formatUnits } from "viem";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface TabItem {
   label: string;
@@ -26,24 +25,63 @@ const unverifiedCredentials = [
   { name: "Education", issuer: "University of Ghana", date: "N/A", icon: "🎓" },
 ];
 
-const verifiedCredentials = [
+// ERC20 ABI for balance checking
+const ERC20_ABI = [
   {
-    name: "Credential Token",
-    issuer: "Ultimate Identity",
-    date: "N/A",
-    icon: "🪙",
+    inputs: [{ name: "account", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
   },
-];
+] as const;
+
+// Token configurations
+const tokens = [
+  {
+    symbol: "GHSFIAT",
+    name: "Ghana Fiat",
+    icon: "/images/tokens/ghs.png",
+    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A",
+    decimals: 18,
+  },
+  {
+    symbol: "USDT",
+    name: "Tether USD",
+    icon: "/images/tokens/usdt.png",
+    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+    decimals: 18,
+  },
+] as const;
 
 const Portfolio: React.FC = () => {
-  // Use useSelector to get token balances from Redux state
-  const { tokenBalances, customerCredentials } = useAppSelector(
-    (state: RootState) => state.wallet
-  );
+  const { user } = usePrivy();
 
-  const totalBalance = tokenBalances.reduce((acc, item) => {
-    return acc + item.amount * item.usdRate;
-  }, 0);
+  // Read all token balances at once
+  const { data: balances } = useReadContracts({
+    contracts: tokens.map((token) => ({
+      address: token.address,
+      abi: ERC20_ABI,
+      functionName: "balanceOf",
+      args: user?.wallet?.address
+        ? [user.wallet.address as `0x${string}`]
+        : undefined,
+    })),
+  });
+
+  // Format balances with token info
+  const tokenBalances = tokens.map((token, index) => ({
+    ...token,
+    balance: balances?.[index]?.result
+      ? Number(formatUnits(balances[index].result, token.decimals))
+      : 0,
+    usdRate: token.symbol === "GHSFIAT" ? 1 / 12.5 : 1, // Mock rates
+  }));
+
+  const totalBalance = tokenBalances.reduce(
+    (acc, token) => acc + token.balance * token.usdRate,
+    0
+  );
 
   const tabsData: TabItem[] = [
     {
@@ -65,22 +103,25 @@ const Portfolio: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {tokenBalances.map((item, index) => {
-                const usdEquivalent = item.amount * item.usdRate;
+              {tokenBalances.map((token) => {
+                const usdValue = token.balance * token.usdRate;
                 return (
-                  <tr key={index} className="border-b hover:bg-gray-50 rounded">
+                  <tr
+                    key={token.symbol}
+                    className="border-b hover:bg-gray-50 rounded"
+                  >
                     <td className="py-2 px-4 flex">
                       <Image
-                        src={item.image}
-                        alt={item.token}
+                        src={token.icon}
+                        alt={token.symbol}
                         width={24}
                         height={24}
                         className="mr-2"
                       />
-                      <span>{item.token}</span>
+                      <span>{token.symbol}</span>
                     </td>
-                    <td className="py-2 px-4">{item.amount.toFixed(2)}</td>
-                    <td className="py-2 px-4">${usdEquivalent.toFixed(2)}</td>
+                    <td className="py-2 px-4">{token.balance.toFixed(2)}</td>
+                    <td className="py-2 px-4">${usdValue.toFixed(2)}</td>
                     <td className="py-2 px-4">N/A</td>
                   </tr>
                 );
@@ -98,32 +139,7 @@ const Portfolio: React.FC = () => {
       content: (
         <div className="p-4">
           <h3 className="text-lg font-semibold mb-4">Verified Credentials</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {customerCredentials.length > 0 &&
-              customerCredentials.map(async (credential, index) => {
-                const { title, name, countryCode, issuanceDate } =
-                  await renderCredential(credential as VerifiableCredential);
-                return (
-                  <div
-                    key={index}
-                    className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-lg shadow-lg text-white hover:shadow-xl transition-shadow duration-300"
-                  >
-                    <div className="text-4xl mb-2">{"🪙"}</div>
-                    <h4 className="text-xl font-bold mb-2">{title}</h4>
-                    <p className="text-sm mb-1">Name: {name}</p>
-                    <p className="text-sm mb-1">Country Code: {countryCode}</p>
-                    <p className="text-sm">Issued: {issuanceDate}</p>
-                    <div className="mt-4 flex justify-between items-center">
-                      <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">
-                        Verified ✓
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
 
-            {customerCredentials.length === 0 && <h4>No issued Credentials</h4>}
-          </div>
           <h3 className="text-lg font-semibold mb-4 mt-8">
             Unverified Credentials
           </h3>
