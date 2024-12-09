@@ -47,8 +47,8 @@ const WebWallet: React.FC = () => {
               Send Money Instantly
             </h1>
             <p className="text-gray-600 text-center mb-8">
-              Transfer Stablecoins to fiatsend.eth and receive GHS directly in
-              your mobile wallet.
+              Transfer Stablecoins to and receive Fiat directly in your mobile
+              wallet.
             </p>
             <div className="space-y-4">
               <LoginButton />

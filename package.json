@@ -38,6 +38,8 @@
     "lodash": "^4.17.21",
     "next": "^14.2.5",
     "next-auth": "^4.24.7",
+    "qrcode.react": "^4.1.0",
+    "rc-slider": "^11.1.7",
     "react": "^18",
     "react-circular-progressbar": "^2.1.0",
     "react-dom": "^18",
