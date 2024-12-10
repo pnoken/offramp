@@ -343,21 +343,23 @@ const Pool = () => {
                   Balance: {formattedBalance} {selectedBaseToken.symbol}
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  placeholder="0.0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="flex-1 bg-transparent text-2xl font-medium focus:outline-none"
-                />
-                <button
-                  onClick={handleMaxClick}
-                  className="px-3 py-1 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg"
-                >
-                  MAX
-                </button>
-                <div className="flex items-center space-x-2 bg-white rounded-lg px-3 py-2">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="0.0"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full bg-transparent text-2xl font-medium focus:outline-none pr-16"
+                  />
+                  <button
+                    onClick={handleMaxClick}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 px-3 py-1 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                  >
+                    MAX
+                  </button>
+                </div>
+                <div className="flex items-center justify-end sm:justify-start space-x-2 bg-white rounded-lg px-3 py-2">
                   <Image
                     src={selectedBaseToken.icon}
                     alt={selectedBaseToken.name}

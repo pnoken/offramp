@@ -26,33 +26,31 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-md fixed w-full z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+    <nav className="bg-[#0D0D0D] fixed w-full z-50 h-12">
+      <div className="max-w-7xl mx-auto px-3 h-full">
+        <div className="flex items-center justify-between h-full">
           {/* Left side - Logo and Navigation */}
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-6">
             <Link href="/home" className="flex items-center">
               <Image
                 src="/images/fiatsend.png"
-                height={40}
-                width={40}
+                height={24}
+                width={24}
                 alt="Fiatsend Icon"
-                className="mr-3"
+                className="mr-2"
               />
-              <span className="text-xl font-bold text-indigo-600">
-                Fiatsend | Alewa
-              </span>
+              <span className="text-sm font-semibold text-white">Fiatsend</span>
             </Link>
 
-            <div className="hidden xl:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-1">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  className={`px-3 py-1 rounded-md text-sm ${
                     pathname === item.href
-                      ? "text-indigo-600"
-                      : "text-gray-600 hover:text-indigo-600"
+                      ? "text-white bg-gray-800"
+                      : "text-gray-300 hover:text-white hover:bg-gray-800"
                   }`}
                 >
                   {item.name}
@@ -62,7 +60,7 @@ const Navbar = () => {
                 href="https://docs.fiatsend.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                className="px-3 py-1 rounded-md text-sm text-gray-300 hover:text-white hover:bg-gray-800"
               >
                 Guide
               </a>
@@ -70,15 +68,15 @@ const Navbar = () => {
           </div>
 
           {/* Right side - Wallet Connection */}
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
             {ready && authenticated && user?.wallet ? (
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors">
+              <button className="bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors">
                 {shortenedAddress}
               </button>
             ) : (
               <button
                 onClick={connectOrCreateWallet}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition-colors"
               >
                 Connect Wallet
               </button>
