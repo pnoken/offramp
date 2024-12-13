@@ -8,11 +8,11 @@ import DrawerContent from "@/components/drawer/content/import";
 import withAuth from "@/hocs/with-auth";
 import { LoginButton } from "@/components/ui/button/login";
 
-const WebWallet: React.FC = () => {
+const Login: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 to-yellow-100 flex items-center justify-center p-4 relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-200 to-yellow-200 flex items-center justify-center p-4 relative">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -28,18 +28,17 @@ const WebWallet: React.FC = () => {
               height={80}
               className="mx-auto mb-8"
             />
-            <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+            <h1 className="text-3xl font-bold text-gray-700 mb-4 text-center">
               Send Money Instantly
             </h1>
-            <p className="text-gray-600 text-center mb-8">
-              Transfer Stablecoins to and receive Fiat directly in your mobile
-              wallet.
+            <p className="text-gray-500 text-center mb-8">
+              Offramp your stablecoins for fiat
             </p>
             <div className="space-y-4">
               <LoginButton />
             </div>
           </div>
-          <div className="md:w-1/2 bg-gradient-to-br from-green-500 to-yellow-500 p-8 flex items-center justify-center">
+          <div className="md:w-1/2 bg-gradient-to-br from-blue-400 to-yellow-400 p-8 flex items-center justify-center">
             <div className="text-white text-center">
               <h2 className="text-3xl font-bold mb-4">
                 Unlock Instant Transactions
@@ -59,11 +58,11 @@ const WebWallet: React.FC = () => {
       <Drawer isOpen={isOpen} setIsOpen={setIsOpen}>
         <DrawerContent onClose={() => setIsOpen(false)} />
       </Drawer>
-      <p className="absolute bottom-4 left-4 text-sm text-gray-500">
+      <p className="absolute bottom-4 left-4 text-sm text-gray-400">
         Web App v 0.1.1
       </p>
     </div>
   );
 };
 
-export default withAuth(WebWallet);
+export default withAuth(Login);

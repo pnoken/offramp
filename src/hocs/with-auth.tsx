@@ -23,7 +23,7 @@ const withAuth = <P extends object>(
 
     if (ready && authenticated) {
       // Replace this code with however you'd like to handle an authenticated user
-      router.push("/home");
+      router.push("/offramp");
     }
 
     return <WrappedComponent {...props} />;

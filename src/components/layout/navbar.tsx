@@ -7,7 +7,8 @@ import { usePrivy } from "@privy-io/react-auth";
 import { usePathname } from "next/navigation";
 
 const Navbar = () => {
-  const { ready, authenticated, user, connectOrCreateWallet } = usePrivy();
+  const { ready, authenticated, user, connectOrCreateWallet, login, logout } =
+    usePrivy();
   const pathname = usePathname();
 
   const walletAddress = user?.wallet?.address || "";
@@ -20,7 +21,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Overview", href: "/home" },
-    { name: "Deposit", href: "/deposit" },
+    { name: "Offramp", href: "/offramp" },
     { name: "Faucet", href: "/faucet" },
     { name: "Liquidity", href: "/liquidity" },
   ];
@@ -72,13 +73,33 @@ const Navbar = () => {
             {ready && authenticated && user?.wallet ? (
               <button className="bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-gray-700 transition-colors">
                 {shortenedAddress}
+                <button
+                  onClick={logout}
+                  className="flex items-center bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 transition duration-200"
+                  title="Disconnect Wallet"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12H9m6 0l-3 3m3-3l-3-3"
+                    />
+                  </svg>
+                </button>
               </button>
             ) : (
               <button
                 onClick={connectOrCreateWallet}
                 className="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition-colors"
               >
-                Connect Wallet
+                Login
               </button>
             )}
           </div>

@@ -14,7 +14,7 @@ const VerificationOptions: React.FC<VerificationOptionsProps> = ({
 
   const handleSkip = () => {
     onSkip();
-    router.push("/home");
+    router.push("/offramp");
   };
 
   return (

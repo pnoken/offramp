@@ -44,7 +44,7 @@ const walletProviders: WalletProvider[] = [
   },
 ];
 
-const DepositPage = () => {
+const ReceiveStablecoins = () => {
   const { user, authenticated } = usePrivy();
   const [amount, setAmount] = useState<string>("");
   const [exchangeRate, setExchangeRate] = useState<number>(12.5); // GHS/USD rate
@@ -285,4 +285,4 @@ const DepositPage = () => {
   );
 };
 
-export default DepositPage;
+export default ReceiveStablecoins;

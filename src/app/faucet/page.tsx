@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useTokenFaucet } from "@/hooks/use-token-faucet";
 import { toast } from "react-hot-toast";
@@ -20,6 +20,7 @@ const Faucet = () => {
   } = useTokenFaucet();
   const { chain } = useAccount();
   const { switchChain } = useSwitchChain();
+  const [hasSwitchedChain, setHasSwitchedChain] = useState(false);
 
   useEffect(() => {
     if (chain && chain.id !== liskSepolia.id) {
@@ -27,7 +28,15 @@ const Faucet = () => {
         <div className="flex flex-col gap-2">
           <span>Please switch to Lisk Sepolia network</span>
           <button
-            onClick={() => switchChain({ chainId: liskSepolia.id })}
+            onClick={async () => {
+              try {
+                await switchChain({ chainId: liskSepolia.id });
+                setHasSwitchedChain(true);
+              } catch (error) {
+                console.error("Failed to switch chain:", error);
+                toast.error("Failed to switch to Lisk Sepolia network");
+              }
+            }}
             className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm"
           >
             Switch Network
@@ -39,7 +48,7 @@ const Faucet = () => {
         }
       );
     }
-  }, [chain, switchChain]);
+  }, [chain, switchChain, hasSwitchedChain]);
 
   const formatTimeRemaining = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -62,7 +71,7 @@ const Faucet = () => {
         return;
       }
 
-      if (chain?.id !== liskSepolia.id) {
+      if (chain?.id !== liskSepolia.id && !hasSwitchedChain) {
         await switchChain({ chainId: liskSepolia.id });
         return;
       }
