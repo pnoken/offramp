@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-const HOME_PATH = '/home';
+const HOME_PATH = "/offramp";
 
 export async function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname.split('/')[1];
-    if ([''].includes(path)) return NextResponse.redirect(HOME_PATH);
+  const path = request.nextUrl.pathname.split("/")[1];
+  if ([""].includes(path)) return NextResponse.redirect(HOME_PATH);
 }
