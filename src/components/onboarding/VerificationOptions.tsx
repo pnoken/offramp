@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface VerificationOptionsProps {
   onSkip: () => void;
@@ -9,6 +10,13 @@ const VerificationOptions: React.FC<VerificationOptionsProps> = ({
   onSkip,
   onProceed,
 }) => {
+  const router = useRouter();
+
+  const handleSkip = () => {
+    onSkip();
+    router.push("/home");
+  };
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Verification Options</h2>
@@ -29,7 +37,7 @@ const VerificationOptions: React.FC<VerificationOptionsProps> = ({
         </button>
 
         <button
-          onClick={onSkip}
+          onClick={handleSkip}
           className="w-full bg-gray-300 text-gray-700 py-2 rounded"
         >
           Skip Verification

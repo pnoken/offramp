@@ -5,6 +5,15 @@ interface MobileMoneyVerificationProps {
   onSubmit: (phoneNumber: string) => void;
 }
 
+const countryCodes: { [key: string]: string } = {
+  Uganda: "+256",
+  Nigeria: "+234",
+  Ghana: "+233",
+  Kenya: "+254",
+};
+
+const DEFAULT_OTP = "666777"; // Default OTP for testing
+
 const MobileMoneyVerification: React.FC<MobileMoneyVerificationProps> = ({
   country,
   onSubmit,
@@ -12,15 +21,24 @@ const MobileMoneyVerification: React.FC<MobileMoneyVerificationProps> = ({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const [error, setError] = useState("");
+  const [isOtpCorrect, setIsOtpCorrect] = useState(true); // Track if OTP is correct
 
   const handleSendOtp = () => {
-    // Implement OTP sending logic
+    // Simulate sending OTP
     setIsOtpSent(true);
+    setError(""); // Reset error when OTP is sent
   };
 
   const handleVerifyOtp = () => {
-    // Implement OTP verification logic
-    onSubmit(phoneNumber);
+    if (otp === DEFAULT_OTP) {
+      // If OTP is correct, proceed
+      onSubmit(phoneNumber);
+    } else {
+      // If OTP is incorrect, set error state
+      setIsOtpCorrect(false);
+      setError("Incorrect OTP. Please try again.");
+    }
   };
 
   return (
@@ -45,12 +63,20 @@ const MobileMoneyVerification: React.FC<MobileMoneyVerificationProps> = ({
         </button>
       ) : (
         <>
+          <p className="mb-2">
+            Your OTP is: <strong>{DEFAULT_OTP}</strong>
+          </p>
           <input
             type="text"
             placeholder="Enter OTP"
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            className="w-full p-2 border rounded mb-4"
+            onChange={(e) => {
+              setOtp(e.target.value);
+              setIsOtpCorrect(true); // Reset OTP correctness state on input change
+            }}
+            className={`w-full p-2 border rounded mb-4 ${
+              !isOtpCorrect ? "border-red-500" : ""
+            }`}
           />
           <button
             onClick={handleVerifyOtp}
@@ -60,6 +86,7 @@ const MobileMoneyVerification: React.FC<MobileMoneyVerificationProps> = ({
           </button>
         </>
       )}
+      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 };
