@@ -9,7 +9,7 @@ import { liskSepolia } from "viem/chains";
 import { formatDistanceToNow } from "date-fns";
 
 const Faucet = () => {
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated, user, login } = usePrivy();
   const {
     claimTokens,
     isClaimLoading,
@@ -67,8 +67,14 @@ const Faucet = () => {
   const handleClaim = async () => {
     try {
       if (!authenticated) {
-        toast.error("Please connect your wallet first");
-        return;
+        try {
+          await login();
+          return;
+        } catch (error) {
+          console.error("Privy login error:", error);
+          toast.error("Please connect your wallet first");
+          return;
+        }
       }
 
       if (chain?.id !== liskSepolia.id && !hasSwitchedChain) {
@@ -80,6 +86,8 @@ const Faucet = () => {
         toast.error("Please wait for the cooldown period to end");
         return;
       }
+
+      console.log("Current wallet:", user?.wallet);
 
       await claimTokens();
       if (isSuccess) {
