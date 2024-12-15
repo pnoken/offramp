@@ -13,7 +13,7 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Set up Momo Transfers</h1>
+      <h1 className="text-2xl font-bold">Set up Moile Account</h1>
 
       <div className="space-y-4">
         <p>Select Mobile Operator</p>
@@ -25,10 +25,10 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
             onClick={() => setOperator("MTN")}
           >
             <Image
-              src="/images/mobile-operator/momo.svg"
+              src="/images/mobile-operator/mtn.jpg"
               alt="MTN"
-              width={36}
-              height={36}
+              width={100}
+              height={100}
             />
             <span>MTN</span>
           </button>
@@ -39,10 +39,10 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
             onClick={() => setOperator("Telecel")}
           >
             <Image
-              src="/images/mobile-operator/telecel-cash.jpeg"
+              src="/images/mobile-operator/voda.png"
               alt="Telecel"
-              width={36}
-              height={36}
+              width={100}
+              height={100}
             />
             <span>Telecel</span>
           </button>
@@ -53,10 +53,10 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
             onClick={() => setOperator("AT")}
           >
             <Image
-              src="/images/mobile-operator/at.svg"
+              src="/images/mobile-operator/at.jpg"
               alt="Airtel Tigo"
-              width={36}
-              height={36}
+              width={100}
+              height={100}
             />
             <span>Airtel Tigo</span>
           </button>

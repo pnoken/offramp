@@ -1,19 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { useTokenFaucet } from "@/hooks/use-token-faucet";
 import { toast } from "react-hot-toast";
-import { useAccount, useSwitchChain } from "wagmi";
+import { useAccount, useConnect, useSwitchChain } from "wagmi";
 import { liskSepolia } from "viem/chains";
 import { formatDistanceToNow } from "date-fns";
+import NeedGas from "@/components/need-gas";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const Faucet = () => {
-  const { ready, authenticated, user, login } = usePrivy();
   const {
     claimTokens,
     isClaimLoading,
-    claimError,
     isSuccess,
     canClaim,
     timeRemaining,
@@ -22,6 +21,7 @@ const Faucet = () => {
   const { chain } = useAccount();
   const { switchChain } = useSwitchChain();
   const [hasSwitchedChain, setHasSwitchedChain] = useState(false);
+  const { isConnected } = useAccount();
 
   useEffect(() => {
     if (chain && chain.id !== liskSepolia.id) {
@@ -56,37 +56,8 @@ const Faucet = () => {
     return formatDistanceToNow(futureDate, { addSuffix: true });
   };
 
-  const checkBalance = async () => {
-    try {
-      if (!user?.wallet?.address) return true; // Skip check if no wallet
-
-      const balance = await window.ethereum.request({
-        method: "eth_getBalance",
-        params: [user.wallet.address, "latest"],
-      });
-
-      // Convert balance from hex to number and check if it's greater than minimum (e.g., 0.01 LSK)
-      const minBalance = BigInt("0x2386F26FC10000"); // 0.01 LSK in wei
-      return BigInt(balance) >= minBalance;
-    } catch (error) {
-      console.error("Error checking balance:", error);
-      return true; // Return true on error to not block the transaction
-    }
-  };
-
   const handleClaim = async () => {
     try {
-      if (!authenticated) {
-        try {
-          await login();
-          return;
-        } catch (error) {
-          console.error("Privy login error:", error);
-          toast.error("Please connect your wallet first");
-          return;
-        }
-      }
-
       if (chain?.id !== liskSepolia.id && !hasSwitchedChain) {
         await switchChain({ chainId: liskSepolia.id });
         return;
@@ -94,17 +65,6 @@ const Faucet = () => {
 
       if (!canClaim) {
         toast.error("Please wait for the cooldown period to end");
-        return;
-      }
-
-      console.log("Current wallet:", user?.wallet);
-
-      const hasEnoughBalance = await checkBalance();
-      if (!hasEnoughBalance) {
-        toast.error(
-          "Insufficient LSK balance for gas fees. Please ensure you have at least 0.01 LSK.",
-          { duration: 5000 }
-        );
         return;
       }
 
@@ -234,10 +194,11 @@ const Faucet = () => {
                   </div>
                 </div>
               </div>
-              <button
-                onClick={handleClaim}
-                disabled={isClaimLoading || !canClaim || !authenticated}
-                className={`w-full md:w-auto font-medium py-3 px-6 rounded-lg transition-colors duration-200
+              {isConnected ? (
+                <button
+                  onClick={handleClaim}
+                  disabled={isClaimLoading || !canClaim}
+                  className={`w-full md:w-auto font-medium py-3 px-6 rounded-lg transition-colors duration-200
                   ${
                     isClaimLoading
                       ? "bg-gray-400 cursor-not-allowed"
@@ -245,13 +206,20 @@ const Faucet = () => {
                       ? "bg-red-600 cursor-not-allowed"
                       : "bg-blue-600 hover:bg-blue-700 text-white"
                   }`}
-              >
-                {isClaimLoading
-                  ? "Claiming..."
-                  : !canClaim && timeRemaining
-                  ? `Next claim in ${formattedTime}`
-                  : "Claim Tokens"}
-              </button>
+                >
+                  {isClaimLoading
+                    ? "Claiming..."
+                    : !canClaim && timeRemaining
+                    ? `Next claim in ${formattedTime}`
+                    : "Claim Tokens"}
+                </button>
+              ) : (
+                <ConnectButton />
+              )}
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 mb-8">
+              <NeedGas />
             </div>
           </div>
         </div>

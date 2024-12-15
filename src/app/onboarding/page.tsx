@@ -5,6 +5,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { MobileMoneySetup } from "@/components/onboarding/MobileMoneySetup";
 import { VerificationStep } from "@/components/onboarding/VerificationStep";
 import { OnboardingComplete } from "@/components/onboarding/OnboardingComplete";
+import { useRouter } from "next/navigation";
 
 const OnboardingPage = () => {
   const { user } = usePrivy();
@@ -15,6 +16,7 @@ const OnboardingPage = () => {
     operator: string;
     phoneNumber: string;
   } | null>(null);
+  const router = useRouter();
 
   const handleMobileSetup = (operator: string, phoneNumber: string) => {
     setPhoneData({ operator, phoneNumber });
@@ -27,7 +29,7 @@ const OnboardingPage = () => {
   };
 
   const handleComplete = () => {
-    // Redirect to main app or dashboard
+    router.push("/");
   };
 
   return (

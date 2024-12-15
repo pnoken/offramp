@@ -14,6 +14,7 @@ import { liskSepolia } from "viem/chains";
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import StickyNavbar from "@/components/layout/StickyNavbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +25,7 @@ const { connectors } = getDefaultWallets({
 
 const config = getDefaultConfig({
   appName: "Fiatsend",
-  projectId: "YOUR_PROJECT_ID",
+  projectId: "788c92c6f1abab2c8b0cc98c5a952607",
   chains: [liskSepolia],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
@@ -53,6 +54,7 @@ export default function RootLayout({
             </RainbowKitProvider>
           </WagmiConfig>
         </QueryClientProvider>
+        <StickyNavbar />
       </body>
     </html>
   );
