@@ -2,66 +2,53 @@
 
 import React, { useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import CountrySelection from "@/components/onboarding/CountrySelection";
-import MobileMoneyVerification from "@/components/onboarding/MobileMoneyVerification";
-import WalletConnectionStep from "@/components/onboarding/WalletConnectionStep";
-import VerificationOptions from "@/components/onboarding/VerificationOptions";
+import { MobileMoneySetup } from "@/components/onboarding/MobileMoneySetup";
+import { VerificationStep } from "@/components/onboarding/VerificationStep";
+import { OnboardingComplete } from "@/components/onboarding/OnboardingComplete";
 
 const OnboardingPage = () => {
   const { user } = usePrivy();
   const [currentStep, setCurrentStep] = useState<
-    "country" | "mobile-money" | "wallet-connection" | "verification-options"
-  >("country");
+    "setup" | "verification" | "complete"
+  >("setup");
+  const [phoneData, setPhoneData] = useState<{
+    operator: string;
+    phoneNumber: string;
+  } | null>(null);
 
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [mobileMoney, setMobileMoney] = useState<string>("");
-
-  const handleCountrySelect = (country: string) => {
-    setSelectedCountry(country);
-    setCurrentStep("mobile-money");
+  const handleMobileSetup = (operator: string, phoneNumber: string) => {
+    setPhoneData({ operator, phoneNumber });
+    setCurrentStep("verification");
   };
 
-  const handleMobileMoneySubmit = (phoneNumber: string) => {
-    setMobileMoney(phoneNumber);
-    setCurrentStep("wallet-connection");
+  const handleVerification = (code: string) => {
+    // Implement verification logic here
+    setCurrentStep("complete");
   };
 
-  const handleWalletConnection = () => {
-    setCurrentStep("verification-options");
-  };
-
-  const handleSkipVerification = () => {
-    // Redirect to dashboard with limited functionality
-    // Or show a modal about limited account
-  };
-
-  const handleProceedToVerification = () => {
-    // Redirect to Persona verification page
+  const handleComplete = () => {
+    // Redirect to main app or dashboard
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
-        {currentStep === "country" && (
-          <CountrySelection onCountrySelect={handleCountrySelect} />
+        {currentStep === "setup" && (
+          <MobileMoneySetup onSubmit={handleMobileSetup} />
         )}
 
-        {currentStep === "mobile-money" && (
-          <MobileMoneyVerification
-            country={selectedCountry!}
-            onSubmit={handleMobileMoneySubmit}
+        {currentStep === "verification" && phoneData && (
+          <VerificationStep
+            phoneNumber={phoneData.phoneNumber}
+            onVerify={handleVerification}
+            onResend={() => {
+              // Implement resend logic
+            }}
           />
         )}
 
-        {currentStep === "wallet-connection" && (
-          <WalletConnectionStep onComplete={handleWalletConnection} />
-        )}
-
-        {currentStep === "verification-options" && (
-          <VerificationOptions
-            onSkip={handleSkipVerification}
-            onProceed={handleProceedToVerification}
-          />
+        {currentStep === "complete" && (
+          <OnboardingComplete onContinue={handleComplete} />
         )}
       </div>
     </div>
