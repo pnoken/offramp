@@ -13,17 +13,20 @@ import { WagmiConfig, createConfig } from "wagmi";
 import { liskSepolia } from "viem/chains";
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const { connectors } = getDefaultWallets({
   appName: "FiatSend",
-  projectId: "YOUR_WALLET_CONNECT_PROJECT_ID",
+  projectId: "788c92c6f1abab2c8b0cc98c5a952607",
 });
 
-const config = createConfig({
-  connectors,
+const config = getDefaultConfig({
+  appName: "Fiatsend",
+  projectId: "YOUR_PROJECT_ID",
   chains: [liskSepolia],
+  ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
 const queryClient = new QueryClient();

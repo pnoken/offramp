@@ -1,40 +1,64 @@
-import React, { useState } from 'react';
+import Image from "next/image";
+import React, { useState } from "react";
 
 interface MobileMoneySetupProps {
   onSubmit: (operator: string, phoneNumber: string) => void;
 }
 
-export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({ onSubmit }) => {
-  const [operator, setOperator] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
+  onSubmit,
+}) => {
+  const [operator, setOperator] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Set up Momo Transfers</h1>
-      
+
       <div className="space-y-4">
         <p>Select Mobile Operator</p>
-        <div className="flex gap-4">
-          <button 
-            className={`p-4 rounded-lg ${operator === 'MTN' ? 'bg-yellow-400' : 'bg-gray-100'}`}
-            onClick={() => setOperator('MTN')}
+        <div className="flex gap-4 w-full">
+          <button
+            className={`p-4 rounded-lg flex-1 ${
+              operator === "MTN" ? "bg-yellow-400" : "bg-gray-100"
+            }`}
+            onClick={() => setOperator("MTN")}
           >
-            <img src="/mtn-logo.svg" alt="MTN" />
+            <Image
+              src="/images/mobile-operator/momo.svg"
+              alt="MTN"
+              width={36}
+              height={36}
+            />
             <span>MTN</span>
           </button>
-          <button 
-            className={`p-4 rounded-lg ${operator === 'Telecel' ? 'bg-red-400' : 'bg-gray-100'}`}
-            onClick={() => setOperator('Telecel')}
+          <button
+            className={`p-4 rounded-lg flex-1 ${
+              operator === "Telecel" ? "bg-red-400" : "bg-gray-100"
+            }`}
+            onClick={() => setOperator("Telecel")}
           >
-            <img src="/telecel-logo.svg" alt="Telecel" />
+            <Image
+              src="/images/mobile-operator/telecel-cash.jpeg"
+              alt="Telecel"
+              width={36}
+              height={36}
+            />
             <span>Telecel</span>
           </button>
-          <button 
-            className={`p-4 rounded-lg ${operator === 'AT' ? 'bg-blue-400' : 'bg-gray-100'}`}
-            onClick={() => setOperator('AT')}
-            >
-            <img src="/at-logo.svg" alt="AT" />
-            <span>AT</span>
+          <button
+            className={`p-4 rounded-lg flex-1 ${
+              operator === "AT" ? "bg-blue-400" : "bg-gray-100"
+            }`}
+            onClick={() => setOperator("AT")}
+          >
+            <Image
+              src="/images/mobile-operator/at.svg"
+              alt="Airtel Tigo"
+              width={36}
+              height={36}
+            />
+            <span>Airtel Tigo</span>
           </button>
         </div>
 
