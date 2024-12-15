@@ -1,5 +1,5 @@
 {
-  "name": "web-wallet",
+  "name": "offramp",
   "version": "0.1.2",
   "private": true,
   "scripts": {
@@ -21,11 +21,6 @@
     "@tbdex/http-client": "1.1.0",
     "@types/crypto-js": "^4.2.2",
     "@types/jsonwebtoken": "^9.0.6",
-    "@web5/api": "^0.10.0",
-    "@web5/credentials": "1.0.3",
-    "@web5/crypto": "1.0.1",
-    "@web5/crypto-aws-kms": "^1.0.0",
-    "@web5/dids": "1.1.2",
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
