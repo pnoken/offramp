@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
@@ -11,6 +11,7 @@ interface StableCoin {
   name: string;
   icon: string;
   address: string;
+  disabled?: boolean;
 }
 
 interface WalletProvider {
@@ -72,12 +73,14 @@ const ReceiveStablecoins = () => {
       name: "USD Coin",
       icon: "/images/tokens/usdc.png",
       address: "0x...",
+      disabled: true,
     },
     {
       symbol: "DAI",
       name: "Dai Stablecoin",
       icon: "/images/tokens/dai.png",
       address: "0x...",
+      disabled: true,
     },
   ];
 
@@ -166,7 +169,8 @@ const ReceiveStablecoins = () => {
                   selectedToken.symbol === token.symbol
                     ? "border-indigo-500 bg-indigo-50"
                     : "border-gray-200 hover:border-indigo-200"
-                }`}
+                } ${token.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={token.disabled}
               >
                 <Image
                   src={token.icon}

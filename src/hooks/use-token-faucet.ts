@@ -6,46 +6,63 @@ import {
 import { Address, Abi } from "viem";
 import TokenFaucetABI from "@/abis/TokenFaucet.json";
 import { useState, useEffect } from "react";
+import { useAccount } from "wagmi";
+import { toast } from "react-hot-toast";
 
 const FAUCET_CONTRACT_ADDRESS =
   "0x0e714082ca836F3432189Cd0568d69c35C8Ff8C7" as Address;
 
+const COOLDOWN_TIME = 86400; // 24 hours in seconds
+
 export function useTokenFaucet() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [formattedTime, setFormattedTime] = useState<string>("");
+  const { address } = useAccount();
 
-  // Read last claim timestamp
-  const { data: lastClaimTime } = useReadContract({
+  const formatTime = (ms: number): string => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+    if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    }
+    return `${seconds}s`;
+  };
+
+  // Read last request timestamp
+  const { data: lastRequestTime } = useReadContract({
     address: FAUCET_CONTRACT_ADDRESS,
     abi: TokenFaucetABI.abi as Abi,
-    functionName: "lastClaimTime",
-  });
-
-  // Read cooldown period
-  const { data: cooldownPeriod } = useReadContract({
-    address: FAUCET_CONTRACT_ADDRESS,
-    abi: TokenFaucetABI.abi as Abi,
-    functionName: "cooldownPeriod",
+    functionName: "lastRequestTime",
+    args: [address],
   });
 
   useEffect(() => {
     const updateTimeRemaining = () => {
-      if (!lastClaimTime || !cooldownPeriod) return;
+      if (!lastRequestTime) return;
 
-      const lastClaim = Number(lastClaimTime) * 1000; // Convert to milliseconds
-      const cooldown = Number(cooldownPeriod) * 1000;
+      const lastRequest = Number(lastRequestTime) * 1000;
+      const cooldown = COOLDOWN_TIME * 1000;
       const now = Date.now();
-      const nextClaimTime = lastClaim + cooldown;
-      const remaining = nextClaimTime - now;
+      const nextRequestTime = lastRequest + cooldown;
+      const remaining = nextRequestTime - now;
 
-      setTimeRemaining(remaining > 0 ? remaining : 0);
+      const newTimeRemaining = remaining > 0 ? remaining : 0;
+      setTimeRemaining(newTimeRemaining);
+      setFormattedTime(formatTime(newTimeRemaining));
     };
 
     updateTimeRemaining();
     const interval = setInterval(updateTimeRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [lastClaimTime, cooldownPeriod]);
+  }, [lastRequestTime]);
 
   const { writeContract, isPending, error } = useWriteContract();
 
@@ -58,6 +75,7 @@ export function useTokenFaucet() {
       });
     } catch (err) {
       console.error("Failed to claim tokens:", err);
+      toast.error("Failed to claim tokens. Please try again.");
     }
   };
 
@@ -68,6 +86,7 @@ export function useTokenFaucet() {
     eventName: "TokensRequested",
     onLogs() {
       setIsSuccess(true);
+      toast.success("Tokens claimed successfully!");
       setTimeout(() => setIsSuccess(false), 5000);
     },
   });
@@ -79,5 +98,6 @@ export function useTokenFaucet() {
     isSuccess,
     canClaim: timeRemaining === 0 || timeRemaining === null,
     timeRemaining,
+    formattedTime,
   };
 }

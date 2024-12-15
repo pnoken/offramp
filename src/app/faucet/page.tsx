@@ -17,6 +17,7 @@ const Faucet = () => {
     isSuccess,
     canClaim,
     timeRemaining,
+    formattedTime,
   } = useTokenFaucet();
   const { chain } = useAccount();
   const { switchChain } = useSwitchChain();
@@ -51,17 +52,26 @@ const Faucet = () => {
   }, [chain, switchChain, hasSwitchedChain]);
 
   const formatTimeRemaining = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
+    const futureDate = new Date(Date.now() + ms);
+    return formatDistanceToNow(futureDate, { addSuffix: true });
+  };
 
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
+  const checkBalance = async () => {
+    try {
+      if (!user?.wallet?.address) return true; // Skip check if no wallet
+
+      const balance = await window.ethereum.request({
+        method: "eth_getBalance",
+        params: [user.wallet.address, "latest"],
+      });
+
+      // Convert balance from hex to number and check if it's greater than minimum (e.g., 0.01 LSK)
+      const minBalance = BigInt("0x2386F26FC10000"); // 0.01 LSK in wei
+      return BigInt(balance) >= minBalance;
+    } catch (error) {
+      console.error("Error checking balance:", error);
+      return true; // Return true on error to not block the transaction
     }
-    if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    }
-    return `${seconds}s`;
   };
 
   const handleClaim = async () => {
@@ -89,21 +99,87 @@ const Faucet = () => {
 
       console.log("Current wallet:", user?.wallet);
 
+      const hasEnoughBalance = await checkBalance();
+      if (!hasEnoughBalance) {
+        toast.error(
+          "Insufficient LSK balance for gas fees. Please ensure you have at least 0.01 LSK.",
+          { duration: 5000 }
+        );
+        return;
+      }
+
       await claimTokens();
       if (isSuccess) {
         toast.success("Tokens claimed successfully!");
       }
     } catch (error: any) {
       console.error("Claim error:", error);
-      if (error.message?.includes("network")) {
-        toast.error(
-          "Network error. Please check your connection and try again."
-        );
-      } else if (error.message?.includes("rejected")) {
-        toast.error("Transaction rejected by user");
-      } else {
-        toast.error("Failed to claim tokens. Please try again later.");
+
+      // Handle cooldown period error
+      if (
+        error.message?.includes("Cooldown period not met") ||
+        error.message?.includes('function "requestTokens" reverted')
+      ) {
+        toast.error("Please wait before claiming again", {
+          duration: 4000,
+          icon: "⏳",
+        });
+        return;
       }
+
+      // Handle user rejection - check for viem specific error pattern
+      if (
+        error.message?.includes("User rejected the request") ||
+        error.message?.includes("User denied request signature") ||
+        error.message?.includes("Request Signature: User denied") ||
+        error.shortMessage?.includes("User rejected") ||
+        error.code === 4001
+      ) {
+        toast.error("Transaction cancelled", {
+          duration: 3000,
+          icon: "❌",
+        });
+        return;
+      }
+
+      // Handle fee estimation errors
+      if (
+        error.message?.includes("fee") ||
+        error.message?.includes("gas") ||
+        error.message?.includes("estimate")
+      ) {
+        toast.error("Insufficient funds for transaction fees", {
+          duration: 4000,
+        });
+        return;
+      }
+
+      // Handle network errors
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("connection")
+      ) {
+        toast.error("Network error. Please check your connection", {
+          duration: 4000,
+        });
+        return;
+      }
+
+      // Handle contract revert errors (catch other contract errors)
+      if (error.message?.includes("reverted")) {
+        toast.error(
+          "Transaction failed: The transaction was reverted by the contract",
+          {
+            duration: 4000,
+          }
+        );
+        return;
+      }
+
+      // Handle unknown errors with a simpler message
+      toast.error("Failed to claim tokens", {
+        duration: 4000,
+      });
     }
   };
 
@@ -173,14 +249,9 @@ const Faucet = () => {
                 {isClaimLoading
                   ? "Claiming..."
                   : !canClaim && timeRemaining
-                  ? `Next claim in ${formatTimeRemaining(timeRemaining)}`
+                  ? `Next claim in ${formattedTime}`
                   : "Claim Tokens"}
               </button>
-              {claimError && (
-                <p className="mt-2 text-red-600 text-sm">
-                  Error: {claimError.message}
-                </p>
-              )}
             </div>
           </div>
         </div>

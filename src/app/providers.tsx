@@ -1,11 +1,12 @@
-import { createConfig, http } from "wagmi";
+"use client";
+
+import { WagmiConfig, createConfig } from "wagmi";
 import { liskSepolia } from "viem/chains";
 
 export const config = createConfig({
   chains: [liskSepolia],
-  transports: {
-    [liskSepolia.id]: http(
-      "https://rpc.sepolia-api.lisk.com" // Replace with actual RPC URL
-    ),
-  },
 });
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <WagmiConfig config={config}>{children}</WagmiConfig>;
+}
