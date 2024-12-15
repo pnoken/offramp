@@ -37,7 +37,7 @@ const OfframpPage: React.FC = () => {
   const handleChainSwitch = useCallback(
     async (chainid: number) => {
       try {
-        await switchChain(chainid);
+        await switchChain({ chainId: liskSepolia.id });
       } catch (error) {
         console.error("Error switching chain:", error);
       }
@@ -54,6 +54,12 @@ const OfframpPage: React.FC = () => {
     phoneNumber: "0548614047",
     provider: "MTN",
   });
+
+  const [recipientName, setRecipientName] = useState<string>("");
+  const [recipientPhoneNumber, setRecipientPhoneNumber] = useState<string>("");
+  const [recipientProvider, setRecipientProvider] = useState<
+    "MTN" | "Telecel" | "AT"
+  >("MTN");
 
   const [showRecipientForm, setShowRecipientForm] = useState(false);
 
@@ -191,15 +197,20 @@ const OfframpPage: React.FC = () => {
                   type="text"
                   placeholder="Name"
                   className="mb-2 p-2 border rounded-lg w-full"
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
                 />
                 <input
                   type="tel"
                   placeholder="Phone Number"
                   className="mb-2 p-2 border rounded-lg w-full"
+                  value={recipientPhoneNumber}
+                  onChange={(e) => setRecipientPhoneNumber(e.target.value)}
                 />
                 <select
                   className="mb-2 p-2 border rounded-lg w-full"
-                  defaultValue="MTN"
+                  value={recipientProvider}
+                  onChange={(e) => setRecipientProvider(e.target.value)}
                 >
                   <option value="MTN">MTN</option>
                   <option value="Telecel">Telecel</option>
@@ -207,7 +218,14 @@ const OfframpPage: React.FC = () => {
                 </select>
                 <button
                   className="p-2 bg-purple-600 text-white rounded-full"
-                  onClick={() => setShowRecipientForm(false)}
+                  onClick={() => {
+                    setRecipient({
+                      name: recipientName,
+                      phoneNumber: recipientPhoneNumber,
+                      provider: recipientProvider,
+                    }),
+                      setShowRecipientForm(false);
+                  }}
                 >
                   Save
                 </button>
