@@ -375,8 +375,13 @@ const Pool = () => {
             </div>
 
             {/* Action Button */}
-            <button className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium hover:bg-indigo-700 transition-colors">
-              {authenticated ? "Add Liquidity" : "Connect Wallet"}
+            <button
+              disabled
+              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium hover:bg-indigo-700 transition-colors"
+            >
+              {authenticated
+                ? "Add Liquidity (Comming soon)"
+                : "Connect Wallet"}
             </button>
 
             {/* Pool Stats */}
@@ -391,7 +396,7 @@ const Pool = () => {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Current Price</span>
-                <span className="font-medium">1 GHSFIAT = 1.00 USDT</span>
+                <span className="font-medium">16.4 GHSFIAT = 1.00 USDT</span>
               </div>
             </div>
           </div>

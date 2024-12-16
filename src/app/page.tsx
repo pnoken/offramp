@@ -321,7 +321,7 @@ const OfframpPage: React.FC = () => {
   };
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-4 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Offramp your USDT</h1>
           <Link
@@ -391,28 +391,6 @@ const OfframpPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Recipient */}
-        {/* <div className="bg-white rounded-lg border p-4">
-          <div className="flex items-center justify-between">
-            {recipient && (
-              <div className="flex items-center gap-3">
-                <div className="bg-yellow-400 p-2 rounded-lg">
-                  <Image
-                    src="/images/mobile-operator/mtn.jpg"
-                    alt="MTN"
-                    width={24}
-                    height={24}
-                  />
-                </div>
-                <div>
-                  <p className="font-medium">{recipient.name}</p>
-                  <p className="text-gray-600">{recipient.phoneNumber}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div> */}
 
         {/* Provider Info */}
         <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-between">

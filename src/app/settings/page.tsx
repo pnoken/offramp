@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const Settings: React.FC = () => {
   const [selectedWallet, setSelectedWallet] = useState("Lisk Sepolia");
@@ -24,7 +27,7 @@ const Settings: React.FC = () => {
 
   const handleSaveEmail = () => {
     // Logic to save the email
-    alert(`Email saved: ${email}`);
+    toast.success(`Email saved: ${email}`);
     setShowEmailInput(false); // Hide email input after saving
   };
 

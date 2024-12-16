@@ -1,9 +1,11 @@
 import Link from "next/link";
 import React, { useState } from "react";
+import { useAccount } from "wagmi";
 
 const NeedGas: React.FC = () => {
   const [isRequesting, setIsRequesting] = useState(false);
-  const [address, setAddress] = useState("");
+  const { address } = useAccount();
+  const [walletAddress, setWalletAddress] = useState(address);
 
   const handleRequestGas = () => {
     const tweetText = `I am requesting 0.01 ETH on testnet.fiatsend.com @fiatsend on @lisk Sepolia chain. My address: ${address}`;
@@ -39,8 +41,13 @@ const NeedGas: React.FC = () => {
           <p className="text-gray-600">Please enter your address:</p>
           <input
             type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            value={walletAddress}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              if (inputValue.startsWith("0x") || inputValue === "") {
+                setWalletAddress(inputValue as `0x${string}` | undefined);
+              }
+            }}
             placeholder="Enter your address"
             className="mt-2 p-2 border border-gray-300 rounded w-full"
           />
