@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { usePrivy } from "@privy-io/react-auth";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { useReadContract } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
+import { useAccount } from "wagmi";
 
 interface Token {
   symbol: string;
@@ -33,7 +33,6 @@ const ERC20_ABI = [
 ] as const;
 
 const Pool = () => {
-  const { ready, authenticated, user } = usePrivy();
   const [activeTab, setActiveTab] = useState<"add" | "remove">("add");
   const [isAutomaticRange, setIsAutomaticRange] = useState(true);
   const [currentRate, setCurrentRate] = useState(12.5); // Current USDT/GHS rate
@@ -56,6 +55,7 @@ const Pool = () => {
   const defaultRange = 0.5;
   const extendedRange = 2;
   const [amount, setAmount] = useState<string>("");
+  const { address } = useAccount();
 
   const stablecoins: Token[] = [
     {
@@ -83,9 +83,7 @@ const Pool = () => {
     address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A",
     abi: ERC20_ABI,
     functionName: "balanceOf",
-    args: user?.wallet?.address
-      ? [user.wallet.address as `0x${string}`]
-      : undefined,
+    args: address ? [address as `0x${string}`] : undefined,
   });
 
   const formattedBalance = ghsfiatBalance
@@ -377,18 +375,16 @@ const Pool = () => {
             {/* Action Button */}
             <button
               disabled
-              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium hover:bg-indigo-700 transition-colors"
+              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium opacity-50"
             >
-              {authenticated
-                ? "Add Liquidity (Comming soon)"
-                : "Connect Wallet"}
+              {"Add Liquidity (Coming soon)"}
             </button>
 
             {/* Pool Stats */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Total Pool Liquidity</span>
-                <span className="font-medium">$1,234,567</span>
+                <span className="font-medium">$1,034,267</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Your Pool Share</span>
