@@ -9,6 +9,7 @@ import { toast } from "react-hot-toast";
 import TetherTokenABI from "@/abis/TetherToken.json";
 import { BrowserProvider, ethers, parseUnits } from "ethers";
 import { liskSepolia } from "viem/chains";
+import Link from "next/link";
 
 interface SendFiatProps {
   remainingLimit: number;
@@ -323,14 +324,17 @@ const OfframpPage: React.FC = () => {
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Offramp your USDT</h1>
-          <button className="p-2 rounded-full hover:bg-gray-100">
+          <Link
+            href={"/settings"}
+            className="p-2 rounded-full hover:bg-gray-100"
+          >
             <Image
               src="/images/icons/settings.png"
               alt="Settings"
               width={24}
               height={24}
             />
-          </button>
+          </Link>
         </div>
 
         {/* Currency Exchange */}

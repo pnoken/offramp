@@ -19,35 +19,33 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
       const checkNFTOwnership = async () => {
         if (!address) return;
 
-        try {
-          const provider = new BrowserProvider(window.ethereum);
-          const nftContract = new ethers.Contract(
-            FiatsendNFTAddress,
-            FiatsendNFT.abi,
-            provider
-          );
+        if (isConnected)
+          try {
+            const provider = new BrowserProvider(window.ethereum);
+            const nftContract = new ethers.Contract(
+              FiatsendNFTAddress,
+              FiatsendNFT.abi,
+              provider
+            );
 
-          if (isConnected) {
             const balance = await nftContract.balanceOf(address);
             console.log("balance", BigInt(balance.toString()));
 
             if (balance === "0n") {
               router.push("/onboarding");
             }
+          } catch (error: any) {
+            if (error.code === "BAD_DATA") {
+              console.error(
+                "Error checking NFT ownership: No data returned. User likely has zero balance."
+              );
+              router.push("/onboarding");
+            } else {
+              console.error("Error checking NFT ownership:", error);
+            }
+          } finally {
+            setLoading(false);
           }
-        } catch (error: any) {
-          router.push("/onboarding");
-          if (error.code === "BAD_DATA") {
-            console.error(
-              "Error checking NFT ownership: No data returned. User likely has zero balance."
-            );
-            router.push("/onboarding");
-          } else {
-            console.error("Error checking NFT ownership:", error);
-          }
-        } finally {
-          setLoading(false);
-        }
       };
 
       checkNFTOwnership();
