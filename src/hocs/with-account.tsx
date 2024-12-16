@@ -53,7 +53,7 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
       checkNFTOwnership();
     }, [address, router, isConnected]);
 
-    if (isConnecting || loading) {
+    if (isConnecting) {
       return <Spinner />;
     }
 
