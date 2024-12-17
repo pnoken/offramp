@@ -8,7 +8,7 @@ const NeedGas: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState(address);
 
   const handleRequestGas = () => {
-    const tweetText = `I am requesting 0.01 ETH on testnet.fiatsend.com @fiatsend on @lisk Sepolia chain. My address: ${address}`;
+    const tweetText = `I am requesting 0.01 ETH @fiatsend offramp.fiatsend.com on @lisk Sepolia chain. My address: ${address}`;
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       tweetText
     )}`;
