@@ -2,14 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useAccount, useSwitchChain } from "wagmi";
+import { useAccount, useReadContract, useSwitchChain } from "wagmi";
 import withFiatsendNFT from "@/hocs/with-account";
 import FiatSendABI from "@/abis/FiatSend.json";
 import { toast } from "react-hot-toast";
 import TetherTokenABI from "@/abis/TetherToken.json";
 import { BrowserProvider, ethers, parseUnits } from "ethers";
-import { liskSepolia } from "viem/chains";
+import { forma, liskSepolia } from "viem/chains";
 import Link from "next/link";
+import { formatUnits } from "viem";
 
 interface SendFiatProps {
   remainingLimit: number;
@@ -26,8 +27,25 @@ interface Recipient {
   provider: "MTN" | "Telecel" | "AT";
 }
 
+interface Token {
+  symbol: string;
+  name: string;
+  icon: string;
+  balance?: string;
+  address?: string;
+}
+
 const FIATSEND_ADDRESS = "0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93" as const;
 const USDT_ADDRESS = "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168";
+
+const stablecoins: Token[] = [
+  {
+    symbol: "USDT",
+    name: "Tether USD",
+    icon: "/images/tokens/usdt.png",
+    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+  },
+];
 
 const OfframpPage: React.FC = () => {
   const { switchChain } = useSwitchChain();
@@ -37,6 +55,20 @@ const OfframpPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [allowance, setAllowance] = useState<bigint>(BigInt(0));
   const { address } = useAccount();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedQuoteToken, setSelectedQuoteToken] = useState<Token>({
+    symbol: "USDT",
+    name: "Tether USD",
+    icon: "/images/tokens/usdt.png",
+    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+  });
+
+  const { data: usdtBalance } = useReadContract({
+    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A",
+    abi: TetherTokenABI.abi,
+    functionName: "balanceOf",
+    args: address ? [address as `0x${string}`] : undefined,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,7 +149,13 @@ const OfframpPage: React.FC = () => {
     provider: "MTN",
   });
 
-  const [showRecipientForm, setShowRecipientForm] = useState(false);
+  const formattedBalance = usdtBalance
+    ? Number(formatUnits(usdtBalance as bigint, 18)).toFixed(2)
+    : "0.00";
+
+  const handleMaxClick = () => {
+    setUsdtAmount(formattedBalance);
+  };
 
   const handleSendFiat = async () => {
     if (!ghsAmount || isNaN(Number(ghsAmount))) {
@@ -337,6 +375,70 @@ const OfframpPage: React.FC = () => {
           </Link>
         </div>
 
+        <div className="flex-1 relative">
+          <div
+            className="w-full p-3 rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Image
+                  src={selectedQuoteToken.icon}
+                  alt={selectedQuoteToken.name}
+                  width={24}
+                  height={24}
+                  className="mr-2"
+                />
+                <span className="font-medium">{selectedQuoteToken.symbol}</span>
+              </div>
+              <svg
+                className={`w-5 h-5 transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+              {stablecoins.map((token) => (
+                <div
+                  key={token.symbol}
+                  className={`flex items-center p-3 hover:bg-gray-50 cursor-pointer ${
+                    selectedQuoteToken.symbol === token.symbol
+                      ? "bg-indigo-50"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedQuoteToken(token);
+                    setIsDropdownOpen(false);
+                  }}
+                >
+                  <Image
+                    src={token.icon}
+                    alt={token.name}
+                    width={24}
+                    height={24}
+                    className="mr-2"
+                  />
+                  <span className="font-medium">{token.symbol}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Currency Exchange */}
         <div className="space-y-3">
           <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
@@ -373,33 +475,56 @@ const OfframpPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
-            <input
-              type="number"
-              value={usdtAmount}
-              disabled
-              className="bg-transparent outline-none text-xl font-medium w-32"
-            />
-            <div className="flex items-center gap-2">
-              <Image
-                src="/images/tokens/usdt.png"
-                alt="USDT"
-                width={24}
-                height={24}
-              />
-              <span className="font-medium">USDT</span>
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Amount</span>
+                <span className="text-sm text-gray-500">
+                  Balance: {formattedBalance} {selectedQuoteToken.symbol}
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="0.0"
+                    disabled
+                    value={usdtAmount}
+                    onChange={(e) => setUsdtAmount(e.target.value)}
+                    className="w-full bg-transparent text-2xl font-medium focus:outline-none pr-16"
+                  />
+                </div>
+                <div className="flex items-center justify-end sm:justify-start space-x-2 bg-white rounded-lg px-3 py-2">
+                  <Image
+                    src={selectedQuoteToken.icon}
+                    alt={selectedQuoteToken.name}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                  <span className="font-medium">
+                    {selectedQuoteToken.symbol}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pool Stats */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Exchange Rate</span>
+                <span className="font-medium">16.40</span>
+              </div>
+
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Fees</span>
+                <span className="font-medium text-green-600">free</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Provider Info */}
-        <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* <Image src="/moolre.svg" alt="Route" width={24} height={24} /> */}
-            {/* <span className="text-gray-600">Settlement Route</span> */}
-          </div>
-          <span className="text-gray-600">Fees: $0.05</span>
-        </div>
 
         {/* Action Button */}
         {allowance < (usdtAmount ? parseUnits(usdtAmount, 6) : BigInt(0)) && (

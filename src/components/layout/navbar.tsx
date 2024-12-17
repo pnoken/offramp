@@ -13,8 +13,8 @@ const Navbar = () => {
     { name: "Offramp", href: "/" },
     { name: "Faucet", href: "/faucet" },
     { name: "Liquidity", href: "/liquidity" },
-    { name: "Vault", href: "/vault" },
-    { name: "Rewards", href: "/rewards" },
+    { name: "Vault", href: "/vault", disabled: true, comingSoon: true },
+    { name: "Rewards", href: "/rewards", disabled: true, comingSoon: true },
   ];
 
   return (
@@ -36,17 +36,24 @@ const Navbar = () => {
 
             <div className="hidden md:flex items-center space-x-1">
               {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`px-3 py-1 rounded-md text-sm ${
-                    pathname === item.href
-                      ? "text-white bg-gray-800"
-                      : "text-gray-300 hover:text-white hover:bg-gray-800"
-                  }`}
-                >
-                  {item.name}
-                </Link>
+                <React.Fragment key={item.name}>
+                  {item.disabled ? (
+                    <span className="px-3 py-1 rounded-md text-sm text-gray-300 opacity-50">
+                      {item.name} (Coming soon)
+                    </span>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        pathname === item.href
+                          ? "text-white bg-gray-800"
+                          : "text-gray-300 hover:text-white hover:bg-gray-800"
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </React.Fragment>
               ))}
               <a
                 href="https://docs.fiatsend.com"

@@ -37,7 +37,7 @@ const Settings: React.FC = () => {
 
   const handleApproveAllowance = () => {
     // Logic to approve the allowance
-    alert(`Allowance approved: ${allowance}`);
+    toast.success(`Allowance approved: ${allowance}`);
   };
 
   return (
