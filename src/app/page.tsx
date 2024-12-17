@@ -13,7 +13,7 @@ import FiatSendABI from "@/abis/FiatSend.json";
 import { toast } from "react-hot-toast";
 import TetherTokenABI from "@/abis/TetherToken.json";
 import { BrowserProvider, ethers, parseUnits } from "ethers";
-import { forma, liskSepolia } from "viem/chains";
+import { dfk, forma, liskSepolia } from "viem/chains";
 import Link from "next/link";
 import { formatUnits } from "viem";
 import { useEthersSigner } from "@/lib/ethers";
@@ -57,7 +57,7 @@ const OfframpPage: React.FC = () => {
   const { switchChain } = useSwitchChain();
   const [ghsAmount, setGhsAmount] = useState("");
   const [usdtAmount, setUsdtAmount] = useState("");
-  const [exchangeRate, setExchangeRate] = useState<number>(17);
+  const [exchangeRate, setExchangeRate] = useState<number>(14);
   const [isProcessing, setIsProcessing] = useState(false);
   const [usdtAllowance, setAllowance] = useState<bigint>(BigInt(0));
   const { address } = useAccount();
@@ -78,7 +78,7 @@ const OfframpPage: React.FC = () => {
     args: address ? [address as `0x${string}`] : undefined,
   });
 
-  const { data: exRates } = useReadContract({
+  const { data: exRates, error: exRatesError } = useReadContract({
     address: "0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93",
     abi: FiatSendABI.abi,
     functionName: "conversionRate",
@@ -99,38 +99,26 @@ const OfframpPage: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (typeof window.ethereum === "undefined") return;
-
       try {
-        const provider = new BrowserProvider(window.ethereum);
-
-        const usdtContract = new ethers.Contract(
-          USDT_ADDRESS,
-          TetherTokenABI.abi,
-          provider
-        );
-
-        try {
-          // Get conversion rate (assuming it's stored with 6 decimals in contract)
+        if (exRates) {
           const formattedRate = formatUnits(exRates as bigint, 0);
-          // If rate is 17000000 (17 with 6 decimals), this will give us 17
           setExchangeRate(Number(formattedRate));
-        } catch (err) {
-          toast.error("Could not fetch rates");
+        } else if (exRatesError) {
+          toast.error("Error fetching exchange rates");
         }
+      } catch (err) {
+        toast.error("Could not fetch rates");
+        console.error("Error fetching rates:", err);
+      }
 
-        // Get usdtAllowance if address exists
-        if (address) {
-          setAllowance(currentusdtAllowance as bigint);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to fetch exchange rate");
+      // Get usdtAllowance if address exists
+      if (address) {
+        setAllowance(currentusdtAllowance as bigint);
       }
     };
 
     fetchData();
-  }, [address, exRates, currentusdtAllowance]);
+  }, [address, exRates, exRatesError, currentusdtAllowance]);
 
   const handleApprove = async () => {
     setIsProcessing(true);
@@ -188,6 +176,7 @@ const OfframpPage: React.FC = () => {
 
     try {
       const parsedUsdtAmount = parseUnits(usdtAmount, 18);
+
       // Check USDT balance first
       if (
         typeof usdtBalance === "number" &&
@@ -201,24 +190,20 @@ const OfframpPage: React.FC = () => {
       if (usdtAllowance < parsedUsdtAmount) {
         toast.loading("Approving USDT transfer...", { id: toastId });
         try {
-          console.log("Current usdtAllowance:", usdtAllowance.toString());
-          console.log("Required amount:", parsedUsdtAmount.toString());
-
-          const approveTx = writeContract({
+          writeContract({
             address: USDT_ADDRESS,
             abi: TetherTokenABI.abi,
             functionName: "approve",
             args: [FIATSEND_ADDRESS, parsedUsdtAmount],
           });
 
-          toast.loading("Waiting for approval confirmation...", {
-            id: toastId,
-          });
+          // toast.loading("Waiting for approval confirmation...", {
+          //   id: toastId,
+          // });
 
-          console.log("Approval receipt:", approveTx);
-
-          setAllowance(parsedUsdtAmount);
-          toast.success("USDT approved successfully!", { id: toastId });
+          // approveTx; // Wait for the transaction to be confirmed
+          // setAllowance(parsedUsdtAmount);
+          // toast.success("USDT approved successfully!", { id: toastId });
         } catch (error) {
           console.error("Approval error:", error);
           toast.error("Failed to approve USDT. Please try again", {
@@ -228,67 +213,36 @@ const OfframpPage: React.FC = () => {
         }
       }
 
-      // Add this before gas estimation
-      try {
-        // Check if user is verified
-        // Check USDT balance of the contract
-        // Check user's USDT balance again
-      } catch (error) {
-        console.error("Error checking contract state:", error);
-      }
-
       // Estimate gas first to check if the transaction will fail
-      try {
-        // Log the parameters for debugging
-        console.log("Estimating gas for amount:", parsedUsdtAmount.toString());
+      // try {
+      //   writeContract({
+      //     address: USDT_ADDRESS,
+      //     abi: FiatSendABI.abi,
+      //     functionName: "depositStablecoin",
+      //     args: [parsedUsdtAmount],
+      //   });
 
-        writeContract({
-          address: USDT_ADDRESS,
-          abi: FiatSendABI.abi,
-          functionName: "depositStablecoin",
-          args: [parsedUsdtAmount],
-        });
-      } catch (error: any) {
-        console.error("Gas estimation failed:", error);
-        // Log more details about the error
-        console.log("Contract address:", FIATSEND_ADDRESS);
-        console.log("USDT amount:", parsedUsdtAmount.toString());
-        console.log("Sender address:", address);
+      //   // console.log("Gas estimate:", gasEstimate);
+      // } catch (error) {
+      //   console.error("Gas estimation failed:", error);
+      //   toast.error(
+      //     "Failed to estimate gas. Please ensure you have enough USDT and are verified.",
+      //     { id: toastId }
+      //   );
+      //   return;
+      // }
 
-        if (error.message?.includes("execution reverted")) {
-          toast.error(
-            "Transaction would fail. Please verify your account status and USDT balance",
-            { id: toastId }
-          );
-        } else {
-          toast.error(
-            "Failed to estimate gas. Make sure you have enough USDT and are verified",
-            { id: toastId }
-          );
-        }
-        return;
-      }
-
-      toast.loading("Waiting for confirmation...", { id: toastId });
-      // Add overrides to the transaction
-      const tx = writeContract({
+      // Proceed with the transaction
+      writeContract({
         address: USDT_ADDRESS,
         abi: FiatSendABI.abi,
         functionName: "depositStablecoin",
-        args: [
-          parsedUsdtAmount,
-          {
-            from: address,
-            gasLimit: 500000, // Increased gas limit
-          },
-        ],
+        args: [parsedUsdtAmount],
       });
 
-      toast.loading("Processing transaction...", { id: toastId });
-
-      // tx.success
-
-      //toast.success("Transaction completed successfully!", { id: toastId });
+      // toast.loading("Waiting for confirmation...", { id: toastId });
+      // // Wait for the transaction to be confirmed
+      // toast.success("Transaction completed successfully!", { id: toastId });
       setGhsAmount("");
       setUsdtAmount("");
     } catch (error: any) {
@@ -317,8 +271,6 @@ const OfframpPage: React.FC = () => {
           "Transaction would fail. Please verify your account status and try again",
           { id: toastId }
         );
-      } else {
-        handleTransactionError(error, toastId);
       }
     } finally {
       setIsProcessing(false);
