@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { useRouter } from "next/navigation";
-import { BrowserProvider, ethers } from "ethers";
 import FiatsendNFT from "@/abis/MomoNFT.json";
 import Spinner from "@/components/spinner";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-
-const FiatsendNFTAddress = "0x701ECdb6823fc3e258c7E291D2D8C16BC52Fbe94";
+import { formatUnits } from "viem";
+import toast from "react-hot-toast";
 
 const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
   const WithFiatsendNFT: React.FC = (props) => {
@@ -14,34 +13,37 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const { data: NFTBalance } = useReadContract({
+      address: "0x701ECdb6823fc3e258c7E291D2D8C16BC52Fbe94",
+      abi: FiatsendNFT.abi,
+      functionName: "balanceOf",
+      args: address ? [address as `0x${string}`] : undefined,
+    });
+
     // Check if the user owns the required NFT
     useEffect(() => {
       const checkNFTOwnership = async () => {
         if (!address) return;
 
-        if (isConnected)
+        if (isConnected && address)
           try {
-            const provider = new BrowserProvider(window.ethereum);
-            const nftContract = new ethers.Contract(
-              FiatsendNFTAddress,
-              FiatsendNFT.abi,
-              provider
-            );
+            setLoading(true);
+            const formattedBalance = NFTBalance
+              ? Number(formatUnits(NFTBalance as bigint, 0))
+              : "0.00";
+            console.log("balance", Number(formattedBalance));
 
-            const balance = await nftContract.balanceOf(address);
-            console.log("balance", BigInt(balance.toString()));
-
-            if (balance === "0n") {
+            if (Number(formattedBalance) < 1) {
               router.push("/onboarding");
             }
           } catch (error: any) {
             if (error.code === "BAD_DATA") {
-              console.error(
+              toast.error(
                 "Error checking NFT ownership: No data returned. User likely has zero balance."
               );
               router.push("/onboarding");
             } else {
-              console.error("Error checking NFT ownership:", error);
+              toast.error("Error checking NFT ownership:", error);
             }
           } finally {
             setLoading(false);
@@ -49,9 +51,13 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
       };
 
       checkNFTOwnership();
-    }, [address, router, isConnected]);
+    }, [address, router, isConnected, NFTBalance]);
 
     if (isConnecting) {
+      return <Spinner />;
+    }
+
+    if (loading) {
       return <Spinner />;
     }
 
