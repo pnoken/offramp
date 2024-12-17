@@ -2,7 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useAccount, useReadContract, useSwitchChain } from "wagmi";
+import {
+  useAccount,
+  useReadContract,
+  useSwitchChain,
+  useWriteContract,
+} from "wagmi";
 import withFiatsendNFT from "@/hocs/with-account";
 import FiatSendABI from "@/abis/FiatSend.json";
 import { toast } from "react-hot-toast";
@@ -53,7 +58,7 @@ const OfframpPage: React.FC = () => {
   const [usdtAmount, setUsdtAmount] = useState("");
   const [exchangeRate, setExchangeRate] = useState<number>(17);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [allowance, setAllowance] = useState<bigint>(BigInt(0));
+  const [usdtAllowance, setAllowance] = useState<bigint>(BigInt(0));
   const { address } = useAccount();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedQuoteToken, setSelectedQuoteToken] = useState<Token>({
@@ -63,11 +68,31 @@ const OfframpPage: React.FC = () => {
     address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
   });
 
+  // const { data: reserveBalance } = useReadContract({
+  //   address: "0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93",
+  //   abi: TetherTokenABI.abi,
+  //   functionName: "balanceOf",
+  //   args: address ? [address as `0x${string}`] : undefined,
+  // });
+
   const { data: usdtBalance } = useReadContract({
     address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A",
     abi: TetherTokenABI.abi,
     functionName: "balanceOf",
     args: address ? [address as `0x${string}`] : undefined,
+  });
+
+  const { data: exRates } = useReadContract({
+    address: "0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93",
+    abi: FiatSendABI.abi,
+    functionName: "conversionRate",
+  });
+
+  const { data: currentusdtAllowance } = useReadContract({
+    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+    abi: TetherTokenABI.abi,
+    functionName: "approve",
+    args: [address ? [address as `0x${string}`] : undefined, FIATSEND_ADDRESS],
   });
 
   useEffect(() => {
@@ -76,11 +101,7 @@ const OfframpPage: React.FC = () => {
 
       try {
         const provider = new BrowserProvider(window.ethereum);
-        const fiatSendContract = new ethers.Contract(
-          FIATSEND_ADDRESS,
-          FiatSendABI.abi,
-          provider
-        );
+
         const usdtContract = new ethers.Contract(
           USDT_ADDRESS,
           TetherTokenABI.abi,
@@ -89,20 +110,16 @@ const OfframpPage: React.FC = () => {
 
         try {
           // Get conversion rate (assuming it's stored with 6 decimals in contract)
-          const rate = await fiatSendContract.conversionRate();
+          const formattedRate = formatUnits(exRates as bigint, 0);
           // If rate is 17000000 (17 with 6 decimals), this will give us 17
-          setExchangeRate(Number(rate));
+          setExchangeRate(Number(formattedRate));
         } catch (err) {
           toast.error("Could not fetch rates");
         }
 
-        // Get allowance if address exists
+        // Get usdtAllowance if address exists
         if (address) {
-          const currentAllowance = await usdtContract.allowance(
-            address,
-            FIATSEND_ADDRESS
-          );
-          setAllowance(currentAllowance);
+          setAllowance(currentusdtAllowance as bigint);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -111,7 +128,7 @@ const OfframpPage: React.FC = () => {
     };
 
     fetchData();
-  }, [address]);
+  }, [address, exRates, currentusdtAllowance]);
 
   const handleApprove = async () => {
     setIsProcessing(true);
@@ -198,11 +215,11 @@ const OfframpPage: React.FC = () => {
         return;
       }
 
-      // Check and update allowance if needed
-      if (allowance < parsedUsdtAmount) {
+      // Check and update usdtAllowance if needed
+      if (usdtAllowance < parsedUsdtAmount) {
         toast.loading("Approving USDT transfer...", { id: toastId });
         try {
-          console.log("Current allowance:", allowance.toString());
+          console.log("Current usdtAllowance:", usdtAllowance.toString());
           console.log("Required amount:", parsedUsdtAmount.toString());
 
           const approveTx = await usdtContract.approve(
@@ -216,12 +233,12 @@ const OfframpPage: React.FC = () => {
           const receipt = await approveTx.wait();
           console.log("Approval receipt:", receipt);
 
-          // Verify the new allowance
-          const newAllowance = await usdtContract.allowance(
+          // Verify the new usdtAllowance
+          const newusdtAllowance = await usdtContract.usdtAllowance(
             address,
             FIATSEND_ADDRESS
           );
-          console.log("New allowance:", newAllowance.toString());
+          console.log("New usdtAllowance:", newusdtAllowance.toString());
 
           setAllowance(parsedUsdtAmount);
           toast.success("USDT approved successfully!", { id: toastId });
@@ -311,7 +328,7 @@ const OfframpPage: React.FC = () => {
         toast.error("Amount must be greater than zero", { id: toastId });
       } else if (error.message?.includes("Stablecoin transfer failed")) {
         toast.error(
-          "USDT transfer failed. Please check your balance and allowance",
+          "USDT transfer failed. Please check your balance and usdtAllowance",
           { id: toastId }
         );
       } else if (error.message?.includes("execution reverted")) {
@@ -527,7 +544,8 @@ const OfframpPage: React.FC = () => {
         {/* Provider Info */}
 
         {/* Action Button */}
-        {allowance < (usdtAmount ? parseUnits(usdtAmount, 6) : BigInt(0)) && (
+        {usdtAllowance <
+          (usdtAmount ? parseUnits(usdtAmount, 6) : BigInt(0)) && (
           <button
             onClick={handleApprove}
             disabled={isProcessing || !usdtAmount}
@@ -542,13 +560,14 @@ const OfframpPage: React.FC = () => {
           disabled={
             isProcessing ||
             !ghsAmount ||
-            allowance < (usdtAmount ? parseUnits(usdtAmount, 6) : BigInt(0))
+            usdtAllowance < (usdtAmount ? parseUnits(usdtAmount, 6) : BigInt(0))
           }
           className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all
             ${
               isProcessing ||
               !ghsAmount ||
-              allowance < (usdtAmount ? parseUnits(usdtAmount, 6) : BigInt(0))
+              usdtAllowance <
+                (usdtAmount ? parseUnits(usdtAmount, 6) : BigInt(0))
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
             }

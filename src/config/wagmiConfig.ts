@@ -1,14 +1,9 @@
-import { mainnet, sepolia } from "viem/chains";
+import { liskSepolia } from "viem/chains";
 import { http } from "wagmi";
+import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 
-import { createConfig } from "@privy-io/wagmi";
-
-// Replace these with your app's chains
-
-export const config = createConfig({
-  chains: [mainnet, sepolia],
-  transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
-  },
+export const config = getDefaultConfig({
+  appName: "Fiatsend",
+  projectId: "788c92c6f1abab2c8b0cc98c5a952607",
+  chains: [liskSepolia],
 });

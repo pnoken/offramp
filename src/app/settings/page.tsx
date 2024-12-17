@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { config } from "@/config/wagmiConfig";
+import { signMessage, verifyMessage } from "@wagmi/core";
+import { useAccount } from "wagmi";
 
 const Settings: React.FC = () => {
   const [selectedWallet, setSelectedWallet] = useState("Lisk Sepolia");
@@ -9,6 +12,7 @@ const Settings: React.FC = () => {
   const [allowance, setAllowance] = useState(1000);
   const [email, setEmail] = useState("");
   const [showEmailInput, setShowEmailInput] = useState(false);
+  const { address } = useAccount();
 
   const handleWalletChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedWallet(event.target.value);
@@ -25,8 +29,23 @@ const Settings: React.FC = () => {
     setAllowance(Number(event.target.value));
   };
 
-  const handleSaveEmail = () => {
-    // Logic to save the email
+  const handleSaveEmail = async () => {
+    try {
+      const result = await signMessage(config, {
+        message: "update email",
+      });
+      if (address) {
+        await verifyMessage(config, {
+          address: address,
+          message: "update email",
+          signature: result,
+        });
+        // Logic to save the email
+      }
+    } catch (error) {
+      toast.error("Error Signing Email");
+    }
+
     toast.success(`Email saved: ${email}`);
     setShowEmailInput(false); // Hide email input after saving
   };
