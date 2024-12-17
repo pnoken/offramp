@@ -13,7 +13,7 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Set up Moile Account</h1>
+      <h1 className="text-2xl font-bold">Set up Mobile Account</h1>
 
       <div className="space-y-4">
         <p>Select Mobile Operator</p>
@@ -53,12 +53,12 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
             onClick={() => setOperator("AT")}
           >
             <Image
-              src="/images/mobile-operator/at.jpg"
+              src="/images/mobile-operator/airteltigo.avif"
               alt="Airtel Tigo"
               width={100}
               height={100}
             />
-            <span>Airtel Tigo</span>
+            <span>AT</span>
           </button>
         </div>
 
@@ -80,7 +80,7 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <span>%</span>
-            <p>0% Fees up to GHS 1k monthly, 0.5% after that</p>
+            <p>0% Fees up to GHS 1k monthly</p>
           </div>
         </div>
 

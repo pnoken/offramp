@@ -1,5 +1,11 @@
 import React from "react";
 import { useRouter } from "next/navigation";
+import {
+  HomeIcon,
+  DocumentTextIcon,
+  PhoneIcon,
+  CurrencyDollarIcon,
+} from "@heroicons/react/24/outline";
 
 const StickyNavbar: React.FC = () => {
   const router = useRouter();
@@ -15,26 +21,29 @@ const StickyNavbar: React.FC = () => {
         onClick={() => handleNavigation("/rewards")}
         className="flex flex-col items-center opacity-50"
       >
-        <span className="text-lg">Rewards</span>
-        <span className="text-sm text-gray-500">Coming Soon</span>
+        <HomeIcon className="h-5 w-5 mb-1" aria-hidden="true" />
+        <span className="text-md">Rewards</span>
       </button>
       <button
         onClick={() => handleNavigation("/faucet")}
         className="flex flex-col items-center"
       >
-        <span className="text-lg">Faucet</span>
+        <PhoneIcon className="h-5 w-5 mb-1" aria-hidden="true" />
+        <span className="text-md">Faucet</span>
       </button>
       <button
         onClick={() => handleNavigation("/liquidity")}
         className="flex flex-col items-center"
       >
-        <span className="text-lg">Liquidity</span>
+        <CurrencyDollarIcon className="h-5 w-5 mb-1" aria-hidden="true" />
+        <span className="text-md">Liquidity</span>
       </button>
       <button
         onClick={() => handleNavigation("https://docs.fiatsend.com")}
         className="flex flex-col items-center"
       >
-        <span className="text-lg">Guide</span>
+        <DocumentTextIcon className="h-5 w-5 mb-1" aria-hidden="true" />
+        <span className="text-md">Guide</span>
       </button>
     </div>
   );

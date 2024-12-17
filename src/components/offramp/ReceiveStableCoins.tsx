@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import Image from "next/image";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "react-hot-toast";
@@ -45,10 +44,16 @@ const walletProviders: WalletProvider[] = [
   },
 ];
 
-const ReceiveStablecoins = () => {
-  const { user, authenticated } = usePrivy();
+interface ReceiveStablecoinsProps {
+  exchangeRate: number; // Specify the type of exchangeRate
+  reserve: number;
+}
+
+const ReceiveStablecoins: React.FC<ReceiveStablecoinsProps> = ({
+  exchangeRate,
+  reserve,
+}) => {
   const [amount, setAmount] = useState<string>("");
-  const [exchangeRate, setExchangeRate] = useState<number>(12.5); // GHS/USD rate
   const [selectedToken, setSelectedToken] = useState<StableCoin>({
     symbol: "USDT",
     name: "Tether USD",
@@ -85,6 +90,14 @@ const ReceiveStablecoins = () => {
   ];
 
   const generateLinks = () => {
+    const amountInGHS = Number(amount);
+
+    // Check if the amount is greater than reserves
+    if (amountInGHS > reserve) {
+      toast.error("Low Fiatsend reserves. Please enter a lower amount.");
+      return;
+    }
+
     if (!amount || isNaN(Number(amount))) {
       toast.error("Please enter a valid amount");
       return;
@@ -93,7 +106,7 @@ const ReceiveStablecoins = () => {
     // Web link for QR and sharing
     const baseUrl = "https://fiatsend.com/pay";
     const params = new URLSearchParams({
-      to: user?.wallet?.address || "fiatsend.eth",
+      to: "0xbaa297515baae690e5a565b340e5efab9ffa24a1",
       amount: amount,
       token: selectedToken.symbol,
       currency: "GHS",
@@ -102,8 +115,7 @@ const ReceiveStablecoins = () => {
 
     // Generate wallet-specific deep link
     const amountInWei = (Number(amount) * 1e18).toString();
-    const recipientAddress =
-      user?.wallet?.address || "0xbaa297515baae690e5a565b340e5efab9ffa24a1";
+    const recipientAddress = "0xbaa297515baae690e5a565b340e5efab9ffa24a1";
     const walletUri = selectedWallet.deepLink(
       selectedToken.address,
       recipientAddress,
@@ -123,7 +135,7 @@ const ReceiveStablecoins = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Request Payment
+          Send to fiatsend.eth
         </h1>
 
         {/* Exchange Rate Display */}
@@ -131,7 +143,7 @@ const ReceiveStablecoins = () => {
           <div className="flex justify-between items-center">
             <span className="text-gray-600">Current Exchange Rate</span>
             <span className="text-lg font-semibold text-gray-900">
-              1 USD = {exchangeRate} GHS
+              1 USDT = {exchangeRate.toFixed(2)} GHS
             </span>
           </div>
         </div>
@@ -225,30 +237,6 @@ const ReceiveStablecoins = () => {
         {/* Invoice Links and QR Codes */}
         {invoiceLink && (
           <div className="space-y-6">
-            {/* Web Link Section */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Web Link
-              </h3>
-              <div className="flex justify-center mb-4">
-                <QRCodeSVG value={invoiceLink} size={200} />
-              </div>
-              <div className="flex items-center gap-2 bg-white p-3 rounded-lg">
-                <input
-                  type="text"
-                  value={invoiceLink}
-                  readOnly
-                  className="flex-1 bg-transparent border-none focus:ring-0"
-                />
-                <button
-                  onClick={() => copyToClipboard(invoiceLink)}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-
             {/* Ethereum URI Section */}
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">

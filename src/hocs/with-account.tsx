@@ -27,14 +27,11 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
     // Check if the user owns the required NFT
     useEffect(() => {
       const checkNFTOwnership = async () => {
-        if (!address || isBalanceLoading || NFTBalance === undefined) return; // Wait for balance to load
+        if (!address) return; // Wait for address to be available
+        if (isBalanceLoading) return; // Wait for balance to load
 
         try {
-          setLoading(true);
           const formattedBalance = Number(formatUnits(NFTBalance as bigint, 0));
-
-          console.log("balance", formattedBalance);
-
           if (formattedBalance < 1) {
             router.push("/onboarding");
           }
@@ -42,17 +39,19 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
           toast.error("Error checking NFT ownership.");
           router.push("/onboarding");
         } finally {
-          setLoading(false);
+          setLoading(false); // Set loading to false after checking
         }
       };
 
       checkNFTOwnership();
-    }, [address, router, isConnected, NFTBalance, isBalanceLoading]);
+    }, [address, NFTBalance, isBalanceLoading, router, isConnected]);
 
-    if (isConnecting || loading || isBalanceLoading) {
+    // Show spinner while connecting or loading
+    if (isBalanceLoading) {
       return <Spinner />;
     }
 
+    // Show connect button if not connected
     if (!isConnected || !address) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen">
