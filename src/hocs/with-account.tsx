@@ -13,7 +13,11 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    const { data: NFTBalance } = useReadContract({
+    const {
+      data: NFTBalance,
+      isLoading: isBalanceLoading,
+      isError,
+    } = useReadContract({
       address: "0x701ECdb6823fc3e258c7E291D2D8C16BC52Fbe94",
       abi: FiatsendNFT.abi,
       functionName: "balanceOf",
@@ -23,41 +27,29 @@ const withFiatsendNFT = (WrappedComponent: React.ComponentType) => {
     // Check if the user owns the required NFT
     useEffect(() => {
       const checkNFTOwnership = async () => {
-        if (!address) return;
+        if (!address || isBalanceLoading || NFTBalance === undefined) return; // Wait for balance to load
 
-        if (isConnected && address)
-          try {
-            setLoading(true);
-            const formattedBalance = NFTBalance
-              ? Number(formatUnits(NFTBalance as bigint, 0))
-              : "0.00";
-            console.log("balance", Number(formattedBalance));
+        try {
+          setLoading(true);
+          const formattedBalance = Number(formatUnits(NFTBalance as bigint, 0));
 
-            if (Number(formattedBalance) < 1) {
-              router.push("/onboarding");
-            }
-          } catch (error: any) {
-            if (error.code === "BAD_DATA") {
-              toast.error(
-                "Error checking NFT ownership: No data returned. User likely has zero balance."
-              );
-              router.push("/onboarding");
-            } else {
-              toast.error("Error checking NFT ownership:", error);
-            }
-          } finally {
-            setLoading(false);
+          console.log("balance", formattedBalance);
+
+          if (formattedBalance < 1) {
+            router.push("/onboarding");
           }
+        } catch (error: any) {
+          toast.error("Error checking NFT ownership.");
+          router.push("/onboarding");
+        } finally {
+          setLoading(false);
+        }
       };
 
       checkNFTOwnership();
-    }, [address, router, isConnected, NFTBalance]);
+    }, [address, router, isConnected, NFTBalance, isBalanceLoading]);
 
-    if (isConnecting) {
-      return <Spinner />;
-    }
-
-    if (loading) {
+    if (isConnecting || loading || isBalanceLoading) {
       return <Spinner />;
     }
 
