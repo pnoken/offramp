@@ -1,31 +1,19 @@
-# fsWallet: Web5 Wallet for Cross-Border Transfers in Africa
+# Offramps by fiatsend: Easy Web3 offramp and settlement solution
 
 ![fsWallet Logo](./public//favicon.ico)
 
 ## Overview
 
-fsWallet is a Web5 wallet designed for cross-border transfers in Africa, developed as part of the TBDex challenge. The wallet leverages decentralized technologies to facilitate secure, fast, and low-cost financial transactions across borders within the African continent.
+offramps by fiatsend is a decentralized app that allows users to mint their mobile account as a SBT NFT which is used to identify users mobile account when they offramp or send stablecoins directly to fiatsend.eth.
 
-## Design Considerations
+##Features:
 
-### Profitability
-fsWallet generates revenue through:
-- Small transaction fees on successful transfers
-
-### Optionality
-- Implements a matching algorithm to compare offerings from multiple PFIs
-- Allows users to sort and filter PFI offerings based on various criteria
-- Provides a comparison view of top matches for user selection
-
-### Customer Management
-- Utilizes Web5 DID protocols for secure identity management
-- Implements a user-friendly interface for DID creation, import, and export
-- Stores Verifiable Credentials securely within the wallet
-
-### Customer Satisfaction
-- Implements a rating system for users to review PFIs after transactions
-- Aggregates and displays PFI ratings to help users make informed decisions
-- Provides a feedback mechanism for continuous improvement
+- NFT Mint
+- Account Verification
+- Transfer
+- Settings
+- Rewards
+- Liquidity Pools
 
 ## Table of Contents
 
@@ -54,11 +42,10 @@ fsWallet generates revenue through:
 
 - **Frontend:** React, TypeScript, Next.js
 - **State Management:** Redux Toolkit
-- **Blockchain:** TBDex SDK, Web5 Protocols
-- **DID Management:** @web5/dids
+- **Blockchain:** Lisk, Solidity
 - **Styling:** Tailwind CSS
 - **Build Tools:** Next.js built-in tooling
-- **Package Management:** npm
+- **Package Management:** yarn
 
 ## Installation & Usage
 
@@ -67,8 +54,8 @@ To run this project locally, follow these steps:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/fiatsend/web-wallet.git
-   cd fswallet
+   git clone https://github.com/fiatsend/offramp.git
+   cd offramp
    ```
 
 2. **Install dependencies:**
@@ -87,24 +74,107 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Project Structure
 
-- `src/app`: Contains the main application pages and routing logic.
-- `src/components`: Reusable React components.
-- `src/lib`: Redux slices and other utility functions.
-- `public`: Static assets.
+/fiatsend-frontend
+│
+├── /public
+│ └── /assets (Images, logos, icons, etc.)
+│
+├── /src
+│ ├── /abis (Smart contract ABIs)
+│ │ └── contractName.json
+│ │
+│ ├── /components (Reusable UI components)
+│ │ ├── /forms (Form-specific components)
+│ │ ├── /modals (Reusable modal components)
+│ │ ├── /navigation (Navbar, Sidebar, etc.)
+│ │ └── /shared (Buttons, Inputs, Cards, etc.)
+│ │
+│ ├── /features (Redux feature slices)
+│ │ ├── authSlice.ts (Authentication state)
+│ │ ├── transactionSlice.ts (Transaction signing and tracking state)
+│ │ └── otherFeatureSlice.ts
+│ │
+│ ├── /hooks (Custom React hooks)
+│ │ ├── /auth (Hooks for authentication logic)
+│ │ └── /web3 (Hooks for blockchain interactions)
+│ │ ├── useWallet.ts
+│ │ ├── useContract.ts
+│ │ └── useTransaction.ts
+│ │
+│ ├── /layouts (Reusable layout components)
+│ │ ├── /MainLayout.tsx
+│ │ └── /AuthLayout.tsx
+│ │
+│ ├── /middleware (Middleware logic for Redux or authentication)
+│ │ ├── authMiddleware.ts (Ensures authenticated state)
+│ │ └── transactionMiddleware.ts (Processes signed transactions)
+│ │
+│ ├── /pages (Next.js pages directory)
+│ │ ├── /api (API routes)
+│ │ ├── /auth (Authentication-related pages)
+│ │ │ ├── login.tsx
+│ │ │ └── signup.tsx
+│ │ ├── /dashboard (Authenticated user dashboard)
+│ │ │ ├── index.tsx
+│ │ │ └── exchange.tsx
+│ │ └── index.tsx (Landing page)
+│ │
+│ ├── /redux (Redux store configuration)
+│ │ ├── store.ts (Configure store with middleware and slices)
+│ │ └── rootReducer.ts (Combine reducers)
+│ │
+│ ├── /services (Business logic, API calls, and blockchain services)
+│ │ ├── apiService.ts (API interaction logic)
+│ │ ├── transactionService.ts (Transaction signing logic)
+│ │ └── walletService.ts (Wallet connection and signing helpers)
+│ │
+│ ├── /styles (Tailwind CSS and other styles)
+│ │ ├── /globals.css
+│ │ └── /theme.js
+│ │
+│ ├── /types (TypeScript type definitions)
+│ │ ├── auth.d.ts (Types for authentication)
+│ │ ├── transactions.d.ts (Types for transactions)
+│ │ ├── redux.d.ts (Types for Redux state)
+│ │ └── web3.d.ts (Types for Web3 interactions)
+│ │
+│ ├── /utils (Utility functions)
+│ │ ├── api.ts (API helpers)
+│ │ ├── constants.ts (App-wide constants)
+│ │ ├── helpers.ts (General helpers)
+│ │ └── validators.ts (Input validation utilities)
+│ │
+│ ├── /views (Page-specific components and logic)
+│ │ ├── /HomeView.tsx (Landing page components and logic)
+│ │ ├── /DashboardView.tsx (Dashboard components and logic)
+│ │ └── /ExchangeView.tsx (Exchange page components and logic)
+│ │
+│ ├── /config (Configuration files)
+│ │ ├── network.ts (Blockchain network configurations)
+│ │ ├── reduxConfig.ts (Redux DevTools and middleware setup)
+│ │ └── web3.ts (Web3 or ethers.js setup)
+│ │
+│ └── app.tsx (Main entry file for the app)
+│
+├── .env.local (Environment variables)
+├── next.config.js
+├── postcss.config.js
+├── tailwind.config.js
+└── package.json
 
 ## Key Components
 
-- `wallet-slice.ts`: Manages wallet creation and DID operations.
-- `offering-slice.ts`: Handles fetching and filtering of TBDex offerings.
-- `exchange-slice.ts`: Manages the creation of exchanges using TBDex protocol.
+- `account-slice.ts`: Manages account information and settings.
+- `offramp-slice.ts`: Handles deposit and exchange operations.
+- `vault-slice.ts`: Manages vault and liqudity operations.
 
 ## Learn More
 
 To learn more about the technologies used in this project:
 
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Web5 DID Documentation](https://developer.tbd.website/docs/web5/learn/decentralized-identifiers)
-- [TBDex Documentation](https://developer.tbd.website/docs/tbdex/)
+- [Wagmi Documentation](https://wagmi.sh/react/getting-started)
+- [Lisk Documentation](https://docs.lisk.com/building-on-lisk/interacting-with-the-blockchain/viem)
 
 ## Contributing
 
