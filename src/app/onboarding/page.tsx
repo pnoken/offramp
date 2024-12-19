@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { MobileMoneySetup } from "@/components/onboarding/MobileMoneySetup";
 import { VerificationStep } from "@/components/onboarding/VerificationStep";
 import { OnboardingComplete } from "@/components/onboarding/OnboardingComplete";
 import { useRouter } from "next/navigation";
 import withFiatsendNFT from "@/hocs/with-account";
+import TermsConditionsModal from "@/components/modals/terms-and-conditons";
 
 const OnboardingPage = () => {
-  const { user } = usePrivy();
   const [currentStep, setCurrentStep] = useState<
     "setup" | "verification" | "complete"
   >("setup");
@@ -18,6 +18,7 @@ const OnboardingPage = () => {
     phoneNumber: string;
   } | null>(null);
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleMobileSetup = (operator: string, phoneNumber: string) => {
     setPhoneData({ operator, phoneNumber });
@@ -31,6 +32,15 @@ const OnboardingPage = () => {
 
   const handleComplete = () => {
     router.push("/");
+  };
+
+  useEffect(() => {
+    setIsModalOpen(true);
+  }, []);
+
+  const handleAcceptTerms = () => {
+    setIsModalOpen(false);
+    // You can add additional logic here if needed
   };
 
   return (
@@ -54,6 +64,13 @@ const OnboardingPage = () => {
           <OnboardingComplete onContinue={handleComplete} />
         )}
       </div>
+      <TermsConditionsModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          localStorage.clear();
+        }}
+        onAccept={handleAcceptTerms}
+      />
     </div>
   );
 };

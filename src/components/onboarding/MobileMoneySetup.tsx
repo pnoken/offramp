@@ -1,6 +1,5 @@
 import Image from "next/image";
 import React, { useState } from "react";
-
 interface MobileMoneySetupProps {
   onSubmit: (operator: string, phoneNumber: string) => void;
 }
