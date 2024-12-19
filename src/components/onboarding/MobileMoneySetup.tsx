@@ -11,6 +11,14 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
   const [operator, setOperator] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
+  // Mobile number validation: 10 digits or with country code 10+ digits
+  const isValidPhoneNumber = (number: string) => {
+    const pattern = /^(?:\+\d{1,3})?\d{10,}$/;
+    return pattern.test(number);
+  };
+
+  const isContinueDisabled = !operator || !isValidPhoneNumber(phoneNumber);
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Set up Mobile Account</h1>
@@ -67,25 +75,38 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
           <input
             type="tel"
             placeholder="Enter your number"
-            className="w-full p-3 border rounded-lg"
+            className={`w-full p-3 border rounded-lg ${
+              phoneNumber && !isValidPhoneNumber(phoneNumber)
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
+          {phoneNumber && !isValidPhoneNumber(phoneNumber) && (
+            <p className="text-red-500 text-sm">
+              Please enter a valid mobile number.
+            </p>
+          )}
         </div>
 
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="flex items-center gap-2">
             <span>↔️</span>
-            <p>Transfer between USDT/USDC TO GHS</p>
+            <p>Offramp USDT/USDC TO GHS</p>
           </div>
           <div className="flex items-center gap-2">
-            <span>%</span>
-            <p>0% Fees up to GHS 1k monthly</p>
+            <p>Free for up to GHS 5k monthly</p>
           </div>
         </div>
 
         <button
-          className="w-full bg-purple-600 text-white py-3 rounded-lg"
+          className={`w-full py-3 rounded-lg text-white ${
+            isContinueDisabled
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-purple-600"
+          }`}
+          disabled={isContinueDisabled}
           onClick={() => onSubmit(operator, phoneNumber)}
         >
           Continue

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 interface VerificationStepProps {
   phoneNumber: string;
   onVerify: (code: string) => void;
@@ -11,6 +12,9 @@ export const VerificationStep: React.FC<VerificationStepProps> = ({
   onResend,
 }) => {
   const [code, setCode] = useState(["", "", "", ""]);
+
+  // Check if all code inputs are filled
+  const isVerifyDisabled = code.some((digit) => digit === "");
 
   return (
     <div className="space-y-6">
@@ -48,8 +52,11 @@ export const VerificationStep: React.FC<VerificationStepProps> = ({
       </button>
 
       <button
-        className="w-full bg-purple-600 text-white py-3 rounded-lg"
+        className={`w-full py-3 rounded-lg text-white ${
+          isVerifyDisabled ? "bg-gray-300 cursor-not-allowed" : "bg-purple-600"
+        }`}
         onClick={() => onVerify(code.join(""))}
+        disabled={isVerifyDisabled}
       >
         Verify
       </button>
