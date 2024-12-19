@@ -76,8 +76,8 @@ export const OnboardingComplete: React.FC<OnboardingCompleteProps> = ({
               src="/images/mobile-wallet.webp" // Replace with your NFT image
               alt="Minted NFT"
               className="w-48 h-48"
-              width={192}
-              height={192}
+              width={240}
+              height={240}
             />
             <button
               onClick={handleMintNFT}
@@ -96,9 +96,11 @@ export const OnboardingComplete: React.FC<OnboardingCompleteProps> = ({
       <p className="text-gray-600">Enjoy sending/converting easily</p>
 
       <div className="bg-purple-50 p-4 rounded-lg">
-        <h3 className="text-xl font-bold text-purple-600">1000 GHS Limit</h3>
+        <h3 className="text-xl font-bold text-purple-600">
+          Send 5000 GHS for free
+        </h3>
         <p className="text-sm text-gray-600">
-          Complete KYC Verification to increase limit
+          Verify your account to enjoy the benefits
         </p>
       </div>
 

@@ -6,6 +6,7 @@ import { MobileMoneySetup } from "@/components/onboarding/MobileMoneySetup";
 import { VerificationStep } from "@/components/onboarding/VerificationStep";
 import { OnboardingComplete } from "@/components/onboarding/OnboardingComplete";
 import { useRouter } from "next/navigation";
+import withFiatsendNFT from "@/hocs/with-account";
 
 const OnboardingPage = () => {
   const { user } = usePrivy();
@@ -57,4 +58,4 @@ const OnboardingPage = () => {
   );
 };
 
-export default OnboardingPage;
+export default withFiatsendNFT(OnboardingPage);
