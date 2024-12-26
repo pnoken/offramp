@@ -4,9 +4,13 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
-import { useReadContract } from "wagmi";
+import { useReadContract, useWriteContract } from "wagmi";
 import { formatUnits, parseUnits } from "viem";
 import { useAccount } from "wagmi";
+import FiatSendABI from "@/abis/FiatSend.json";
+import toast from "react-hot-toast";
+import GHSFIATABI from "@/abis/GHSFIAT.json";
+import withFiatsendNFT from "@/hocs/with-account";
 
 interface Token {
   symbol: string;
@@ -35,27 +39,91 @@ const ERC20_ABI = [
 const Pool = () => {
   const [activeTab, setActiveTab] = useState<"add" | "remove">("add");
   const [isAutomaticRange, setIsAutomaticRange] = useState(true);
-  const [currentRate, setCurrentRate] = useState(12.5); // Current USDT/GHS rate
+  const [currentAllowance, setCurrentAllowance] = useState<bigint>(BigInt(0));
   const [selectedBaseToken, setSelectedBaseToken] = useState<Token>({
     symbol: "GHSFIAT",
     name: "Ghana Fiat",
     icon: "/images/tokens/ghs.png",
   });
+  const { writeContract } = useWriteContract();
   const [selectedQuoteToken, setSelectedQuoteToken] = useState<Token>({
     symbol: "USDT",
     name: "Tether USD",
     icon: "/images/tokens/usdt.png",
     address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
   });
+  const [exchangeRate, setExchangeRate] = useState<number>(0);
+  const [poolBalance, setPoolBalance] = useState<number>(0);
+  const FIATSEND_ADDRESS = "0xaB310b0C3eE366C839319b09407FF2A66A92771E";
+  const GHSFIAT_ADDRESS = "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A";
+  const { address } = useAccount();
+
+  const { data: exRates, error: exRatesError } = useReadContract({
+    address: "0xaB310b0C3eE366C839319b09407FF2A66A92771E",
+    abi: FiatSendABI.abi,
+    functionName: "conversionRate",
+  });
+
+  const { data: liquidity, error: liquidityError } = useReadContract({
+    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A", // GHSFIAT token address
+    abi: GHSFIATABI.abi, // ABI for GHSFIAT token
+    functionName: "balanceOf",
+    args: ["0xaB310b0C3eE366C839319b09407FF2A66A92771E"], // Fiatsend contract address
+  });
+
+  const { data: allowance, error: AllowanceError } = useReadContract({
+    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A", // GHSFIAT token address
+    abi: GHSFIATABI.abi, // ABI for GHSFIAT token
+    functionName: "allowance",
+    args: [address, FIATSEND_ADDRESS],
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (exRates) {
+          const formattedRate = formatUnits(exRates as bigint, 2);
+          setExchangeRate(Number(formattedRate));
+        } else if (exRatesError) {
+          toast.error("Error fetching exchange rates");
+        }
+
+        if (allowance) {
+          setCurrentAllowance(allowance as bigint);
+        } else if (AllowanceError) {
+          toast.error("Error fetching allowances");
+        }
+
+        if (liquidity) {
+          const formattedReserves = formatUnits(liquidity as bigint, 18); // Assuming GHSFIAT has 18 decimals
+          setPoolBalance(Number(formattedReserves));
+        } else if (liquidityError) {
+          toast.error("Error fetching reserves");
+        }
+      } catch (err) {
+        toast.error("Could not fetch data");
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
+  }, [
+    exRates,
+    exRatesError,
+    liquidity,
+    liquidityError,
+    allowance,
+    AllowanceError,
+  ]);
+
   const [priceRange, setPriceRange] = useState<PriceRange>({
-    min: currentRate - 0.5,
-    max: currentRate + 0.5,
+    min: exchangeRate - 0.5,
+    max: exchangeRate + 0.5,
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const defaultRange = 0.5;
   const extendedRange = 2;
   const [amount, setAmount] = useState<string>("");
-  const { address } = useAccount();
 
   const stablecoins: Token[] = [
     {
@@ -64,18 +132,18 @@ const Pool = () => {
       icon: "/images/tokens/usdt.png",
       address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
     },
-    {
-      symbol: "USDC",
-      name: "USD Coin",
-      icon: "/images/tokens/usdc.png",
-      address: "0x...", // Add USDC address
-    },
-    {
-      symbol: "DAI",
-      name: "Dai Stablecoin",
-      icon: "/images/tokens/dai.png",
-      address: "0x...", // Add DAI address
-    },
+    // {
+    //   symbol: "USDC",
+    //   name: "USD Coin",
+    //   icon: "/images/tokens/usdc.png",
+    //   address: "0x...", // Add USDC address
+    // },
+    // {
+    //   symbol: "DAI",
+    //   name: "Dai Stablecoin",
+    //   icon: "/images/tokens/dai.png",
+    //   address: "0x...", // Add DAI address
+    // },
   ];
 
   // Read GHSFIAT balance
@@ -98,11 +166,11 @@ const Pool = () => {
   useEffect(() => {
     if (isAutomaticRange) {
       setPriceRange({
-        min: Number((currentRate - defaultRange).toFixed(2)),
-        max: Number((currentRate + defaultRange).toFixed(2)),
+        min: Number((exchangeRate - defaultRange).toFixed(2)),
+        max: Number((exchangeRate + defaultRange).toFixed(2)),
       });
     }
-  }, [currentRate, isAutomaticRange]);
+  }, [exchangeRate, isAutomaticRange]);
 
   const handleRangeChange = (value: number | number[]) => {
     if (Array.isArray(value)) {
@@ -113,13 +181,54 @@ const Pool = () => {
     }
   };
 
+  const handleApproveAllowance = async () => {
+    writeContract({
+      address: GHSFIAT_ADDRESS,
+      abi: GHSFIATABI.abi,
+      functionName: "approve",
+      args: [FIATSEND_ADDRESS, amount],
+    });
+  };
+
+  const handleAddLiquidity = async () => {
+    if (!amount || isNaN(Number(amount))) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    const toastId = toast.loading("Approving GHSFIAT...");
+    const parsedGHSFIATAmount = parseUnits(amount, 18);
+
+    try {
+      // Proceed with the transaction
+      writeContract({
+        address: FIATSEND_ADDRESS,
+        abi: FiatSendABI.abi,
+        functionName: "supplyGHSFIAT",
+        args: [parsedGHSFIATAmount],
+      });
+    } catch (error: any) {
+      handleTransactionError(error, toastId);
+    }
+  };
+
+  const handleTransactionError = (error: any, toastId: string) => {
+    if (error.message?.includes("user rejected")) {
+      toast.error("Transaction cancelled by user", { id: toastId });
+    } else if (error.message?.includes("insufficient funds")) {
+      toast.error("Insufficient funds for transaction", { id: toastId });
+    } else {
+      toast.error("Transaction failed. Please try again", { id: toastId });
+    }
+  };
+
   const toggleAutomaticRange = () => {
     setIsAutomaticRange(!isAutomaticRange);
     if (!isAutomaticRange) {
       // Reset to default range when switching to automatic
       setPriceRange({
-        min: currentRate - 0.5,
-        max: currentRate + 0.5,
+        min: exchangeRate - 0.5,
+        max: exchangeRate + 0.5,
       });
     }
   };
@@ -150,6 +259,7 @@ const Pool = () => {
               Add Liquidity
             </button>
             <button
+              disabled
               onClick={() => setActiveTab("remove")}
               className={`px-4 py-2 rounded-lg font-medium ${
                 activeTab === "remove"
@@ -281,8 +391,8 @@ const Pool = () => {
               <div className="mb-4">
                 <Slider
                   range
-                  min={currentRate - extendedRange}
-                  max={currentRate + extendedRange}
+                  min={exchangeRate - extendedRange}
+                  max={exchangeRate + extendedRange}
                   value={[priceRange.min, priceRange.max]}
                   onChange={handleRangeChange}
                   disabled={isAutomaticRange}
@@ -294,7 +404,7 @@ const Pool = () => {
                   Min: {priceRange.min.toFixed(2)} {selectedQuoteToken.symbol}
                   /GHS
                 </div>
-                <div>Current: {currentRate.toFixed(2)}</div>
+                <div>Current: {exchangeRate.toFixed(2)}</div>
                 <div>
                   Max: {priceRange.max.toFixed(2)} {selectedQuoteToken.symbol}
                   /GHS
@@ -372,19 +482,31 @@ const Pool = () => {
               </div>
             </div>
 
+            {currentAllowance < parseUnits(amount, 18) && (
+              <button
+                onClick={handleApproveAllowance}
+                className="w-full bg-green-600 text-white py-4 rounded-xl font-medium"
+              >
+                {"Set Allowance"}
+              </button>
+            )}
+
             {/* Action Button */}
             <button
-              disabled
-              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium opacity-50"
+              onClick={handleAddLiquidity}
+              disabled={!amount || amount < formattedBalance}
+              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium"
             >
-              {"Add Liquidity (Coming soon)"}
+              {amount < formattedBalance
+                ? "Insufficient Balance"
+                : "Add Liquidity"}
             </button>
 
             {/* Pool Stats */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Total Pool Liquidity</span>
-                <span className="font-medium">$1,034,267</span>
+                <span className="font-medium">{poolBalance} GHSFIAT</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Your Pool Share</span>
@@ -392,7 +514,9 @@ const Pool = () => {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Current Price</span>
-                <span className="font-medium">16.4 GHSFIAT = 1.00 USDT</span>
+                <span className="font-medium">
+                  {exchangeRate} GHSFIAT = 1.00 USDT
+                </span>
               </div>
             </div>
           </div>
@@ -402,4 +526,4 @@ const Pool = () => {
   );
 };
 
-export default Pool;
+export default withFiatsendNFT(Pool);
