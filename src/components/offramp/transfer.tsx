@@ -56,23 +56,30 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     args: address ? [address as `0x${string}`] : undefined,
   });
 
-  const { data: currentusdtAllowance } = useReadContract({
-    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
-    abi: TetherTokenABI.abi,
-    functionName: "allowance",
-    args: [address ? [address as `0x${string}`] : undefined, FIATSEND_ADDRESS],
-  });
+  const { data: currentusdtAllowance, error: AllowanceError } = useReadContract(
+    {
+      address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+      abi: TetherTokenABI.abi,
+      functionName: "allowance",
+      args: [
+        address ? [address as `0x${string}`] : undefined,
+        FIATSEND_ADDRESS,
+      ],
+    }
+  );
 
   useEffect(() => {
     const fetchData = async () => {
       // Get usdtAllowance if address exists
-      if (address) {
+      if (currentusdtAllowance) {
         setAllowance(currentusdtAllowance as bigint);
+      } else if (AllowanceError) {
+        toast.error("Error fetching allowances");
       }
     };
 
     fetchData();
-  }, [address, currentusdtAllowance]);
+  }, [currentusdtAllowance, AllowanceError]);
 
   const handleApprove = async () => {
     setIsProcessing(true);
@@ -81,16 +88,12 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     const amount = parseUnits(usdtAmount, 18);
 
     try {
-      const tx = writeContract({
+      writeContract({
         address: USDT_ADDRESS,
         abi: TetherTokenABI.abi,
         functionName: "approve",
         args: [FIATSEND_ADDRESS, amount],
       });
-
-      console.log("txn", tx);
-      toast.loading("Waiting for approval confirmation...", { id: toastId });
-      setAllowance(amount);
       //toast.success("USDT approved successfully!", { id: toastId });
     } catch (error) {
       console.error("Error approving USDT:", error);
@@ -331,8 +334,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       {/* Provider Info */}
 
       {/* Action Button */}
-      {usdtAllowance <
-        (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0)) && (
+      {usdtAllowance < parseUnits(usdtAmount, 18) && (
         <button
           onClick={handleApprove}
           disabled={isProcessing || !usdtAmount}
