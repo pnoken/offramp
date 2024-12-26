@@ -128,59 +128,14 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     const toastId = toast.loading("Preparing transaction...");
 
     try {
-      // Check USDT balance first
-      if (
-        typeof usdtBalance === "number" &&
-        usdtBalance < Number(parsedUsdtAmount.toString())
-      ) {
-        toast.error("Insufficient USDT balance", { id: toastId });
-        return;
-      }
-
-      // Check and update usdtAllowance if needed
-      if (usdtAllowance < parsedUsdtAmount) {
-        toast.loading("Approving USDT transfer...", { id: toastId });
-        try {
-          await writeContract({
-            address: USDT_ADDRESS,
-            abi: TetherTokenABI.abi,
-            functionName: "approve",
-            args: [FIATSEND_ADDRESS, parsedUsdtAmount],
-          });
-          setAllowance(parsedUsdtAmount); // Update allowance after approval
-        } catch (error) {
-          console.error("Approval error:", error);
-          toast.error("Failed to approve USDT. Please try again", {
-            id: toastId,
-          });
-          return;
-        }
-      }
-
-      // Estimate gas for the transaction
-      // const gasEstimate = await writeContract({
-      //   address: FIATSEND_ADDRESS,
-      //   abi: FiatSendABI.abi,
-      //   functionName: "depositStablecoin",
-      //   args: [parsedUsdtAmount],
-      // });
-
       // Proceed with the transaction
-      try {
-        await writeContract({
-          address: FIATSEND_ADDRESS,
-          abi: FiatSendABI.abi,
-          functionName: "offRamp",
-          args: [parsedUsdtAmount],
-        });
-      } catch (error) {
-        console.error("Transaction failed:", error);
-        // Handle the error appropriately
-        handleTransactionError(error, toastId);
-      }
+      writeContract({
+        address: FIATSEND_ADDRESS,
+        abi: FiatSendABI.abi,
+        functionName: "offRamp",
+        args: [parsedUsdtAmount],
+      });
     } catch (error: any) {
-      console.error("Transaction failed:", error);
-      // Enhanced error handling
       handleTransactionError(error, toastId);
     } finally {
       setIsProcessing(false);

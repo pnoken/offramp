@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import FiatSendABI from "@/abis/FiatSend.json";
 import { useReadContract } from "wagmi";
 import GHSFIATABI from "@/abis/GHSFIAT.json";
+import Link from "next/link";
 
 const OfframpPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"receive" | "transfer">("receive");
@@ -62,6 +63,19 @@ const OfframpPage: React.FC = () => {
         <span className="text-[#009A80]">{fiatsendReserves} GHSFIAT</span>
       </h2>
 
+      <h2 className="text-sm font-bold mb-4">
+        Contract:{" "}
+        <Link
+          href={
+            "https://sepolia-blockscout.lisk.com/address/0xaB310b0C3eE366C839319b09407FF2A66A92771E?tab=read_write_contract"
+          }
+          target="_blank"
+          className="text-[#3640d2] underline"
+        >
+          0xaB310b0C3eE366C839319b09407FF2A66A92771E
+        </Link>
+      </h2>
+
       {/* <button disabled className="bg-[#009A80] text-white">
         Verify Proof of reserve
       </button> */}
@@ -89,7 +103,7 @@ const OfframpPage: React.FC = () => {
           </button>
         </div>
         <div
-          className={`absolute bottom-0 left-0 h-1 bg-indigo-600 transition-all duration-300 ${
+          className={`absolute bottom-0 left-0 h-1 transition-all duration-300 ${
             activeTab === "receive" ? "w-1/2" : "w-1/2 translate-x-full"
           }`}
         />
