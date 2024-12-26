@@ -494,10 +494,10 @@ const Pool = () => {
             {/* Action Button */}
             <button
               onClick={handleAddLiquidity}
-              disabled={!amount || amount < formattedBalance}
+              disabled={!amount || formattedBalance < amount}
               className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium"
             >
-              {amount < formattedBalance
+              {formattedBalance < amount
                 ? "Insufficient Balance"
                 : "Add Liquidity"}
             </button>
