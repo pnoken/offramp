@@ -39,7 +39,7 @@ const ERC20_ABI = [
 const Pool = () => {
   const [activeTab, setActiveTab] = useState<"add" | "remove">("add");
   const [isAutomaticRange, setIsAutomaticRange] = useState(true);
-  const [currentAllowance, setCurrentAllowance] = useState<bigint>(BigInt(0));
+  const [currentAllowance, setCurrentAllowance] = useState("");
   const [selectedBaseToken, setSelectedBaseToken] = useState<Token>({
     symbol: "GHSFIAT",
     name: "Ghana Fiat",
@@ -89,7 +89,7 @@ const Pool = () => {
         }
 
         if (allowance) {
-          setCurrentAllowance(allowance as bigint);
+          setCurrentAllowance(formatUnits(allowance as bigint, 0));
         } else if (AllowanceError) {
           toast.error("Error fetching allowances");
         }
@@ -186,7 +186,7 @@ const Pool = () => {
       address: GHSFIAT_ADDRESS,
       abi: GHSFIATABI.abi,
       functionName: "approve",
-      args: [FIATSEND_ADDRESS, amount],
+      args: [FIATSEND_ADDRESS, parseUnits(amount, 18)],
     });
   };
 
@@ -482,7 +482,7 @@ const Pool = () => {
               </div>
             </div>
 
-            {currentAllowance < parseUnits(amount, 18) && (
+            {Number(currentAllowance) < parseUnits(amount, 18) && (
               <button
                 onClick={handleApproveAllowance}
                 className="w-full bg-green-600 text-white py-4 rounded-xl font-medium"
@@ -497,7 +497,7 @@ const Pool = () => {
               disabled={!amount || formattedBalance < amount}
               className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium"
             >
-              {formattedBalance < amount
+              {Number(formattedBalance) < Number(amount)
                 ? "Insufficient Balance"
                 : "Add Liquidity"}
             </button>
