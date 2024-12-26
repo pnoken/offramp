@@ -5,13 +5,15 @@ import toast from "react-hot-toast";
 import { config } from "@/config/wagmiConfig";
 import { signMessage, verifyMessage } from "@wagmi/core";
 import { useAccount } from "wagmi";
+import withFiatsendNFT from "@/hocs/with-account";
 
 const Settings: React.FC = () => {
   const [selectedWallet, setSelectedWallet] = useState("Lisk Sepolia");
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [allowance, setAllowance] = useState(1000);
+  const [allowance, setAllowance] = useState<number | "">(1000);
   const [email, setEmail] = useState("");
   const [showEmailInput, setShowEmailInput] = useState(false);
+  const [useFSENDFee, setUseFSENDFee] = useState(true);
   const { address } = useAccount();
 
   const handleWalletChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -20,18 +22,23 @@ const Settings: React.FC = () => {
 
   const handleToggleNotifications = () => {
     setNotificationsEnabled(!notificationsEnabled);
-    setShowEmailInput(!showEmailInput); // Toggle email input visibility
+    setShowEmailInput(!notificationsEnabled); // Toggle email input visibility
   };
 
   const handleAllowanceChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setAllowance(Number(event.target.value));
+    const value = Number(event.target.value);
+    if (isNaN(value) || value <= 0) {
+      toast.error("Allowance must be a positive number.");
+      return;
+    }
+    setAllowance(value);
   };
 
   const handleSaveEmail = async () => {
-    if (!email) {
-      toast.error("Email cannot be empty");
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      toast.error("Please enter a valid email address.");
       return;
     }
 
@@ -45,15 +52,15 @@ const Settings: React.FC = () => {
           message: "update email",
           signature: result,
         });
-        // Logic to save the email (e.g., API call)
-        // Example: await saveEmailToServer(email);
-        toast.success(`Email saved: ${email}`);
+        // Example API call to save email (replace with actual logic)
+        await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate async API call
+        toast.success(`Email saved successfully: ${email}`);
       }
     } catch (error) {
-      console.error(error); // Log the error for debugging
-      toast.error("Error signing or verifying email. Please try again.");
+      console.error("Email update failed:", error);
+      toast.error("Failed to save email. Please try again.");
     } finally {
-      setShowEmailInput(false); // Hide email input after attempting to save
+      setShowEmailInput(false);
     }
   };
 
@@ -61,9 +68,31 @@ const Settings: React.FC = () => {
     setShowEmailInput(false); // Hide email input without saving
   };
 
-  const handleApproveAllowance = () => {
-    // Logic to approve the allowance
-    toast.success(`Allowance approved: ${allowance}`);
+  const handleApproveAllowance = async () => {
+    if (!allowance || allowance <= 0) {
+      toast.error("Allowance must be a valid positive number.");
+      return;
+    }
+    try {
+      // Logic to approve allowance (replace with actual API logic)
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate async API call
+      toast.success(`Allowance approved: ${allowance}`);
+    } catch (error) {
+      console.error("Allowance approval failed:", error);
+      toast.error("Failed to approve allowance. Please try again.");
+    }
+  };
+
+  const handleToggleFSENDFee = async () => {
+    try {
+      setUseFSENDFee(!useFSENDFee);
+      // Logic to persist toggle state (e.g., API call)
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate async API call
+      toast.success(`FSEND fees ${useFSENDFee ? "disabled" : "enabled"}.`);
+    } catch (error) {
+      console.error("FSEND toggle failed:", error);
+      toast.error("Failed to update FSEND fee setting.");
+    }
   };
 
   return (
@@ -136,17 +165,19 @@ const Settings: React.FC = () => {
           <label className="block text-sm font-medium mb-2">
             Use FSEND as fees for incoming transactions
           </label>
-          <input type="checkbox" className="toggle" defaultChecked />
-          <button
-            onClick={handleApproveAllowance}
-            className="mt-2 bg-green-600 text-white py-1 px-3 rounded hover:bg-green-700"
-          >
-            Save
-          </button>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={useFSENDFee}
+              onChange={handleToggleFSENDFee}
+              className="mr-2"
+            />
+            <span>Enable FSEND fees</span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Settings;
+export default withFiatsendNFT(Settings);

@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 
 interface VerificationStepProps {
-  phoneNumber: string;
   onVerify: (code: string) => void;
   onResend: () => void;
 }
 
 export const VerificationStep: React.FC<VerificationStepProps> = ({
-  phoneNumber,
   onVerify,
   onResend,
 }) => {

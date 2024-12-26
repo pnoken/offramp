@@ -1,20 +1,29 @@
 import Image from "next/image";
-import React, { useState } from "react";
-import { ethers, BrowserProvider } from "ethers";
+import React, { useEffect, useState } from "react";
 import MomoNFTABI from "@/abis/MomoNFT.json"; // Import your NFT contract ABI
 import { toast } from "react-hot-toast";
-import { useAccount } from "wagmi";
+import {
+  useAccount,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+} from "wagmi";
 
 interface OnboardingCompleteProps {
   onContinue: () => void;
+  mobileNumber: string;
 }
 
 export const OnboardingComplete: React.FC<OnboardingCompleteProps> = ({
   onContinue,
+  mobileNumber,
 }) => {
-  const [isMinting, setIsMinting] = useState(false);
   const [nftMinted, setNftMinted] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState("");
+  const { address } = useAccount();
+  const { data: hash, isPending, writeContract } = useWriteContract();
+
+  const { isSuccess, isPending: isConfirming } = useWaitForTransactionReceipt({
+    hash: hash,
+  });
 
   const encryptMobileNumber = (number: string) => {
     return btoa(number); // Simple encryption for demonstration
@@ -23,34 +32,40 @@ export const OnboardingComplete: React.FC<OnboardingCompleteProps> = ({
   const ipfsMetadataUrl =
     "ipfs://bafkreiddnggjxrrysnxutdh2udpsmkwxcqtroggpkp2veer6o3qzsra3se";
 
-  const { address } = useAccount();
+  const NFTContract = "0x701ECdb6823fc3e258c7E291D2D8C16BC52Fbe94";
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("NFT minted successfully!");
+      setNftMinted(true); // Enable the button when NFT is minted
+    }
+  }, [isSuccess]);
 
   const handleMintNFT = async () => {
-    setIsMinting(true);
-    const encryptedNumber = encryptMobileNumber(mobileNumber);
+    if (!address) {
+      toast.error(
+        "Wallet is not connected. Please connect your wallet and try again."
+      );
+      return;
+    }
 
     try {
-      const provider = new BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const nftContract = new ethers.Contract(
-        "0x701ECdb6823fc3e258c7E291D2D8C16BC52Fbe94", // MobileMoneyNFT contract address
-        MomoNFTABI.abi,
-        signer
-      );
+      const encryptedNumber = encryptMobileNumber(mobileNumber);
+      writeContract({
+        address: NFTContract,
+        abi: MomoNFTABI.abi,
+        functionName: "mintFiatsendNFT",
+        args: [address, ipfsMetadataUrl, encryptedNumber],
+      });
 
-      const tx = await nftContract.mintFiatsendNFT(
-        address,
-        ipfsMetadataUrl,
-        encryptedNumber
-      );
-      await tx.wait();
-      toast.success("NFT minted successfully!");
-      setNftMinted(true); // Set NFT minted state to true
+      if (isConfirming) {
+        toast("Transaction submitted, awaiting confirmation...", {
+          icon: "⏳",
+        });
+      }
     } catch (error) {
       console.error("Minting failed:", error);
       toast.error("Failed to mint NFT.");
-    } finally {
-      setIsMinting(false);
     }
   };
 
@@ -81,12 +96,12 @@ export const OnboardingComplete: React.FC<OnboardingCompleteProps> = ({
             />
             <button
               onClick={handleMintNFT}
-              disabled={isMinting}
+              disabled={isPending}
               className={`mt-4 w-full py-3 rounded-lg text-white font-medium ${
-                isMinting ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+                isPending ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
               }`}
             >
-              {isMinting ? "Minting..." : "Mint NFT"}
+              {isPending ? "Minting..." : "Mint NFT"}
             </button>
           </div>
         )}
@@ -97,8 +112,11 @@ export const OnboardingComplete: React.FC<OnboardingCompleteProps> = ({
 
       <div className="bg-purple-50 p-4 rounded-lg">
         <h3 className="text-xl font-bold text-purple-600">
-          Send 5000 GHS for free
+          Send up to 5000.00 GHS for free monthly
         </h3>
+        <p className="text-sm text-gray-600">
+          Send 1000.00 now without KYC verification
+        </p>
         <p className="text-sm text-gray-600">
           Verify your account to enjoy the benefits
         </p>
@@ -111,7 +129,7 @@ export const OnboardingComplete: React.FC<OnboardingCompleteProps> = ({
             : "bg-gray-400 cursor-not-allowed"
         }`}
         onClick={nftMinted ? onContinue : undefined}
-        disabled={!nftMinted}
+        disabled={!nftMinted} // Disable if NFT is not minted
       >
         Continue
       </button>

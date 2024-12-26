@@ -17,7 +17,7 @@ const OfframpPage: React.FC = () => {
   const [fiatsendReserves, setFiatsendReserves] = useState<number>(0);
 
   const { data: exRates, error: exRatesError } = useReadContract({
-    address: "0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93",
+    address: "0xaB310b0C3eE366C839319b09407FF2A66A92771E",
     abi: FiatSendABI.abi,
     functionName: "conversionRate",
   });
@@ -26,14 +26,14 @@ const OfframpPage: React.FC = () => {
     address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A", // GHSFIAT token address
     abi: GHSFIATABI.abi, // ABI for GHSFIAT token
     functionName: "balanceOf",
-    args: ["0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93"], // Fiatsend contract address
+    args: ["0xaB310b0C3eE366C839319b09407FF2A66A92771E"], // Fiatsend contract address
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (exRates) {
-          const formattedRate = formatUnits(exRates as bigint, 0);
+          const formattedRate = formatUnits(exRates as bigint, 2);
           setExchangeRate(Number(formattedRate));
         } else if (exRatesError) {
           toast.error("Error fetching exchange rates");

@@ -8,13 +8,6 @@ import { toast } from "react-hot-toast";
 import TetherTokenABI from "@/abis/TetherToken.json";
 import Link from "next/link";
 import { formatUnits, parseUnits } from "viem";
-import { useEthersSigner } from "@/lib/ethers";
-
-interface Recipient {
-  name: string;
-  phoneNumber: string;
-  provider: "MTN" | "Telecel" | "AT";
-}
 
 interface Token {
   symbol: string;
@@ -24,7 +17,7 @@ interface Token {
   address?: string;
 }
 
-const FIATSEND_ADDRESS = "0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93";
+const FIATSEND_ADDRESS = "0xaB310b0C3eE366C839319b09407FF2A66A92771E";
 const USDT_ADDRESS = "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168";
 
 const stablecoins: Token[] = [
@@ -57,22 +50,16 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
   });
 
   const { data: usdtBalance } = useReadContract({
-    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A",
+    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
     abi: TetherTokenABI.abi,
     functionName: "balanceOf",
     args: address ? [address as `0x${string}`] : undefined,
   });
 
-  // const { usdtFiatsendBalance } = useReadContract({
-  //   address: "0x9e4fCd5Cc9D80a49184715c8BA1C3C6729E05A93",
-  //   abi: FiatSendABI.abi,
-  //   functionName: "conversionRate",
-  // });
-
   const { data: currentusdtAllowance } = useReadContract({
     address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
     abi: TetherTokenABI.abi,
-    functionName: "approve",
+    functionName: "allowance",
     args: [address ? [address as `0x${string}`] : undefined, FIATSEND_ADDRESS],
   });
 
@@ -183,7 +170,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
         await writeContract({
           address: FIATSEND_ADDRESS,
           abi: FiatSendABI.abi,
-          functionName: "depositStablecoin",
+          functionName: "offRamp",
           args: [parsedUsdtAmount],
         });
       } catch (error) {

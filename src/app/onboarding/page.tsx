@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { MobileMoneySetup } from "@/components/onboarding/MobileMoneySetup";
 import { VerificationStep } from "@/components/onboarding/VerificationStep";
 import { OnboardingComplete } from "@/components/onboarding/OnboardingComplete";
@@ -16,7 +15,7 @@ const OnboardingPage = () => {
   const [phoneData, setPhoneData] = useState<{
     operator: string;
     phoneNumber: string;
-  } | null>(null);
+  }>({ operator: "", phoneNumber: "" });
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -52,7 +51,6 @@ const OnboardingPage = () => {
 
         {currentStep === "verification" && phoneData && (
           <VerificationStep
-            phoneNumber={phoneData.phoneNumber}
             onVerify={handleVerification}
             onResend={() => {
               // Implement resend logic
@@ -61,7 +59,10 @@ const OnboardingPage = () => {
         )}
 
         {currentStep === "complete" && (
-          <OnboardingComplete onContinue={handleComplete} />
+          <OnboardingComplete
+            onContinue={handleComplete}
+            mobileNumber={phoneData.phoneNumber}
+          />
         )}
       </div>
       <TermsConditionsModal
