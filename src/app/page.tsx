@@ -75,7 +75,7 @@ const OfframpPage: React.FC = () => {
           target="_blank"
           className="text-[#3640d2] underline"
         >
-          0x64...B8Db
+          0xb5...D0BD
         </Link>
       </h2>
 
