@@ -54,25 +54,25 @@ const Pool = () => {
   });
   const [exchangeRate, setExchangeRate] = useState<number>(0);
   const [poolBalance, setPoolBalance] = useState<number>(0);
-  const FIATSEND_ADDRESS = "0xaB310b0C3eE366C839319b09407FF2A66A92771E";
+  const FIATSEND_ADDRESS = "0xA5abAA2fA755C1AC378912280C5F703A1c162BCb";
   const GHSFIAT_ADDRESS = "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A";
   const { address } = useAccount();
 
   const { data: exRates, error: exRatesError } = useReadContract({
-    address: "0xaB310b0C3eE366C839319b09407FF2A66A92771E",
+    address: FIATSEND_ADDRESS,
     abi: FiatSendABI.abi,
     functionName: "conversionRate",
   });
 
   const { data: liquidity, error: liquidityError } = useReadContract({
-    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A", // GHSFIAT token address
+    address: GHSFIAT_ADDRESS, // GHSFIAT token address
     abi: GHSFIATABI.abi, // ABI for GHSFIAT token
     functionName: "balanceOf",
-    args: ["0xaB310b0C3eE366C839319b09407FF2A66A92771E"], // Fiatsend contract address
+    args: [FIATSEND_ADDRESS], // Fiatsend contract address
   });
 
   const { data: allowance, error: AllowanceError } = useReadContract({
-    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A", // GHSFIAT token address
+    address: GHSFIAT_ADDRESS, // GHSFIAT token address
     abi: GHSFIATABI.abi, // ABI for GHSFIAT token
     functionName: "allowance",
     args: [address, FIATSEND_ADDRESS],
@@ -482,17 +482,17 @@ const Pool = () => {
               </div>
             </div>
 
-            {Number(currentAllowance) < parseUnits(amount, 18) && (
+            {/* {Number(currentAllowance) < parseUnits(amount, 18) && (
               <button
                 onClick={handleApproveAllowance}
                 className="w-full bg-green-600 text-white py-4 rounded-xl font-medium"
               >
                 {"Set Allowance"}
               </button>
-            )}
+            )} */}
 
             {/* Action Button */}
-            <button
+            {/* <button
               onClick={handleAddLiquidity}
               disabled={!amount || formattedBalance < amount}
               className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium"
@@ -500,6 +500,13 @@ const Pool = () => {
               {Number(formattedBalance) < Number(amount)
                 ? "Insufficient Balance"
                 : "Add Liquidity"}
+            </button> */}
+            <button
+              onClick={handleAddLiquidity}
+              disabled
+              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-medium opacity-50"
+            >
+              Unavailable
             </button>
 
             {/* Pool Stats */}
