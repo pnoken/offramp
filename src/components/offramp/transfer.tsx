@@ -93,8 +93,6 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
   }, [address, currentusdtAllowance, AllowanceError]);
 
   const handleApprove = async () => {
-    const toastId = toast.loading("Approving USDT...");
-
     const amount = parseUnits(usdtAmount, 18);
 
     try {
@@ -107,7 +105,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       //toast.success("USDT approved successfully!", { id: toastId });
     } catch (error) {
       console.error("Error approving USDT:", error);
-      toast.error("Failed to approve USDT", { id: toastId });
+      toast.error("Failed to approve USDT");
     }
   };
 
