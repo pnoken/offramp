@@ -73,7 +73,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     const amount = parseUnits(usdtAmount, 18);
 
     try {
-      await writeContract({
+      writeContract({
         address: USDT_ADDRESS,
         abi: TetherTokenABI.abi,
         functionName: "approve",
@@ -108,16 +108,20 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
 
     try {
       // Proceed with the transaction
-      await writeContract({
+      writeContract({
         address: FIATSEND_ADDRESS,
         abi: FiatSendABI.abi,
         functionName: "depositStablecoin",
         args: [parsedUsdtAmount],
       });
+
+      if (hash) {
+        toast.success("Transaction confirmed");
+      }
     } catch (error: any) {
       handleTransactionError(error, error);
     }
-  }, [ghsAmount, usdtAmount, exchangeRate, reserve, writeContract]);
+  }, [ghsAmount, usdtAmount, exchangeRate, reserve, writeContract, hash]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -389,7 +393,6 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
           "Send USDT"
         )}
       </button>
-      {hash && toast.success("Transaction confirmed")}
     </div>
   );
 };
