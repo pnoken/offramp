@@ -12,22 +12,25 @@ import { useReadContract } from "wagmi";
 import GHSFIATABI from "@/abis/GHSFIAT.json";
 import Link from "next/link";
 
+const FIATSEND_ADDRESS = "0xA5abAA2fA755C1AC378912280C5F703A1c162BCb";
+const GHSFIAT_ADDRESS = "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A";
+
 const OfframpPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"receive" | "transfer">("receive");
   const [exchangeRate, setExchangeRate] = useState<number>(14);
   const [fiatsendReserves, setFiatsendReserves] = useState<number>(0);
 
   const { data: exRates, error: exRatesError } = useReadContract({
-    address: "0xaB310b0C3eE366C839319b09407FF2A66A92771E",
+    address: FIATSEND_ADDRESS,
     abi: FiatSendABI.abi,
     functionName: "conversionRate",
   });
 
   const { data: reservesData, error: reservesError } = useReadContract({
-    address: "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A", // GHSFIAT token address
+    address: GHSFIAT_ADDRESS, // GHSFIAT token address
     abi: GHSFIATABI.abi, // ABI for GHSFIAT token
     functionName: "balanceOf",
-    args: ["0xaB310b0C3eE366C839319b09407FF2A66A92771E"], // Fiatsend contract address
+    args: [FIATSEND_ADDRESS], // Fiatsend contract address
   });
 
   useEffect(() => {
@@ -67,12 +70,12 @@ const OfframpPage: React.FC = () => {
         Contract:{" "}
         <Link
           href={
-            "https://sepolia-blockscout.lisk.com/address/0xaB310b0C3eE366C839319b09407FF2A66A92771E?tab=read_write_contract"
+            "https://sepolia-blockscout.lisk.com/address/0xA5abAA2fA755C1AC378912280C5F703A1c162BCb"
           }
           target="_blank"
           className="text-[#3640d2] underline"
         >
-          0xaB...92771E
+          0xA5...2BCb
         </Link>
       </h2>
 

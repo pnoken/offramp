@@ -17,7 +17,7 @@ interface Token {
   address?: string;
 }
 
-const FIATSEND_ADDRESS = "0xaB310b0C3eE366C839319b09407FF2A66A92771E";
+const FIATSEND_ADDRESS = "0xA5abAA2fA755C1AC378912280C5F703A1c162BCb";
 const USDT_ADDRESS = "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168";
 
 const stablecoins: Token[] = [
@@ -50,11 +50,11 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     symbol: "USDT",
     name: "Tether USD",
     icon: "/images/tokens/usdt.png",
-    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+    address: USDT_ADDRESS,
   });
 
   const { data: usdtBalance } = useReadContract({
-    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+    address: USDT_ADDRESS,
     abi: TetherTokenABI.abi,
     functionName: "balanceOf",
     args: address ? [address as `0x${string}`] : undefined,
@@ -62,7 +62,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
 
   const { data: currentusdtAllowance, error: AllowanceError } = useReadContract(
     {
-      address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+      address: USDT_ADDRESS,
       abi: TetherTokenABI.abi,
       functionName: "allowance",
       args: address ? [address, FIATSEND_ADDRESS] : undefined,
