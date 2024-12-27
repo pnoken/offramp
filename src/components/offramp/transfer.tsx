@@ -17,7 +17,7 @@ interface Token {
   address?: string;
 }
 
-const FIATSEND_ADDRESS = "0x6428588D995Db5c398B0e3259f8fc513b930B8Db";
+const FIATSEND_ADDRESS = "0xb55B7EeCB4F13C15ab545C8C49e752B396aaD0BD";
 const USDT_ADDRESS = "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168";
 
 const stablecoins: Token[] = [
