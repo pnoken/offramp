@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import FiatSendABI from "@/abis/FiatSend.json";
@@ -69,34 +69,11 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     }
   );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!address) {
-          setAllowance(""); // Reset allowance if address is not provided
-          return;
-        }
-
-        if (currentusdtAllowance) {
-          // Safely format and set the allowance
-          setAllowance(formatUnits(currentusdtAllowance as bigint, 0));
-        } else if (AllowanceError) {
-          toast.error("Error fetching allowances");
-        }
-      } catch (error) {
-        console.error("An unexpected error occurred:", error);
-        toast.error("An unexpected error occurred");
-      }
-    };
-
-    fetchData();
-  }, [address, currentusdtAllowance, AllowanceError]);
-
-  const handleApprove = async () => {
+  const handleApprove = useCallback(async () => {
     const amount = parseUnits(usdtAmount, 18);
 
     try {
-      writeContract({
+      await writeContract({
         address: USDT_ADDRESS,
         abi: TetherTokenABI.abi,
         functionName: "approve",
@@ -107,13 +84,9 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       console.error("Error approving USDT:", error);
       toast.error("Failed to approve USDT");
     }
-  };
+  }, [usdtAmount, writeContract]);
 
-  const formattedBalance = usdtBalance
-    ? Number(formatUnits(usdtBalance as bigint, 18)).toFixed(2)
-    : "0.00";
-
-  const handleSendFiat = async () => {
+  const handleSendFiat = useCallback(async () => {
     if (!ghsAmount || isNaN(Number(ghsAmount))) {
       toast.error("Please enter a valid amount");
       return;
@@ -135,7 +108,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
 
     try {
       // Proceed with the transaction
-      writeContract({
+      await writeContract({
         address: FIATSEND_ADDRESS,
         abi: FiatSendABI.abi,
         functionName: "offRamp",
@@ -144,7 +117,39 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     } catch (error: any) {
       handleTransactionError(error, error);
     }
-  };
+  }, [ghsAmount, usdtAmount, exchangeRate, reserve, writeContract]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!address) {
+          setAllowance(""); // Reset allowance if address is not provided
+          return;
+        }
+
+        if (currentusdtAllowance) {
+          // Safely format and set the allowance
+          setAllowance(formatUnits(currentusdtAllowance as bigint, 0));
+        } else if (AllowanceError) {
+          toast.error("Error fetching allowances");
+        }
+      } catch (error) {
+        console.error("An unexpected error occurred:", error);
+        toast.error("An unexpected error occurred");
+      }
+    };
+
+    fetchData();
+  }, [
+    address,
+    currentusdtAllowance,
+    AllowanceError,
+    handleApprove,
+    handleSendFiat,
+  ]);
+  const formattedBalance = usdtBalance
+    ? Number(formatUnits(usdtBalance as bigint, 18)).toFixed(2)
+    : "0.00";
 
   const handleTransactionError = (error: any, toastId: string) => {
     if (error.message?.includes("user rejected")) {
