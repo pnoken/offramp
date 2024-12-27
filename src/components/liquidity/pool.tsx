@@ -54,7 +54,7 @@ const Pool = () => {
   });
   const [exchangeRate, setExchangeRate] = useState<number>(0);
   const [poolBalance, setPoolBalance] = useState<number>(0);
-  const FIATSEND_ADDRESS = "0xA5abAA2fA755C1AC378912280C5F703A1c162BCb";
+  const FIATSEND_ADDRESS = "0x6428588D995Db5c398B0e3259f8fc513b930B8Db";
   const GHSFIAT_ADDRESS = "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A";
   const { address } = useAccount();
 

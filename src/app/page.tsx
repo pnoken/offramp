@@ -12,7 +12,7 @@ import { useReadContract } from "wagmi";
 import GHSFIATABI from "@/abis/GHSFIAT.json";
 import Link from "next/link";
 
-const FIATSEND_ADDRESS = "0xA5abAA2fA755C1AC378912280C5F703A1c162BCb";
+const FIATSEND_ADDRESS = "0x6428588D995Db5c398B0e3259f8fc513b930B8Db";
 const GHSFIAT_ADDRESS = "0x84Fd74850911d28C4B8A722b6CE8Aa0Df802f08A";
 
 const OfframpPage: React.FC = () => {
@@ -70,12 +70,12 @@ const OfframpPage: React.FC = () => {
         Contract:{" "}
         <Link
           href={
-            "https://sepolia-blockscout.lisk.com/address/0xA5abAA2fA755C1AC378912280C5F703A1c162BCb"
+            "https://sepolia-blockscout.lisk.com/address/0x6428588D995Db5c398B0e3259f8fc513b930B8Db"
           }
           target="_blank"
           className="text-[#3640d2] underline"
         >
-          0xA5...2BCb
+          0x64...B8Db
         </Link>
       </h2>
 
