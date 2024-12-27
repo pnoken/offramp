@@ -37,11 +37,15 @@ interface TransferProps {
 const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
   const [ghsAmount, setGhsAmount] = useState("");
   const [usdtAmount, setUsdtAmount] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [usdtAllowance, setAllowance] = useState<bigint>(BigInt(0));
+  const [usdtAllowance, setAllowance] = useState("");
   const { address } = useAccount();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { writeContract } = useWriteContract();
+  const {
+    writeContract,
+    isPending,
+    data: hash,
+    error: writeError,
+  } = useWriteContract();
   const [selectedQuoteToken, setSelectedQuoteToken] = useState<Token>({
     symbol: "USDT",
     name: "Tether USD",
@@ -61,28 +65,34 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
       abi: TetherTokenABI.abi,
       functionName: "allowance",
-      args: [
-        address ? [address as `0x${string}`] : undefined,
-        FIATSEND_ADDRESS,
-      ],
+      args: address ? [address, FIATSEND_ADDRESS] : undefined,
     }
   );
 
   useEffect(() => {
     const fetchData = async () => {
-      // Get usdtAllowance if address exists
-      if (currentusdtAllowance) {
-        setAllowance(currentusdtAllowance as bigint);
-      } else if (AllowanceError) {
-        toast.error("Error fetching allowances");
+      try {
+        if (!address) {
+          setAllowance(""); // Reset allowance if address is not provided
+          return;
+        }
+
+        if (currentusdtAllowance) {
+          // Safely format and set the allowance
+          setAllowance(formatUnits(currentusdtAllowance as bigint, 0));
+        } else if (AllowanceError) {
+          toast.error("Error fetching allowances");
+        }
+      } catch (error) {
+        console.error("An unexpected error occurred:", error);
+        toast.error("An unexpected error occurred");
       }
     };
 
     fetchData();
-  }, [currentusdtAllowance, AllowanceError]);
+  }, [address, currentusdtAllowance, AllowanceError]);
 
   const handleApprove = async () => {
-    setIsProcessing(true);
     const toastId = toast.loading("Approving USDT...");
 
     const amount = parseUnits(usdtAmount, 18);
@@ -98,8 +108,6 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     } catch (error) {
       console.error("Error approving USDT:", error);
       toast.error("Failed to approve USDT", { id: toastId });
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -127,9 +135,6 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       return;
     }
 
-    setIsProcessing(true);
-    const toastId = toast.loading("Preparing transaction...");
-
     try {
       // Proceed with the transaction
       writeContract({
@@ -139,9 +144,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
         args: [parsedUsdtAmount],
       });
     } catch (error: any) {
-      handleTransactionError(error, toastId);
-    } finally {
-      setIsProcessing(false);
+      handleTransactionError(error, error);
     }
   };
 
@@ -259,7 +262,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
               handleGhsAmountChange(value);
             }}
             placeholder="0.00"
-            disabled={isProcessing}
+            disabled={isPending}
             className="bg-transparent outline-none text-xl font-medium w-32"
           />
           <div className="flex items-center gap-2">
@@ -334,10 +337,10 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       {/* Provider Info */}
 
       {/* Action Button */}
-      {usdtAllowance < parseUnits(usdtAmount, 18) && (
+      {Number(usdtAllowance) < parseUnits(usdtAmount, 18) && (
         <button
           onClick={handleApprove}
-          disabled={isProcessing || !usdtAmount}
+          disabled={isPending || !usdtAmount}
           className="w-full py-3 px-4 rounded-lg text-white font-medium bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Approve USDT
@@ -346,23 +349,16 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
 
       <button
         onClick={handleSendFiat}
-        disabled={
-          isProcessing ||
-          !ghsAmount ||
-          usdtAllowance < (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0))
-        }
+        disabled={isPending || !ghsAmount || formattedBalance < usdtAmount}
         className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all
             ${
-              isProcessing ||
-              !ghsAmount ||
-              usdtAllowance <
-                (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0))
+              isPending || !ghsAmount || formattedBalance < usdtAmount
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700"
             }
           `}
       >
-        {isProcessing ? (
+        {isPending ? (
           <span className="flex items-center justify-center gap-2">
             <svg
               className="animate-spin h-5 w-5 text-white"
@@ -390,6 +386,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
           "Send USDT"
         )}
       </button>
+      {hash && toast.success("Transaction confirmed")}
     </div>
   );
 };
