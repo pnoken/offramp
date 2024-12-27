@@ -111,7 +111,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       writeContract({
         address: FIATSEND_ADDRESS,
         abi: FiatSendABI.abi,
-        functionName: "depositStablecoin",
+        functionName: "offRamp",
         args: [parsedUsdtAmount],
       });
 
