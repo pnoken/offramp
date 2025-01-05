@@ -344,7 +344,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       {/* Provider Info */}
 
       {/* Action Button */}
-      {Number(usdtAllowance) < parseUnits(usdtAmount, 18) && (
+      {/* {Number(usdtAllowance) < parseUnits(usdtAmount, 18) && (
         <button
           onClick={handleApprove}
           disabled={isPending || !usdtAmount}
@@ -352,7 +352,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
         >
           Approve USDT
         </button>
-      )}
+      )} */}
 
       <button
         onClick={handleSendFiat}
@@ -389,6 +389,8 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
             </svg>
             Processing...
           </span>
+        ) : Number(usdtAllowance) < parseUnits(usdtAmount, 18) ? (
+          "Approve"
         ) : (
           "Send USDT"
         )}
