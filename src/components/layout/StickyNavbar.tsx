@@ -18,7 +18,7 @@ const StickyNavbar: React.FC = () => {
     <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4 flex justify-around items-center border-t border-gray-300 sm:hidden">
       <button
         onClick={() => handleNavigation("/")}
-        className="flex flex-col items-center opacity-50"
+        className="flex flex-col items-center"
       >
         <HomeIcon className="h-5 w-5 mb-1" aria-hidden="true" />
         <span className="text-md">Offramp</span>
