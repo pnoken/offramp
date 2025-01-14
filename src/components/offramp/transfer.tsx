@@ -2,7 +2,13 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useSimulateContract,
+} from "wagmi";
 import FiatSendABI from "@/abis/FiatSend.json";
 import { toast } from "react-hot-toast";
 import TetherTokenABI from "@/abis/TetherToken.json";
@@ -25,7 +31,7 @@ const stablecoins: Token[] = [
     symbol: "USDT",
     name: "Tether USD",
     icon: "/images/tokens/usdt.png",
-    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+    address: USDT_ADDRESS,
   },
 ];
 
@@ -37,15 +43,58 @@ interface TransferProps {
 const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
   const [ghsAmount, setGhsAmount] = useState("");
   const [usdtAmount, setUsdtAmount] = useState("");
-  const [usdtAllowance, setAllowance] = useState("");
+  const [usdtAllowance, setUSDTAllowance] = useState<bigint>(BigInt(0));
   const { address } = useAccount();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const amount = parseUnits(usdtAmount, 18);
+
+  //simulate data
   const {
-    writeContract,
-    isPending,
-    data: hash,
-    error: writeError,
+    data: approvalData,
+    isFetching: approvalIsFetching,
+    isLoading: isApprovalLoading,
+    isError: approvalError,
+  } = useSimulateContract({
+    address: USDT_ADDRESS,
+    abi: TetherTokenABI.abi,
+    functionName: "approve",
+    args: [FIATSEND_ADDRESS, amount],
+  });
+
+  const {
+    writeContractAsync: setApproval,
+    data: apprData,
+    isPending: isApprovalPending,
+    isSuccess: isApprovalSuccess,
   } = useWriteContract();
+
+  const {
+    writeContractAsync: swapTokens,
+    isPending: isSwapPending,
+    isSuccess: isSwapSuccess,
+    data: swapData,
+    error: swapError,
+  } = useWriteContract();
+
+  const {
+    data: txData,
+    isSuccess: txSuccess,
+    error: txError,
+  } = useWaitForTransactionReceipt({
+    hash: swapData,
+  });
+
+  const {
+    data: txAppData,
+    isSuccess: txAppSuccess,
+    error: txAppError,
+  } = useWaitForTransactionReceipt({
+    hash: apprData,
+  });
+
+  const isApproved = txAppSuccess;
+  const isSwapComplete = txSuccess;
+
   const [selectedQuoteToken, setSelectedQuoteToken] = useState<Token>({
     symbol: "USDT",
     name: "Tether USD",
@@ -69,24 +118,14 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     }
   );
 
-  const handleApprove = useCallback(async () => {
-    const amount = parseUnits(usdtAmount, 18);
-
-    try {
-      writeContract({
-        address: USDT_ADDRESS,
-        abi: TetherTokenABI.abi,
-        functionName: "approve",
-        args: [FIATSEND_ADDRESS, amount],
-      });
-      //toast.success("USDT approved successfully!", { id: toastId });
-    } catch (error) {
-      console.error("Error approving USDT:", error);
-      toast.error("Failed to approve USDT");
+  const handleApprove = async () => {
+    if (!address) {
+      toast.error(
+        "Wallet is not connected. Please connect your wallet and try again."
+      );
+      return;
     }
-  }, [usdtAmount, writeContract]);
 
-  const handleSendFiat = useCallback(async () => {
     if (!ghsAmount || isNaN(Number(ghsAmount))) {
       toast.error("Please enter a valid amount");
       return;
@@ -108,32 +147,85 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
 
     try {
       // Proceed with the transaction
-      writeContract({
-        address: FIATSEND_ADDRESS,
-        abi: FiatSendABI.abi,
-        functionName: "offRamp",
-        args: [parsedUsdtAmount],
-      });
+      if (
+        usdtAllowance < (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0))
+      ) {
+        await setApproval(approvalData!.request, {
+          onSuccess() {
+            toast.success("Transaction successful");
+          },
+        });
 
-      if (hash) {
-        toast.success("Transaction confirmed");
+        if (isApprovalPending) {
+          toast.success("Transaction submitted, awaiting confirmation...", {
+            icon: "⏳",
+          });
+        }
       }
+    } catch (error: any) {
+      if (approvalError) {
+        toast.error("Error approving");
+      }
+      handleTransactionError(error, error);
+    }
+  };
+
+  const handleSendFiat = async () => {
+    if (!address) {
+      toast.error(
+        "Wallet is not connected. Please connect your wallet and try again."
+      );
+      return;
+    }
+
+    if (!ghsAmount || isNaN(Number(ghsAmount))) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    if (!usdtAmount || isNaN(Number(usdtAmount))) {
+      toast.error("Invalid USDT amount");
+      return;
+    }
+
+    // Check if the amount in USDT exceeds the reserves
+    const parsedUsdtAmount = parseUnits(usdtAmount, 18);
+    const usdtAmountInGHS = Number(usdtAmount) * exchangeRate; // Convert USDT amount to GHS
+
+    if (usdtAmountInGHS > reserve) {
+      toast.error("Low Fiatsend reserves. Please enter a lower amount.");
+      return;
+    }
+
+    try {
+      await swapTokens(
+        {
+          address: FIATSEND_ADDRESS,
+          abi: FiatSendABI.abi,
+          functionName: "offRamp",
+          args: [parsedUsdtAmount],
+        },
+        {
+          onSuccess() {
+            toast.success("Transaction successful");
+          },
+        }
+      );
     } catch (error: any) {
       handleTransactionError(error, error);
     }
-  }, [ghsAmount, usdtAmount, exchangeRate, reserve, writeContract, hash]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!address) {
-          setAllowance(""); // Reset allowance if address is not provided
-          return;
-        }
-
         if (currentusdtAllowance) {
           // Safely format and set the allowance
-          setAllowance(formatUnits(currentusdtAllowance as bigint, 0));
+          const formattedAllowance = BigInt(
+            formatUnits(currentusdtAllowance as bigint, 0)
+          );
+          setUSDTAllowance(formattedAllowance);
+          console.log("Usdt allowance", formattedAllowance);
         } else if (AllowanceError) {
           toast.error("Error fetching allowances");
         }
@@ -148,9 +240,10 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     address,
     currentusdtAllowance,
     AllowanceError,
-    handleApprove,
-    handleSendFiat,
+    isApproved,
+    isSwapComplete,
   ]);
+
   const formattedBalance = usdtBalance
     ? Number(formatUnits(usdtBalance as bigint, 18)).toFixed(2)
     : "0.00";
@@ -269,7 +362,7 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
               handleGhsAmountChange(value);
             }}
             placeholder="0.00"
-            disabled={isPending}
+            disabled={isSwapPending}
             className="bg-transparent outline-none text-xl font-medium w-32"
           />
           <div className="flex items-center gap-2">
@@ -344,28 +437,36 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       {/* Provider Info */}
 
       {/* Action Button */}
-      {/* {Number(usdtAllowance) < parseUnits(usdtAmount, 18) && (
+      {usdtAllowance <
+        (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0)) && (
         <button
           onClick={handleApprove}
-          disabled={isPending || !usdtAmount}
+          disabled={
+            !approvalData ||
+            isApprovalPending ||
+            isApprovalLoading ||
+            !usdtAmount ||
+            usdtAllowance >
+              (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0))
+          }
           className="w-full py-3 px-4 rounded-lg text-white font-medium bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Approve USDT
         </button>
-      )} */}
+      )}
 
       <button
         onClick={handleSendFiat}
-        disabled={isPending || !ghsAmount || formattedBalance < usdtAmount}
-        className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all
-            ${
-              isPending || !ghsAmount || formattedBalance < usdtAmount
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }
+        disabled={
+          isSwapPending ||
+          !ghsAmount ||
+          usdtAllowance < (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0))
+        }
+        className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all bg-blue-600 hover:bg-blue-700
+            
           `}
       >
-        {isPending ? (
+        {isSwapPending ? (
           <span className="flex items-center justify-center gap-2">
             <svg
               className="animate-spin h-5 w-5 text-white"
@@ -389,10 +490,8 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
             </svg>
             Processing...
           </span>
-        ) : Number(usdtAllowance) < parseUnits(usdtAmount, 18) ? (
-          "Approve"
         ) : (
-          "Send USDT"
+          "Send"
         )}
       </button>
     </div>

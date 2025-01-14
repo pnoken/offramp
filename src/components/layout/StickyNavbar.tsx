@@ -38,11 +38,11 @@ const StickyNavbar: React.FC = () => {
         <span className="text-md">Liquidity</span>
       </button>
       <button
-        onClick={() => handleNavigation("https://docs.fiatsend.com")}
+        onClick={() => handleNavigation("/profile")}
         className="flex flex-col items-center"
       >
         <DocumentTextIcon className="h-5 w-5 mb-1" aria-hidden="true" />
-        <span className="text-md">Guide</span>
+        <span className="text-md">Profile</span>
       </button>
     </div>
   );
