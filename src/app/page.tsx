@@ -59,68 +59,82 @@ const OfframpPage: React.FC = () => {
   }, [exRates, exRatesError, reservesData, reservesError]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-16">
-      {/* <VerificationCard /> */}
-      <h2 className="text-xl font-bold mb-4">
-        GHSFIAT Reserves:{" "}
-        <span className="text-[#009A80]">{fiatsendReserves} GHSFIAT</span>
-      </h2>
-
-      <h2 className="text-sm font-bold mb-4">
-        Contract:{" "}
-        <Link
-          href={
-            "https://sepolia-blockscout.lisk.com/address/0xb55B7EeCB4F13C15ab545C8C49e752B396aaD0BD"
-          }
-          target="_blank"
-          className="text-[#3640d2] underline"
-        >
-          0xb5...D0BD
-        </Link>
-      </h2>
-
-      {/* <button disabled className="bg-[#009A80] text-white">
-        Verify Proof of reserve
-      </button> */}
-      <div className="relative flex items-center mb-4">
-        <div className="flex space-x-4">
-          <button
-            onClick={() => setActiveTab("receive")}
-            className={`py-2 px-4 rounded-l-lg transition-all duration-300 ${
-              activeTab === "receive"
-                ? "bg-[#009A80] text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Transfer to fiatsend.eth
-          </button>
-          <button
-            onClick={() => setActiveTab("transfer")}
-            className={`py-2 px-4 rounded-r-lg transition-all duration-300 ${
-              activeTab === "transfer"
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Send with wallet
-          </button>
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+      {/* Stats Banner */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Protocol Reserves Card */}
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6">
+              <h2 className="text-sm font-medium text-gray-600 mb-1">
+                Protocol Reserves
+              </h2>
+              <p className="text-xl sm:text-2xl font-bold text-purple-600">
+                {fiatsendReserves.toLocaleString()} GHSFIAT
+              </p>
+              <Link
+                href="https://sepolia-blockscout.lisk.com/address/0xb55B7EeCB4F13C15ab545C8C49e752B396aaD0BD"
+                target="_blank"
+                className="text-sm text-purple-500 hover:text-purple-600 mt-2 inline-flex items-center space-x-1"
+              >
+                <span>View Contract</span>
+                <span>→</span>
+              </Link>
+            </div>
+            {/* Exchange Rate Card */}
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6">
+              <h2 className="text-sm font-medium text-gray-600 mb-1">
+                Exchange Rate
+              </h2>
+              <p className="text-2xl font-bold text-purple-600">
+                1 USDT = {exchangeRate} GHS
+              </p>
+              <p className="text-sm text-gray-500 mt-2">Updated in real-time</p>
+            </div>
+          </div>
         </div>
-        <div
-          className={`absolute bottom-0 left-0 h-1 transition-all duration-300 ${
-            activeTab === "receive" ? "w-1/2" : "w-1/2 translate-x-full"
-          }`}
-        />
       </div>
 
-      {/* Render Active Tab Component */}
-      {activeTab === "receive" ? (
-        <ReceiveStablecoins
-          reserve={fiatsendReserves}
-          exchangeRate={exchangeRate}
-        />
-      ) : (
-        <Transfer reserve={fiatsendReserves} exchangeRate={exchangeRate} />
-      )}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Tab Navigation */}
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-xl shadow-sm p-1 mb-4 sm:mb-8 flex w-full sm:w-auto">
+            <button
+              onClick={() => setActiveTab("receive")}
+              className={`flex-1 sm:flex-none py-2 px-4 sm:px-6 rounded-lg transition-all duration-200 text-sm sm:text-base ${
+                activeTab === "receive"
+                  ? "bg-purple-600 text-white"
+                  : "text-gray-600 hover:text-purple-600"
+              }`}
+            >
+              Transfer to fiatsend.eth
+            </button>
+            <button
+              onClick={() => setActiveTab("transfer")}
+              className={`py-2 px-6 rounded-lg transition-all duration-200 ${
+                activeTab === "transfer"
+                  ? "bg-purple-600 text-white"
+                  : "text-gray-600 hover:text-purple-600"
+              }`}
+            >
+              Send with wallet
+            </button>
+          </div>
+        </div>
+
+        {/* Active Component */}
+        <div className="transition-all duration-300">
+          {activeTab === "receive" ? (
+            <ReceiveStablecoins
+              reserve={fiatsendReserves}
+              exchangeRate={exchangeRate}
+            />
+          ) : (
+            <Transfer reserve={fiatsendReserves} exchangeRate={exchangeRate} />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

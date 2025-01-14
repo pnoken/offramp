@@ -1,13 +1,20 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import {
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useSimulateContract,
+} from "wagmi";
 import FiatSendABI from "@/abis/FiatSend.json";
 import { toast } from "react-hot-toast";
 import TetherTokenABI from "@/abis/TetherToken.json";
 import Link from "next/link";
 import { formatUnits, parseUnits } from "viem";
+import LoadingScreen from "./LoadingScreen";
 
 interface Token {
   symbol: string;
@@ -15,6 +22,7 @@ interface Token {
   icon: string;
   balance?: string;
   address?: string;
+  disabled?: boolean;
 }
 
 const FIATSEND_ADDRESS = "0xb55B7EeCB4F13C15ab545C8C49e752B396aaD0BD";
@@ -25,7 +33,7 @@ const stablecoins: Token[] = [
     symbol: "USDT",
     name: "Tether USD",
     icon: "/images/tokens/usdt.png",
-    address: "0xAE134a846a92CA8E7803Ca075A1a0EE854Cd6168",
+    address: USDT_ADDRESS,
   },
 ];
 
@@ -37,15 +45,59 @@ interface TransferProps {
 const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
   const [ghsAmount, setGhsAmount] = useState("");
   const [usdtAmount, setUsdtAmount] = useState("");
-  const [usdtAllowance, setAllowance] = useState("");
+  const [usdtAllowance, setUSDTAllowance] = useState<bigint>(BigInt(0));
   const { address } = useAccount();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const amount = parseUnits(usdtAmount, 18);
+
+  //simulate data
   const {
-    writeContract,
-    isPending,
-    data: hash,
-    error: writeError,
+    data: approvalData,
+    isFetching: approvalIsFetching,
+    isLoading: isApprovalLoading,
+    isError: approvalError,
+  } = useSimulateContract({
+    address: USDT_ADDRESS,
+    abi: TetherTokenABI.abi,
+    functionName: "approve",
+    args: [FIATSEND_ADDRESS, amount],
+  });
+
+  const {
+    writeContractAsync: setApproval,
+    data: apprData,
+    isPending: isApprovalPending,
+    isSuccess: isApprovalSuccess,
   } = useWriteContract();
+
+  const {
+    writeContractAsync: swapTokens,
+    isPending: isSwapPending,
+    isSuccess: isSwapSuccess,
+    data: swapData,
+    error: swapError,
+  } = useWriteContract();
+
+  const {
+    data: txData,
+    isSuccess: txSuccess,
+    error: txError,
+  } = useWaitForTransactionReceipt({
+    hash: swapData,
+  });
+
+  const {
+    data: txAppData,
+    isSuccess: txAppSuccess,
+    error: txAppError,
+  } = useWaitForTransactionReceipt({
+    hash: apprData,
+  });
+
+  const isApproved = txAppSuccess;
+  const isSwapComplete = txSuccess;
+
   const [selectedQuoteToken, setSelectedQuoteToken] = useState<Token>({
     symbol: "USDT",
     name: "Tether USD",
@@ -69,71 +121,81 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     }
   );
 
-  const handleApprove = useCallback(async () => {
-    const amount = parseUnits(usdtAmount, 18);
+  const [transactionStatus, setTransactionStatus] = useState<
+    "idle" | "approving" | "converting" | "completed"
+  >("idle");
+
+  const handleApprove = async () => {
+    if (!address) {
+      toast.error("Please connect your wallet");
+      return;
+    }
 
     try {
-      writeContract({
+      setTransactionStatus("approving");
+      toast.loading("Waiting for approval...", { id: "approve" });
+
+      await setApproval({
         address: USDT_ADDRESS,
         abi: TetherTokenABI.abi,
         functionName: "approve",
         args: [FIATSEND_ADDRESS, amount],
       });
-      //toast.success("USDT approved successfully!", { id: toastId });
-    } catch (error) {
-      console.error("Error approving USDT:", error);
-      toast.error("Failed to approve USDT");
+    } catch (error: any) {
+      handleTransactionError(error, "approve");
+      setTransactionStatus("idle");
     }
-  }, [usdtAmount, writeContract]);
+  };
 
-  const handleSendFiat = useCallback(async () => {
-    if (!ghsAmount || isNaN(Number(ghsAmount))) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    if (!usdtAmount || isNaN(Number(usdtAmount))) {
-      toast.error("Invalid USDT amount");
-      return;
-    }
-
-    // Check if the amount in USDT exceeds the reserves
-    const parsedUsdtAmount = parseUnits(usdtAmount, 18);
-    const usdtAmountInGHS = Number(usdtAmount) * exchangeRate; // Convert USDT amount to GHS
-
-    if (usdtAmountInGHS > reserve) {
-      toast.error("Low Fiatsend reserves. Please enter a lower amount.");
+  const handleSendFiat = async () => {
+    if (!address) {
+      toast.error("Please connect your wallet");
       return;
     }
 
     try {
-      // Proceed with the transaction
-      writeContract({
+      setTransactionStatus("converting");
+      toast.loading("Converting USDT to GHS...", { id: "convert" });
+
+      // Add validation for amount
+      if (!usdtAmount || Number(usdtAmount) <= 0) {
+        toast.error("Please enter a valid amount", { id: "convert" });
+        return;
+      }
+
+      // Add validation for liquidity
+      if (Number(ghsAmount) > reserve) {
+        toast.error("Insufficient liquidity", { id: "convert" });
+        return;
+      }
+
+      const tx = await swapTokens({
         address: FIATSEND_ADDRESS,
         abi: FiatSendABI.abi,
         functionName: "offRamp",
-        args: [parsedUsdtAmount],
+        args: [parseUnits(usdtAmount, 18)],
       });
 
-      if (hash) {
-        toast.success("Transaction confirmed");
+      if (!tx) {
+        throw new Error("Transaction failed");
       }
     } catch (error: any) {
-      handleTransactionError(error, error);
+      console.error("Swap error:", error);
+      handleTransactionError(error, "convert");
+      setTransactionStatus("idle");
     }
-  }, [ghsAmount, usdtAmount, exchangeRate, reserve, writeContract, hash]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!address) {
-          setAllowance(""); // Reset allowance if address is not provided
-          return;
-        }
-
         if (currentusdtAllowance) {
           // Safely format and set the allowance
-          setAllowance(formatUnits(currentusdtAllowance as bigint, 0));
+          const formattedAllowance = BigInt(
+            formatUnits(currentusdtAllowance as bigint, 0)
+          );
+          setUSDTAllowance(formattedAllowance);
+          console.log("Usdt allowance", formattedAllowance);
         } else if (AllowanceError) {
           toast.error("Error fetching allowances");
         }
@@ -148,9 +210,31 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
     address,
     currentusdtAllowance,
     AllowanceError,
-    handleApprove,
-    handleSendFiat,
+    isApproved,
+    isSwapComplete,
   ]);
+
+  useEffect(() => {
+    if (txAppSuccess) {
+      toast.success("USDT Approved!", { id: "approve" });
+      setTransactionStatus("idle");
+    }
+  }, [txAppSuccess]);
+
+  useEffect(() => {
+    if (txSuccess) {
+      toast.success("Successfully converted USDT to GHS!", { id: "convert" });
+      setTransactionStatus("completed");
+
+      // Reset form after successful transaction
+      setTimeout(() => {
+        setGhsAmount("");
+        setUsdtAmount("");
+        setTransactionStatus("idle");
+      }, 2000);
+    }
+  }, [txSuccess]);
+
   const formattedBalance = usdtBalance
     ? Number(formatUnits(usdtBalance as bigint, 18)).toFixed(2)
     : "0.00";
@@ -180,222 +264,255 @@ const Transfer: React.FC<TransferProps> = ({ exchangeRate, reserve }) => {
       setUsdtAmount("");
     }
   };
-  return (
-    <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-4 my-12 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Offramp your USDT</h1>
-        <Link href={"/settings"} className="p-2 rounded-full hover:bg-gray-100">
-          <Image
-            src="/images/icons/settings.png"
-            alt="Settings"
-            width={24}
-            height={24}
-          />
-        </Link>
-      </div>
 
-      <div className="flex-1 relative">
-        <div
-          className="w-full p-3 rounded-lg border border-gray-200 cursor-pointer hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+  const SuccessScreen = () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 space-y-6 text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+          <svg
+            className="w-8 h-8 text-green-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Transaction Successful!
+        </h2>
+        <p className="text-gray-600">
+          You have successfully converted {usdtAmount} USDT to {ghsAmount} GHS
+        </p>
+        <button
+          onClick={() => setTransactionStatus("idle")}
+          className="w-full py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Image
-                src={selectedQuoteToken.icon}
-                alt={selectedQuoteToken.name}
-                width={24}
-                height={24}
-                className="mr-2"
-              />
-              <span className="font-medium">{selectedQuoteToken.symbol}</span>
-            </div>
-            <svg
-              className={`w-5 h-5 transition-transform ${
-                isDropdownOpen ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-        </div>
-
-        {/* Dropdown Menu */}
-        {isDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-            {stablecoins.map((token) => (
-              <div
-                key={token.symbol}
-                className={`flex items-center p-3 hover:bg-gray-50 cursor-pointer ${
-                  selectedQuoteToken.symbol === token.symbol
-                    ? "bg-indigo-50"
-                    : ""
-                }`}
-                onClick={() => {
-                  setSelectedQuoteToken(token);
-                  setIsDropdownOpen(false);
-                }}
-              >
-                <Image
-                  src={token.icon}
-                  alt={token.name}
-                  width={24}
-                  height={24}
-                  className="mr-2"
-                />
-                <span className="font-medium">{token.symbol}</span>
-              </div>
-            ))}
-          </div>
-        )}
+          Close
+        </button>
       </div>
+    </div>
+  );
 
-      {/* Currency Exchange */}
-      <div className="space-y-3">
-        <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
-          <input
-            type="text"
-            value={ghsAmount}
-            onChange={(e) => {
-              const value = e.target.value.replace(/[^0-9.]/g, "");
-              handleGhsAmountChange(value);
-            }}
-            placeholder="0.00"
-            disabled={isPending}
-            className="bg-transparent outline-none text-xl font-medium w-32"
-          />
-          <div className="flex items-center gap-2">
-            <Image
-              src="/images/tokens/ghs.png"
-              alt="GHS"
-              width={24}
-              height={24}
-            />
-            <span className="font-medium">GHS</span>
+  if (isSwapPending) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <>
+      {transactionStatus === "completed" && <SuccessScreen />}
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+        {/* Header with Gradient */}
+        <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-8 text-white">
+          <h1 className="text-2xl font-bold">Send with Connected Wallet</h1>
+          <p className="mt-2 opacity-90">
+            Convert your USDT to GHS directly from your wallet
+          </p>
+
+          {/* Exchange Rate Cards */}
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4">
+              <p className="text-sm font-medium opacity-90">Exchange Rate</p>
+              <div className="flex items-baseline mt-1">
+                <p className="text-2xl font-bold">1 USDT</p>
+                <p className="text-lg ml-2">= {exchangeRate.toFixed(2)} GHS</p>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4">
+              <p className="text-sm font-medium opacity-90">
+                Available Liquidity
+              </p>
+              <p className="text-2xl font-bold mt-1">
+                {reserve.toFixed(2)} GHS
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <button className="p-2 bg-gray-100 rounded-full">
-            <Image
-              src="/images/icons/arrow-down.png"
-              alt="Swap"
-              width={20}
-              height={20}
-            />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div className="bg-gray-50 rounded-xl p-4">
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-600">Amount</span>
-              <span className="text-sm text-gray-500">
-                Balance: {formattedBalance} {selectedQuoteToken.symbol}
-              </span>
+        {/* Main Content */}
+        <div className="p-8 space-y-8">
+          {/* Step 1: Amount Input */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">
+                1
+              </div>
+              <h2 className="text-xl font-semibold">Enter Amount</h2>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
+
+            <div className="bg-gray-50 p-6 rounded-xl space-y-4">
+              <div className="relative">
                 <input
                   type="number"
-                  placeholder="0.0"
-                  disabled
-                  value={usdtAmount}
-                  onChange={(e) => setUsdtAmount(e.target.value)}
-                  className="w-full bg-transparent text-2xl font-medium focus:outline-none pr-16"
+                  value={ghsAmount}
+                  onChange={(e) => {
+                    setGhsAmount(e.target.value);
+                    setUsdtAmount(
+                      (Number(e.target.value) / exchangeRate).toFixed(2)
+                    );
+                  }}
+                  className="w-full p-4 pr-24 text-3xl font-bold rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="0.00"
                 />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <span className="text-gray-400 text-xl font-medium">GHS</span>
+                </div>
               </div>
-              <div className="flex items-center justify-end sm:justify-start space-x-2 bg-white rounded-lg px-3 py-2">
-                <Image
-                  src={selectedQuoteToken.icon}
-                  alt={selectedQuoteToken.name}
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
-                <span className="font-medium">{selectedQuoteToken.symbol}</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">You&apos;ll send</span>
+                <span className="text-lg font-semibold text-gray-700">
+                  ≈ {usdtAmount} USDT
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Pool Stats */}
-          <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Exchange Rate</span>
-              <span className="font-medium">{exchangeRate.toFixed(2)}</span>
+          {/* Step 2: Token Selection */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">
+                2
+              </div>
+              <h2 className="text-xl font-semibold">Select Token</h2>
             </div>
 
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Fees</span>
-              <span className="font-medium text-green-600">free</span>
+            <div className="grid grid-cols-3 gap-4">
+              {stablecoins.map((token) => (
+                <button
+                  key={token.symbol}
+                  onClick={() =>
+                    !token.disabled && setSelectedQuoteToken(token)
+                  }
+                  disabled={token.disabled}
+                  className={`flex items-center justify-center p-4 rounded-xl border-2 transition-all ${
+                    selectedQuoteToken.symbol === token.symbol
+                      ? "border-purple-500 bg-purple-50"
+                      : "border-gray-200 hover:border-purple-300"
+                  } ${token.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Image
+                      src={token.icon}
+                      alt={token.name}
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                    <span className="font-medium text-gray-900">
+                      {token.symbol}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Step 3: Transaction */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">
+                3
+              </div>
+              <h2 className="text-xl font-semibold">Approve & Send</h2>
+            </div>
+
+            <div className="space-y-4">
+              {usdtAllowance <
+                (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0)) && (
+                <button
+                  onClick={handleApprove}
+                  disabled={transactionStatus === "approving"}
+                  className={`w-full py-4 rounded-xl font-medium transition-all ${
+                    transactionStatus === "approving"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-purple-600 text-white hover:bg-purple-700"
+                  }`}
+                >
+                  {transactionStatus === "approving" ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Approving...</span>
+                    </div>
+                  ) : (
+                    "Approve USDT"
+                  )}
+                </button>
+              )}
+
+              <button
+                onClick={handleSendFiat}
+                disabled={
+                  transactionStatus === "converting" ||
+                  !ghsAmount ||
+                  usdtAllowance <
+                    (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0))
+                }
+                className={`w-full py-4 rounded-xl font-medium transition-all ${
+                  transactionStatus === "converting" ||
+                  !ghsAmount ||
+                  usdtAllowance <
+                    (usdtAmount ? parseUnits(usdtAmount, 18) : BigInt(0))
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+                }`}
+              >
+                {transactionStatus === "converting" ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Converting...</span>
+                  </div>
+                ) : (
+                  "Convert to GHS"
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Provider Info */}
-
-      {/* Action Button */}
-      {/* {Number(usdtAllowance) < parseUnits(usdtAmount, 18) && (
-        <button
-          onClick={handleApprove}
-          disabled={isPending || !usdtAmount}
-          className="w-full py-3 px-4 rounded-lg text-white font-medium bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          Approve USDT
-        </button>
-      )} */}
-
-      <button
-        onClick={handleSendFiat}
-        disabled={isPending || !ghsAmount || formattedBalance < usdtAmount}
-        className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all
-            ${
-              isPending || !ghsAmount || formattedBalance < usdtAmount
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }
-          `}
-      >
-        {isPending ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg
-              className="animate-spin h-5 w-5 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            Processing...
-          </span>
-        ) : Number(usdtAllowance) < parseUnits(usdtAmount, 18) ? (
-          "Approve"
-        ) : (
-          "Send USDT"
-        )}
-      </button>
-    </div>
+    </>
   );
 };
 

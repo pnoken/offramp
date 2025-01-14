@@ -46,7 +46,7 @@ const Onboarding: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12 px-4 sm:px-6 lg:px-8">
       <h1>Onboarding</h1>
       <input
         type="text"

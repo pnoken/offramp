@@ -1,14 +1,15 @@
 import Image from "next/image";
 import React, { useState } from "react";
+import CountrySelector from "./CountrySelection"; // Adjust the import path as necessary
+import { Country } from "./CountrySelection"; // Remove the local Country interface
+
 interface MobileMoneySetupProps {
-  onSubmit: (operator: string, phoneNumber: string) => void;
+  onSubmit: (country: string, phoneNumber: string) => void;
 }
 
-export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
-  onSubmit,
-}) => {
-  const [operator, setOperator] = useState("");
+const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({ onSubmit }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
   // Mobile number validation: 10 digits or with country code 10+ digits
   const isValidPhoneNumber = (number: string) => {
@@ -16,58 +17,25 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
     return pattern.test(number);
   };
 
-  const isContinueDisabled = !operator || !isValidPhoneNumber(phoneNumber);
+  const isContinueDisabled =
+    !selectedCountry || !isValidPhoneNumber(phoneNumber);
+
+  const handleSubmit = () => {
+    if (selectedCountry && isValidPhoneNumber(phoneNumber)) {
+      onSubmit(selectedCountry.name, phoneNumber); // Pass country name and phone number
+    }
+  };
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Set up Mobile Account</h1>
 
       <div className="space-y-4">
-        <p>Select Mobile Operator</p>
-        <div className="flex gap-4 w-full">
-          <button
-            className={`p-4 rounded-lg flex-1 ${
-              operator === "MTN" ? "bg-yellow-400" : "bg-gray-100"
-            }`}
-            onClick={() => setOperator("MTN")}
-          >
-            <Image
-              src="/images/mobile-operator/mtn.jpg"
-              alt="MTN"
-              width={100}
-              height={100}
-            />
-            <span>MTN</span>
-          </button>
-          <button
-            className={`p-4 rounded-lg flex-1 ${
-              operator === "Telecel" ? "bg-red-400" : "bg-gray-100"
-            }`}
-            onClick={() => setOperator("Telecel")}
-          >
-            <Image
-              src="/images/mobile-operator/voda.png"
-              alt="Telecel"
-              width={100}
-              height={100}
-            />
-            <span>Telecel</span>
-          </button>
-          <button
-            className={`p-4 rounded-lg flex-1 ${
-              operator === "AT" ? "bg-blue-400" : "bg-gray-100"
-            }`}
-            onClick={() => setOperator("AT")}
-          >
-            <Image
-              src="/images/mobile-operator/airteltigo.avif"
-              alt="Airtel Tigo"
-              width={100}
-              height={100}
-            />
-            <span>AT</span>
-          </button>
-        </div>
+        <p>Select Country or Region</p>
+        <CountrySelector
+          selectedCountry={selectedCountry}
+          onSelect={setSelectedCountry}
+        />
 
         <div className="space-y-2">
           <label className="block">Mobile Number</label>
@@ -89,16 +57,6 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
           )}
         </div>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="flex items-center gap-2">
-            <span>↔️</span>
-            <p>Offramp USDT/USDC TO GHS</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <p>Free for up to GHS 5k monthly</p>
-          </div>
-        </div>
-
         <button
           className={`w-full py-3 rounded-lg text-white ${
             isContinueDisabled
@@ -106,7 +64,7 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
               : "bg-purple-600"
           }`}
           disabled={isContinueDisabled}
-          onClick={() => onSubmit(operator, phoneNumber)}
+          onClick={handleSubmit}
         >
           Continue
         </button>
@@ -114,3 +72,5 @@ export const MobileMoneySetup: React.FC<MobileMoneySetupProps> = ({
     </div>
   );
 };
+
+export default MobileMoneySetup;

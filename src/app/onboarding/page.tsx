@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { MobileMoneySetup } from "@/components/onboarding/MobileMoneySetup";
+import MobileMoneySetup from "@/components/onboarding/MobileMoneySetup";
 import { VerificationStep } from "@/components/onboarding/VerificationStep";
 import { OnboardingComplete } from "@/components/onboarding/OnboardingComplete";
 import { useRouter } from "next/navigation";

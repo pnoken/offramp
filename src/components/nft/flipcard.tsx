@@ -31,14 +31,17 @@ export default function FlipCard({ children }: any) {
     <AnimatedBox
       style={{
         perspective: 1000,
+        width: "100%", // Changed to make the width full
+        margin: "auto", // Added to center the card horizontally
       }}
     >
       <AnimatedBox
         style={{
           position: "relative",
           transformStyle: "preserve-3d",
-          width: 300,
-          height: 300,
+          width: "100%", // Changed to make the width full
+          height: 400,
+          margin: "auto", // Added to center the card horizontally
         }}
       >
         {children}
