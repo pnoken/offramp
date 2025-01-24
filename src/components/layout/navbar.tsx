@@ -80,7 +80,7 @@ const Navbar = () => {
                 className="rounded-lg"
               />
               <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Fiatsend
+                Offramps
               </span>
             </Link>
 
